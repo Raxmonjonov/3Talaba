@@ -1,0 +1,1102 @@
+// 3talab — Prisma schema
+// Batafsil izoh: ARCHITECTURE.md §3
+//
+// Lokal matn maydonlari `{ "uz": "...", "en": "..." }` ko'rinishida `Json` sifatida saqlanadi.
+// Bu ilova faqat 2 tilni qo'llab-quvvatlaydi (uz — asosiy, en — o'quv kontenti), shuning uchun
+// alohida `LessonTranslation` jadvali kerak emas va har bir savol yozilganda tarjima qo'shish
+// majburiy emas (bo'sh `en` -> `uz` ko'rsatiladi).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUM'LAR
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum Gender {
+  FEMALE
+  MALE
+  OTHER
+}
+
+enum Locale {
+  uz
+  en
+}
+
+/// AI ustozning murojaat uslubi
+enum AddressForm {
+  /// "Siz" — rasmiy, hurmatli
+  FORMAL
+  /// "sen" — iliq, do'stona
+  WARM
+}
+
+enum ThemeMode {
+  system
+  light
+  dark
+}
+
+enum Subject {
+  SAT
+  IELTS
+  ACADEMIC_ENGLISH
+  MATHEMATICS
+  LOGIC
+  WRITING
+  APPLICATIONS
+  CAREER
+}
+
+enum QuestionType {
+  MCQ_SINGLE
+  MCQ_MULTI
+  NUMERIC
+  SHORT_TEXT
+  ORDERING
+  MATCHING
+  ESSAY
+}
+
+enum ExamType {
+  SAT
+  IELTS
+  ACADEMIC_ENGLISH
+  NONE
+}
+
+enum PlacementStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum PlanStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum Phase {
+  FOUNDATION
+  BUILD
+  STRENGTHEN
+  SPRINT
+  MOCKS
+  FINAL
+}
+
+enum DayStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  REST
+}
+
+enum PlannedBlockType {
+  LEARN
+  PRACTICE
+  TUTOR_CHAT
+  QUIZ
+  MOCK
+  REVIEW
+}
+
+enum BlockStatus {
+  PENDING
+  ACTIVE
+  DONE
+  SKIPPED
+}
+
+/// Dars ichidagi blok turi
+enum LessonBlockKind {
+  STORY
+  EXPLAIN
+  EXAMPLE
+  DRILL
+  AI_CHAT
+  QUIZ
+  ERROR_REVIEW
+  BREAK
+}
+
+enum SessionStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ABANDONED
+}
+
+enum SessionMode {
+  STANDARD
+  SPRINT
+}
+
+enum StepStatus {
+  PENDING
+  ACTIVE
+  DONE
+  SKIPPED
+}
+
+enum MessageRole {
+  user
+  assistant
+  system
+}
+
+enum MessageKind {
+  LESSON
+  ONBOARDING
+  ERROR_REVIEW
+  MOCK_REVIEW
+  FREE_CHAT
+}
+
+enum CardKind {
+  WORD
+  FORMULA
+  GRAMMAR
+  CONCEPT
+}
+
+enum ErrorStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+}
+
+enum ConsentKind {
+  PRIVACY
+  DATA_PROCESSING
+  GUARDIAN
+  MARKETING
+}
+
+enum GuardianStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+}
+
+enum DataRequestKind {
+  EXPORT
+  DELETE
+}
+
+enum DataRequestStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  REJECTED
+}
+
+enum XpReason {
+  ONBOARDING
+  LESSON_BLOCK
+  QUIZ
+  SESSION_COMPLETE
+  MOCK_EXAM
+  SRS_REVIEW
+  ACHIEVEMENT
+  STREAK_BONUS
+  ERROR_FIXED
+}
+
+// ─────────────────────────────────────────────────────────────
+// AUTENTIFIKATSIYA VA PROFIL
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  emailVerified DateTime?
+  passwordHash String?
+  name         String
+  image        String?
+  role         Role      @default(STUDENT)
+
+  // Ro'yxatdan o'tish formasi
+  gender       Gender?
+  birthDate    DateTime?
+  currentGrade String?
+
+  // Maqsad
+  targetExam     ExamType @default(SAT)
+  targetScore    Int?
+  targetCountries String[] @default([])
+  targetUni      String?
+  motivation     String?
+
+  // O'quv holati
+  level       Int       @default(0) // 0..5 — placement natijasi
+  levelLocked Boolean   @default(false)
+  onboardedAt DateTime?
+  timezone    String    @default("Asia/Tashkent")
+
+  deletedAt   DateTime?
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  preferences    UserPreferences?
+  tutorProfile   AiTutorProfile?
+  accounts       Account[]
+  sessions       Session[]
+  placement      PlacementAttempt[]
+  plans          StudyPlan[]
+  lessons        LessonSession[]
+  messages       ChatMessage[]
+  skillMasteries SkillMastery[]
+  errorEntries   ErrorEntry[]
+  reviewCards    ReviewCard[]
+  reviewLogs     ReviewLog[]
+  xpEvents       XpEvent[]
+  achievements   UserAchievement[]
+  streak         Streak?
+  projections    ScoreProjection[]
+  mockAttempts   MockAttempt[]
+  consents       ConsentRecord[]
+  guardianOf     GuardianLink[]   @relation("StudentGuardians")
+  guardianLinks  GuardianLink[]   @relation("GuardianStudents")
+  dataRequests   DataRequest[]
+  auditLogs      AuditLog[]       @relation("AuditActor")
+  promptsUpdated PromptTemplate[] @relation("PromptUpdater")
+
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model UserPreferences {
+  userId String @id
+
+  // AI ustoz
+  nickname          String?
+  nicknameEnabled   Boolean @default(true)
+  addressForm       AddressForm @default(WARM)
+  soundEnabled      Boolean @default(true)
+  matrixIntroEnabled Boolean @default(true)
+
+  // Ko'rinish / a11y
+  theme          ThemeMode @default(system)
+  reduceMotion   Boolean   @default(false)
+  fontScale      Float     @default(1)
+
+  // Reja
+  dailyGoalMinutes  Int @default(60)
+  sessionBlockMinutes Int @default(15)
+  breakMinutes      Int @default(5)
+
+  // Tanaffus / uy
+  breakRemindersEnabled Boolean @default(true)
+  bedtimeReminder      Boolean @default(true)
+  bedtimeReminderAt    String  @default("23:00")
+
+  // Reyting (default yopiq — majburlash yo'q)
+  leaderboardVisible Boolean @default(false)
+
+  // Bashoratni ko'rsatish
+  showScoreProjection Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────
+// KONTENT: KURSLAR, DARSLAR, SAVOLLAR
+// ─────────────────────────────────────────────────────────────
+
+model Course {
+  id          String @id @default(cuid())
+  slug        String @unique
+  title       Json
+  description Json
+  subject     Subject
+  order       Int    @default(0)
+  isPublished Boolean @default(true)
+
+  modules Module[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subject, order])
+  @@map("courses")
+}
+
+model Module {
+  id          String @id @default(cuid())
+  courseId    String
+  slug        String
+  title       Json
+  description Json?
+  subject     Subject
+  order       Int    @default(0)
+  levelRange  String @default("0-5") // "0-1", "2-3", "4-5"
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@unique([courseId, slug])
+  @@index([courseId, order])
+  @@map("modules")
+}
+
+model Lesson {
+  id       String @id @default(cuid())
+  moduleId String
+  slug     String @unique
+
+  title       Json
+  summary     Json
+  objectives  Json
+  storyAct    Int     @default(1)
+  storyTitle  Json?
+  levelRange  String  @default("0-5")
+  estMinutes  Int     @default(60)
+  xpReward    Int     @default(40)
+  skillIds    String[] @default([])
+  isPublished Boolean @default(true)
+
+  module   Module        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  blocks   LessonBlock[]
+  sessions LessonSession[]
+  planned  PlannedBlock[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@index([levelRange])
+  @@map("lessons")
+}
+
+model LessonBlock {
+  id        String @id @default(cuid())
+  lessonId  String
+  order     Int
+  kind      LessonBlockKind
+  title     Json
+  content   Json
+  minMinutes Int    @default(10)
+  skillId   String?
+
+  lesson  Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  skill   Skill?           @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  steps   SessionStep[]
+  errors  ErrorEntry[]
+
+  @@unique([lessonId, order])
+  @@index([lessonId, kind])
+  @@map("lesson_blocks")
+}
+
+model Skill {
+  id       String @id @default(cuid())
+  slug     String @unique
+  subject  Subject
+  name     Json
+  parentId String?
+
+  parent   Skill?  @relation("SkillTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Skill[] @relation("SkillTree")
+
+  questions     Question[]
+  mastery       SkillMastery[]
+  blocks        LessonBlock[]
+
+  @@index([subject])
+  @@map("skills")
+}
+
+model Question {
+  id        String       @id @default(cuid())
+  skillId   String
+  type      QuestionType
+  prompt    Json
+  passage   Json?
+  difficulty Float       @default(0) // -3..+3 (IRT b)
+  estimatedSeconds Int   @default(60)
+  source    String       @default("seed")
+  isActive  Boolean      @default(true)
+
+  skill    Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  options  QuestionOption[]
+  answers  PlacementAnswer[]
+  mock     MockAnswer[]
+  errors   ErrorEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([skillId, isActive])
+  @@index([type])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String @id @default(cuid())
+  questionId String
+  order      Int
+  label      Json
+  isCorrect  Boolean @default(false)
+  explanation Json?
+  /// SHORT_TEXT uchun tolerant solishtirish qoidalari
+  matchRules Json?
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, order])
+  @@map("question_options")
+}
+
+model MockExam {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       Json
+  description Json?
+  exam        ExamType
+  durationMin Int
+  /// [{ sectionKey, title, questionIds, points, skillIds }]
+  sections    Json
+  isPublished Boolean  @default(true)
+
+  attempts MockAttempt[]
+  weeks    StudyWeek[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([exam])
+  @@map("mock_exams")
+}
+
+model MockAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  mockExamId  String
+  status      String   @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | ABANDONED
+  rawScore    Float    @default(0)
+  scaledScore Int?
+  band        Float?
+  sectionScores Json   @default("[]")
+  timeSpentSec Int     @default(0)
+  startedAt   DateTime @default(now())
+  finishedAt  DateTime?
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mockExam MockExam     @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  answers  MockAnswer[]
+
+  @@index([userId, startedAt])
+  @@map("mock_attempts")
+}
+
+model MockAnswer {
+  id        String  @id @default(cuid())
+  attemptId String
+  questionId String
+  chosen    Json
+  isCorrect Boolean @default(false)
+  timeMs    Int     @default(0)
+
+  attempt  MockAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@map("mock_answers")
+}
+
+// ─────────────────────────────────────────────────────────────
+// PLACEMENT (adaptiv daraja aniqlash)
+// ─────────────────────────────────────────────────────────────
+
+model PlacementAttempt {
+  id        String @id @default(cuid())
+  userId    String
+  status    PlacementStatus @default(IN_PROGRESS)
+
+  abilityTheta   Float  @default(0)
+  abilityStderr  Float  @default(1)
+  rawCorrect     Int    @default(0)
+  rawTotal       Int    @default(0)
+  level          Int?
+  scaledScore    Int?
+  durationSec    Int    @default(0)
+  /// Adaptiv qadamlar izi: [{ order, questionId, correct, thetaBefore, thetaAfter, seAfter }]
+  itemTrace      Json   @default("[]")
+  skillThetas    Json   @default("{}")
+  finishedAt     DateTime?
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers PlacementAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@map("placement_attempts")
+}
+
+model PlacementAnswer {
+  id        String @id @default(cuid())
+  attemptId String
+  questionId String
+  order     Int
+  chosen    Json
+  isCorrect Boolean @default(false)
+  responseTimeMs Int @default(0)
+  difficultyBefore Float @default(0)
+  thetaBefore Float @default(0)
+  thetaAfter  Float @default(0)
+  seAfter     Float @default(1)
+
+  attempt  PlacementAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, order])
+  @@index([attemptId])
+  @@map("placement_answers")
+}
+
+// ─────────────────────────────────────────────────────────────
+// O'QUV REJASI (12 oylik yo'l xaritasi)
+// ─────────────────────────────────────────────────────────────
+
+model StudyPlan {
+  id           String @id @default(cuid())
+  userId       String
+  title        Json
+  targetExam   ExamType
+  targetScore  Int?
+  startDate    DateTime
+  endDate      DateTime
+  weeksTotal   Int    @default(52)
+  mode         String @default("STANDARD") // STANDARD | STARTER | INTENSIVE
+  status       PlanStatus @default(ACTIVE)
+  version      Int    @default(1)
+  /// rejimni o'zgartirish sababi: SICK | EXAM | TRAVEL | OTHER
+  changeReason String?
+  isArchivedAt DateTime?
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weeks  StudyWeek[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@map("study_plans")
+}
+
+model StudyWeek {
+  id       String @id @default(cuid())
+  planId   String
+  index    Int // 1..52
+  phase    Phase
+  goal     Json
+  focusSkillIds String[] @default([])
+  mockExamId    String?
+  isRestWeek    Boolean @default(false)
+
+  plan       StudyPlan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  days       StudyDay[]
+  mockExam   MockExam?    @relation(fields: [mockExamId], references: [id], onDelete: SetNull)
+
+  @@unique([planId, index])
+  @@map("study_weeks")
+}
+
+model StudyDay {
+  id       String @id @default(cuid())
+  weekId   String
+  date     DateTime
+  dayIndex Int // 1..7 (haftaning kuni)
+  targetMinutes Int
+  completedMinutes Int @default(0)
+  deferredMinutes Int @default(0) // keyingi kunga ko'chirilgan vaqt
+  status   DayStatus @default(PENDING)
+  isStudyDay Boolean @default(true)
+
+  week   StudyWeek      @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  blocks PlannedBlock[]
+
+  @@unique([weekId, date])
+  @@index([date])
+  @@map("study_days")
+}
+
+model PlannedBlock {
+  id      String @id @default(cuid())
+  dayId   String
+  lessonId String?
+  blockType PlannedBlockType
+  plannedMinutes Int
+  order   Int
+  status  BlockStatus @default(PENDING)
+
+  day    StudyDay  @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  lesson Lesson?   @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  sessions LessonSession[] @relation("PlannedBlockSessions")
+
+  @@unique([dayId, order])
+  @@map("planned_blocks")
+}
+
+// ─────────────────────────────────────────────────────────────
+// DARS SESSIYASI VA AI SUHBAT
+// ─────────────────────────────────────────────────────────────
+
+model LessonSession {
+  id      String @id @default(cuid())
+  userId  String
+  lessonId String
+  plannedBlockId String?
+  mockAttemptId  String?
+
+  status   SessionStatus @default(ACTIVE)
+  mode     SessionMode   @default(STANDARD)
+  targetMinutes Int      @default(60)
+  elapsedSec  Int         @default(0)
+  resumeStepId String?
+  stepIndex   Int         @default(0)
+  breakOfferedAt DateTime?
+  breaksTaken     Int      @default(0)
+  completed       Boolean  @default(false)
+  xpAwarded       Int      @default(0)
+  accuracy        Float?
+  summary         Json?
+  startReason     String? // NEW | RESUME | REGENERATE
+
+  startedAt   DateTime  @default(now())
+  lastActiveAt DateTime @default(now())
+  endedAt     DateTime?
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  planned PlannedBlock[] @relation("PlannedBlockSessions")
+  steps  SessionStep[]
+  messages ChatMessage[]
+
+  @@index([userId, status])
+  @@index([userId, startedAt])
+  @@map("lesson_sessions")
+}
+
+model SessionStep {
+  id        String @id @default(cuid())
+  sessionId String
+  blockId   String?
+  order     Int
+  status    StepStatus @default(PENDING)
+  payload   Json  @default("{}")
+  result    Json  @default("{}")
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  session LessonSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  block   LessonBlock?  @relation(fields: [blockId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, order])
+  @@map("session_steps")
+}
+
+model ChatMessage {
+  id        String @id @default(cuid())
+  userId    String
+  sessionId String?
+  role      MessageRole
+  kind      MessageKind @default(LESSON)
+  content   String
+  tokensIn  Int?
+  tokensOut Int?
+  model     String?
+  latencyMs Int?
+  blocked   Boolean @default(false) // guard tomonidan rad etilgan
+  createdAt DateTime @default(now())
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session LessonSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@index([userId, createdAt])
+  @@map("chat_messages")
+}
+
+model AiTutorProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  nickname        String?
+  nicknameEnabled Boolean @default(true)
+  addressForm     AddressForm @default(WARM)
+
+  motivation       String?
+  fears            String?
+  studyStyle       Json?  // { prefersVisuals, likesTheory, silentStudy, discussionLevel }
+  favoriteSubjects String[] @default([])
+  avoidTopics      String[] @default([])
+  dailyStartTime   String  @default("07:00")
+  studyDays        String[] @default([])
+  learningPace     String  @default("NORMAL") // SLOW | NORMAL | FAST
+  onboardedSummary Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ai_tutor_profiles")
+}
+
+model PromptTemplate {
+  id       String @id @default(cuid())
+  key      String @unique
+  name     Json
+  body     String
+  version  Int    @default(1)
+  isActive Boolean @default(true)
+  updatedById String?
+
+  updatedBy User? @relation("PromptUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("prompt_templates")
+}
+
+// ─────────────────────────────────────────────────────────────
+// XATOLAR DAFTARI VA SPACED REPETITION (FSRS)
+// ─────────────────────────────────────────────────────────────
+
+model ErrorEntry {
+  id           String @id @default(cuid())
+  userId       String
+  questionId   String?
+  lessonBlockId String?
+  topic        String
+  userAnswer   Json
+  correctAnswer Json
+  reason       String? // NIQOH / DASHBOARD / VAQT / FORMAL / BILIM
+  explanation  Json?
+  status       ErrorStatus @default(OPEN)
+  timesShown   Int  @default(0)
+  timesFixed   Int  @default(0)
+  resolvedAt   DateTime?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question     Question?     @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  lessonBlock  LessonBlock?  @relation(fields: [lessonBlockId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@map("error_entries")
+}
+
+model ReviewCard {
+  id     String @id @default(cuid())
+  userId String
+  kind   CardKind
+  front  String
+  back   String
+  note   String?
+  source String? // lessonId / questionId / skillId
+
+  // FSRS holati
+  stability   Float  @default(0)
+  difficulty  Float  @default(5)
+  dueAt       DateTime @default(now())
+  lastReviewAt DateTime?
+  state       Int     @default(0) // 0=NEW 1=LEARNING 2=REVIEW 3=RELEARNING
+  reps        Int     @default(0)
+  lapses      Int     @default(0)
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs  ReviewLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, dueAt])
+  @@index([kind])
+  @@map("review_cards")
+}
+
+model ReviewLog {
+  id        String   @id @default(cuid())
+  cardId    String
+  userId    String
+  reviewedAt DateTime @default(now())
+  grade     Int // 0..5
+  elapsedMs Int      @default(0)
+  stabilityAfter Float @default(0)
+  dueAfter  DateTime?
+
+  card ReviewCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([cardId, reviewedAt])
+  @@map("review_logs")
+}
+
+// ─────────────────────────────────────────────────────────────
+// KO'NIKMA VA PROGRESS
+// ─────────────────────────────────────────────────────────────
+
+model SkillMastery {
+  id      String @id @default(cuid())
+  userId  String
+  skillId String
+  theta   Float  @default(0) // -3..+3
+  confidence Float @default(0)
+  samples Int    @default(0)
+  correctCount Int @default(0)
+  attempts Int   @default(0)
+  lastSeenAt DateTime?
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@index([userId, theta])
+  @@map("skill_masteries")
+}
+
+model ScoreProjection {
+  id             String   @id @default(cuid())
+  userId         String
+  exam           ExamType
+  projectedScore Int
+  lower          Int
+  upper          Int
+  confidence     Float    @default(0)
+  breakdown      Json     @default("{}")
+  computedAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, exam, computedAt])
+  @@map("score_projections")
+}
+
+// ─────────────────────────────────────────────────────────────
+// GAMIFIKATSIYA
+// ─────────────────────────────────────────────────────────────
+
+model XpEvent {
+  id      String @id @default(cuid())
+  userId  String
+  amount  Int
+  reason  XpReason
+  refId   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("xp_events")
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  code        String @unique
+  title       Json
+  description Json
+  icon        String
+  xp          Int    @default(0)
+  /// { type: "STREAK", value: 7 } | { type: "XP_TOTAL", value: 1000 } | ...
+  criteria    Json
+
+  users UserAchievement[]
+
+  createdAt DateTime @default(now())
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+  seenAt        DateTime?
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Streak {
+  id          String @id @default(cuid())
+  userId      String @unique
+  current     Int    @default(0)
+  longest     Int    @default(0)
+  lastStudyDate DateTime?
+  freezes     Int    @default(2)
+  freezeUsedDates String[] @default([])
+  totalDays   Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("streaks")
+}
+
+// ─────────────────────────────────────────────────────────────
+// MAXFIYLIK / GDPR / AUDIT
+// ─────────────────────────────────────────────────────────────
+
+model ConsentRecord {
+  id      String @id @default(cuid())
+  userId  String
+  kind    ConsentKind
+  granted Boolean
+  version String
+  ip      String?
+  at      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+  @@map("consent_records")
+}
+
+model GuardianLink {
+  id         String @id @default(cuid())
+  studentId  String
+  guardianId String
+  status     GuardianStatus @default(PENDING)
+  /// qaysi ma'lumotlar ko'rinadi: PROGRESS_ONLY | FULL
+  scope      String   @default("PROGRESS_ONLY")
+  createdAt  DateTime @default(now())
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+
+  student  User @relation("StudentGuardians", fields: [studentId], references: [id], onDelete: Cascade)
+  guardian User @relation("GuardianStudents", fields: [guardianId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, guardianId])
+  @@index([guardianId, status])
+  @@map("guardian_links")
+}
+
+model DataRequest {
+  id          String @id @default(cuid())
+  userId      String
+  kind        DataRequestKind
+  status      DataRequestStatus @default(PENDING)
+  requestedAt DateTime @default(now())
+  completedAt DateTime?
+  artifactKey String?
+  note        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+  @@map("data_requests")
+}
+
+model AuditLog {
+  id       String @id @default(cuid())
+  actorId  String?
+  action   String
+  entity   String
+  entityId String?
+  before   Json?
+  after    Json?
+  ip       String?
+  at       DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([at])
+  @@map("audit_logs")
+}
+
+model RateLimitBucket {
+  id          String @id @default(cuid())
+  key         String @unique
+  windowStart DateTime
+  count       Int    @default(0)
+
+  @@index([windowStart])
+  @@map("rate_limit_buckets")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
