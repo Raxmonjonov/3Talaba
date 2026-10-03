@@ -234,7 +234,31 @@ export function getAuth(): NextAuthResult {
   return cached;
 }
 
-export const { handlers, auth, signIn, signOut } = getAuth();
+type Lazy<T> = T extends (...args: infer A) => infer R
+  ? (...args: A) => R
+  : T;
+
+/**
+ * `next build` route modullarini import qiladi, lekin so'rov bajarilmaydi.
+ * Shu sababli Auth.js konfiguratsiyasi import vaqtida emas, birinchi
+ * chaqirilganda yaratiladi — aks holda build muhitida `AUTH_SECRET`
+ * yo'q bo'lsa build butunlay ishlamaydi.
+ */
+function lazyAuth<T extends keyof NextAuthResult>(key: T): Lazy<NextAuthResult[T]> {
+  return ((...args: unknown[]) => {
+    const target = getAuth()[key] as unknown as (...a: unknown[]) => unknown;
+    return Reflect.apply(target, getAuth(), args);
+  }) as Lazy<NextAuthResult[T]>;
+}
+
+export const handlers = {
+  GET: lazyAuth('handlers').GET,
+  POST: lazyAuth('handlers').POST,
+} as NextAuthResult['handlers'];
+
+export const auth = lazyAuth('auth') as NextAuthResult['auth'];
+export const signIn = lazyAuth('signIn') as NextAuthResult['signIn'];
+export const signOut = lazyAuth('signOut') as NextAuthResult['signOut'];
 
 /** Server komponentlarida joriy sessiya. */
 export async function getSessionUser(): Promise<SessionUser | null> {

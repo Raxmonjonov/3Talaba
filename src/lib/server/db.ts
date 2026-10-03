@@ -28,10 +28,31 @@ function createClient(): PrismaClient {
   });
 }
 
-export const prisma: PrismaClient = globalThis.__3talabPrisma ?? createClient();
+let realClient: PrismaClient | null = null;
 
-if (getServerEnv().NODE_ENV !== 'production') {
-  globalThis.__3talabPrisma = prisma;
+function resolveClient(): PrismaClient {
+  if (!realClient) {
+    realClient = globalThis.__3talabPrisma ?? createClient();
+    if (process.env.NODE_ENV !== 'production') {
+      globalThis.__3talabPrisma = realClient;
+    }
+  }
+  return realClient;
 }
+
+/**
+ * Klient faqat birinchi ishlatilishda yaratiladi.
+ *
+ * `next build` paytida route modullari import qilinadi, lekin so'rov
+ * bajarilmaydi. Shu sababli `DATABASE_URL` yo'q bo'lsa ham build
+ * muvaffaqiyatli o'tishi uchun klient darhol emas, kerak bo'lganda
+ * yaratiladi.
+ */
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, property, receiver) {
+    const value = Reflect.get(resolveClient() as object, property, receiver);
+    return typeof value === 'function' ? value.bind(resolveClient()) : value;
+  },
+});
 
 export type { PrismaClient } from '@prisma/client';
