@@ -246,8 +246,9 @@ type Lazy<T> = T extends (...args: infer A) => infer R
  */
 function lazyAuth<T extends keyof NextAuthResult>(key: T): Lazy<NextAuthResult[T]> {
   return ((...args: unknown[]) => {
-    const target = getAuth()[key] as unknown as (...a: unknown[]) => unknown;
-    return Reflect.apply(target, getAuth(), args);
+    const auth = getAuth();
+    const target = auth[key] as unknown as (...a: unknown[]) => unknown;
+    return Reflect.apply(target, auth, args);
   }) as Lazy<NextAuthResult[T]>;
 }
 
