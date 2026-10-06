@@ -22,6 +22,11 @@
     --accent: 199 100% 63%;
     --accent-foreground: 258 44% 12%;
 
+    /* End stop of the hero headline gradient. It is darker than --accent so the
+       text clears 4.5:1 on this near-white background; --accent stays bright
+       because it is used as a background elsewhere. */
+    --gradient-end: 199 100% 35%;
+
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
 
@@ -55,6 +60,8 @@
 
     --accent: 199 95% 60%;
     --accent-foreground: 256 44% 8%;
+
+    --gradient-end: 199 95% 60%;
 
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;

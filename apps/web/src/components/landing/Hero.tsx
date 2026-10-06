@@ -61,7 +61,7 @@ export function Hero() {
 
           <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
             {t.hero.title}{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-gradient-end bg-clip-text text-transparent">
               {t.hero.titleAccent}
             </span>
           </h1>
