@@ -23,7 +23,7 @@ export function Subjects() {
             <div className="flex items-baseline gap-3">
               <span
                 aria-hidden="true"
-                className="text-sm font-bold text-primary/60"
+                className="text-sm font-bold text-primary"
               >
                 {String(index + 1).padStart(2, "0")}
               </span>

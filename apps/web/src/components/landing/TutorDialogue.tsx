@@ -36,7 +36,7 @@ export function TutorDialogue() {
                     >
                       <p
                         className={`mb-1 text-[11px] font-semibold uppercase tracking-wide ${
-                          isTutor ? "text-muted-foreground" : "text-primary-foreground/80"
+                          isTutor ? "text-muted-foreground" : "text-primary-foreground"
                         }`}
                       >
                         {isTutor ? t.dialogue.tutor : t.dialogue.student}

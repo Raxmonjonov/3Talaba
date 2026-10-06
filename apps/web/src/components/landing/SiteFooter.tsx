@@ -26,7 +26,7 @@ export function SiteFooter() {
                   <span className="inline-flex items-center gap-2 text-muted-foreground">
                     <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
                     {t.footer.telegram}
-                    <span className="text-xs text-muted-foreground/70">
+                    <span className="text-xs text-muted-foreground">
                       ({t.footer.telegramPlaceholder})
                     </span>
                   </span>
@@ -35,7 +35,7 @@ export function SiteFooter() {
                   <span className="inline-flex items-center gap-2 text-muted-foreground">
                     <span className="h-1.5 w-1.5 rounded-full bg-border" aria-hidden="true" />
                     {t.footer.privacy}
-                    <span className="text-xs text-muted-foreground/70">
+                    <span className="text-xs text-muted-foreground">
                       ({t.footer.telegramPlaceholder})
                     </span>
                   </span>
@@ -44,7 +44,7 @@ export function SiteFooter() {
                   <span className="inline-flex items-center gap-2 text-muted-foreground">
                     <span className="h-1.5 w-1.5 rounded-full bg-border" aria-hidden="true" />
                     {t.footer.terms}
-                    <span className="text-xs text-muted-foreground/70">
+                    <span className="text-xs text-muted-foreground">
                       ({t.footer.telegramPlaceholder})
                     </span>
                   </span>
