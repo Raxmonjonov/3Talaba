@@ -1,0 +1,26 @@
+{
+  "uz": {
+    "file": "og-image.png",
+    "line1": "Bir yil ichida",
+    "line2": "nufuzli oliygohga",
+    "accent": "tayyor bo'ling",
+    "sub": "Daraja testi  ·  Kunlik reja  ·  AI-ustoz",
+    "cta": "Bepul darajamni aniqlayman"
+  },
+  "en": {
+    "file": "og-image-en.png",
+    "line1": "Get into a top",
+    "line2": "university",
+    "accent": "within one year",
+    "sub": "Placement test  ·  Daily plan  ·  AI tutor",
+    "cta": "Test my level for free"
+  },
+  "ru": {
+    "file": "og-image-ru.png",
+    "line1": "Поступление в",
+    "line2": "топовый вуз",
+    "accent": "за один год",
+    "sub": "Входной тест  ·  План на день  ·  AI-репетитор",
+    "cta": "Бесплатно определить уровень"
+  }
+}

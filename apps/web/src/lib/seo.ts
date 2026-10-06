@@ -123,6 +123,10 @@ export function useSeo(locale: Locale) {
       content: meta.description,
     });
     upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: meta.image });
+    upsertMeta('meta[name="twitter:image:alt"]', {
+      name: "twitter:image:alt",
+      content: getDictionary(locale).meta.ogAlt,
+    });
 
     let script = document.head.querySelector<HTMLScriptElement>(
       'script[data-3talab="structured-data"]'

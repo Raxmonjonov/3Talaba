@@ -1,99 +1,145 @@
 Add-Type -AssemblyName System.Drawing
 
+# Generates the Open Graph images (1200x630) and the Apple touch icon (180x180).
+# All user-facing text lives in og-content.json so this script stays ASCII-safe:
+# Windows PowerShell reads .ps1 files as ANSI unless they carry a BOM, which would
+# corrupt the Cyrillic strings.
+
 $ErrorActionPreference = "Stop"
 
 $Width = 1200
 $Height = 630
-$PublicDir = (Resolve-Path (Join-Path $PSScriptRoot "..\public")).Path
+$ScriptDir = $PSScriptRoot
+$PublicDir = (Resolve-Path (Join-Path $ScriptDir "..\public")).Path
+$ContentPath = Join-Path $ScriptDir "og-content.json"
 
-# Brand palette (from favicon.svg): violet 7e14ff, deep 5b0bc4, cyan 47bfff
+# Brand palette taken from favicon.svg
 $Violet = [System.Drawing.Color]::FromArgb(126, 20, 255)
 $VioletDeep = [System.Drawing.Color]::FromArgb(91, 11, 196)
 $Cyan = [System.Drawing.Color]::FromArgb(71, 191, 255)
 $Ink = [System.Drawing.Color]::FromArgb(24, 18, 38)
-$InkSoft = [System.Drawing.Color]::FromArgb(78, 66, 102)
 $White = [System.Drawing.Color]::FromArgb(255, 255, 255)
 
-$bitmap = New-Object System.Drawing.Bitmap $Width, $Height
-$graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-$graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-$graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
-$graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-
-# --- Background: deep violet gradient -------------------------------------
-$background = New-Object System.Drawing.Drawing2D.LinearGradientBrush (
-    (New-Object System.Drawing.Point 0, 0),
-    (New-Object System.Drawing.Point $Width, $Height),
-    $VioletDeep,
-    $Ink
-)
-$graphics.FillRectangle($background, 0, 0, $Width, $Height)
-
-# --- Soft glow, echoing the hero motif ------------------------------------
-$glowPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-$glowRect = New-Object System.Drawing.Rectangle 620, -220, 820, 720
-$glowPath.AddEllipse($glowRect)
-$glow = New-Object System.Drawing.Drawing2D.PathGradientBrush $glowPath
-$glow.CenterColor = [System.Drawing.Color]::FromArgb(90, 71, 191, 255)
-$glow.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 71, 191, 255))
-$graphics.FillEllipse($glow, $glowRect)
-
-# --- Time-flow grid -------------------------------------------------------
-$gridPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(38, 255, 255, 255)), 1
-for ($x = 0; $x -le $Width; $x += 60) {
-    $graphics.DrawLine($gridPen, $x, 0, $x, $Height)
-}
-for ($y = 0; $y -le $Height; $y += 60) {
-    $graphics.DrawLine($gridPen, 0, $y, $Width, $y)
+function New-Font([string]$name, [float]$size, [System.Drawing.FontStyle]$style) {
+    return New-Object System.Drawing.Font $name, $size, $style
 }
 
-# --- Drifting light columns ----------------------------------------------
-$columnXs = @(96, 214, 352, 470, 604, 742, 880, 1012, 1128)
-$columnHeights = @(230, 400, 300, 470, 260, 430, 320, 380, 210)
-for ($i = 0; $i -lt $columnXs.Count; $i++) {
-    $h = $columnHeights[$i]
-    $rect = New-Object System.Drawing.Rectangle $columnXs[$i], ($Height - $h), 3, $h
-    $columnBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush (
-        (New-Object System.Drawing.Point $columnXs[$i], $Height),
-        (New-Object System.Drawing.Point $columnXs[$i], ($Height - $h)),
-        [System.Drawing.Color]::FromArgb(0, 255, 255, 255),
-        [System.Drawing.Color]::FromArgb(70, 255, 255, 255)
+# Picks the largest size that still fits the available width, so nothing is clipped.
+function Fit-FontSize([System.Drawing.Graphics]$g, [string]$text, [float]$start, [string]$fontName, [System.Drawing.FontStyle]$style, [float]$maxWidth) {
+    $size = $start
+    while ($size -gt 18) {
+        $font = New-Font $fontName $size $style
+        $measured = $g.MeasureString($text, $font)
+        $font.Dispose()
+        if ($measured.Width -le $maxWidth) { break }
+        $size -= 1
+    }
+    return $size
+}
+
+$entries = [System.IO.File]::ReadAllText($ContentPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+
+foreach ($property in $entries.PSObject.Properties) {
+    $locale = $property.Name
+    $content = $property.Value
+
+    $bitmap = New-Object System.Drawing.Bitmap $Width, $Height
+    $g = [System.Drawing.Graphics]::FromImage($bitmap)
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+
+    # Background gradient
+    $background = New-Object System.Drawing.Drawing2D.LinearGradientBrush (
+        (New-Object System.Drawing.Point 0, 0),
+        (New-Object System.Drawing.Point $Width, $Height),
+        $VioletDeep,
+        $Ink
     )
-    $graphics.FillRectangle($columnBrush, $rect)
+    $g.FillRectangle($background, 0, 0, $Width, $Height)
+
+    # Soft cyan glow, echoing the hero motif
+    $glowPath = New-Object System.Drawing.Drawing2D.GraphicsPath
+    $glowRect = New-Object System.Drawing.Rectangle 620, -220, 820, 720
+    $glowPath.AddEllipse($glowRect)
+    $glow = New-Object System.Drawing.Drawing2D.PathGradientBrush $glowPath
+    $glow.CenterColor = [System.Drawing.Color]::FromArgb(90, 71, 191, 255)
+    $glow.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 71, 191, 255))
+    $g.FillEllipse($glow, $glowRect)
+
+    # Time-flow grid
+    $gridPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(38, 255, 255, 255)), 1
+    for ($x = 0; $x -le $Width; $x += 60) { $g.DrawLine($gridPen, $x, 0, $x, $Height) }
+    for ($y = 0; $y -le $Height; $y += 60) { $g.DrawLine($gridPen, 0, $y, $Width, $y) }
+
+    # Drifting light columns
+    $columnXs = @(96, 214, 352, 470, 604, 742, 880, 1012, 1128)
+    $columnHeights = @(230, 400, 300, 470, 260, 430, 320, 380, 210)
+    for ($i = 0; $i -lt $columnXs.Count; $i++) {
+        $h = $columnHeights[$i]
+        $x = $columnXs[$i]
+        $columnBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush (
+            (New-Object System.Drawing.Point $x, $Height),
+            (New-Object System.Drawing.Point $x, ($Height - $h)),
+            [System.Drawing.Color]::FromArgb(0, 255, 255, 255),
+            [System.Drawing.Color]::FromArgb(70, 255, 255, 255)
+        )
+        $g.FillRectangle($columnBrush, (New-Object System.Drawing.Rectangle $x, ($Height - $h), 3, $h))
+    }
+
+    # Wordmark
+    $wordmarkFont = New-Font "Segoe UI Semibold" 40 ([System.Drawing.FontStyle]::Bold)
+    $whiteBrush = New-Object System.Drawing.SolidBrush $White
+    $g.DrawString("3Talab", $wordmarkFont, $whiteBrush, (New-Object System.Drawing.PointF 96, 96))
+    $wordmarkFont.Dispose()
+
+    # Headline, each line auto-fitted to the available width
+    $maxTextWidth = $Width - 192
+    $headlineTop = 172.0
+    $lineHeight = 74.0
+    $lines = @(
+        @{ text = $content.line1; brush = $whiteBrush },
+        @{ text = $content.line2; brush = $whiteBrush },
+        @{ text = $content.accent; brush = (New-Object System.Drawing.SolidBrush $Cyan) }
+    )
+
+    $index = 0
+    foreach ($line in $lines) {
+        $size = Fit-FontSize $g $line.text 62 "Segoe UI" ([System.Drawing.FontStyle]::Bold) $maxTextWidth
+        $font = New-Font "Segoe UI" $size ([System.Drawing.FontStyle]::Bold)
+        $g.DrawString($line.text, $font, $line.brush, (New-Object System.Drawing.PointF 92, ($headlineTop + $index * $lineHeight)))
+        $font.Dispose()
+        $index++
+    }
+
+    # Supporting line
+    $subSize = Fit-FontSize $g $content.sub 29 "Segoe UI" ([System.Drawing.FontStyle]::Regular) $maxTextWidth
+    $subFont = New-Font "Segoe UI" $subSize ([System.Drawing.FontStyle]::Regular)
+    $subBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(226, 219, 235))
+    $g.DrawString($content.sub, $subFont, $subBrush, (New-Object System.Drawing.PointF 96, ($headlineTop + 3 * $lineHeight + 14)))
+    $subFont.Dispose()
+
+    # CTA pill, sized to its label
+    $ctaSize = Fit-FontSize $g $content.cta 29 "Segoe UI" ([System.Drawing.FontStyle]::Bold) ($maxTextWidth - 120)
+    $ctaFont = New-Font "Segoe UI" $ctaSize ([System.Drawing.FontStyle]::Bold)
+    $ctaBrush = New-Object System.Drawing.SolidBrush $Violet
+    $ctaTextBounds = $g.MeasureString($content.cta, $ctaFont)
+    $pillWidth = [float]$ctaTextBounds.Width + 64
+    $pillRect = New-Object System.Drawing.Rectangle 92, 496, ([int]$pillWidth), 74
+    $g.FillRectangle($ctaBrush, $pillRect)
+    $g.DrawString($content.cta, $ctaFont, $whiteBrush, (New-Object System.Drawing.PointF 124, 514))
+    $ctaFont.Dispose()
+
+    $outPath = Join-Path $PublicDir $content.file
+    $bitmap.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
+
+    $g.Dispose()
+    $bitmap.Dispose()
+    Write-Output "Wrote $($content.file) ($locale)"
 }
 
-# --- Wordmark -------------------------------------------------------------
-$wordmarkFont = New-Object System.Drawing.Font "Segoe UI Semibold", 40, ([System.Drawing.FontStyle]::Bold)
-$wordmarkBrush = New-Object System.Drawing.SolidBrush $White
-$graphics.DrawString("3Talab", $wordmarkFont, $wordmarkBrush, 96, 96)
-
-# --- Headline -------------------------------------------------------------
-$headlineFont = New-Object System.Drawing.Font "Segoe UI", 62, ([System.Drawing.FontStyle]::Bold)
-$graphics.DrawString("Bir yil ichida", $headlineFont, $wordmarkBrush, 92, 176)
-$graphics.DrawString("nufuzli oliygohga", $headlineFont, $wordmarkBrush, 92, 252)
-
-$accentFont = New-Object System.Drawing.Font "Segoe UI", 62, ([System.Drawing.FontStyle]::Bold)
-$accentBrush = New-Object System.Drawing.SolidBrush $Cyan
-$graphics.DrawString("tayyor bo'ling", $accentFont, $accentBrush, 92, 328)
-
-# --- Supporting line ------------------------------------------------------
-$subFont = New-Object System.Drawing.Font "Segoe UI", 29
-$subBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(226, 219, 235))
-$graphics.DrawString("Daraja testi  ·  Kunlik reja  ·  AI-ustoz", $subFont, $subBrush, 96, 430)
-
-# --- CTA pill -------------------------------------------------------------
-$ctaRect = New-Object System.Drawing.Rectangle 96, 492, 452, 74
-$ctaBrush = New-Object System.Drawing.SolidBrush $Violet
-$graphics.FillRectangle($ctaBrush, $ctaRect)
-$ctaFont = New-Object System.Drawing.Font "Segoe UI", 29, ([System.Drawing.FontStyle]::Bold)
-$ctaTextBrush = New-Object System.Drawing.SolidBrush $White
-$graphics.DrawString("Bepul darajamni aniqlayman", $ctaFont, $ctaTextBrush, 126, 511)
-
-# --- Save -----------------------------------------------------------------
-$pngPath = Join-Path $PublicDir "og-image.png"
-$bitmap.Save($pngPath, [System.Drawing.Imaging.ImageFormat]::Png)
-
-# Apple touch icon: 180x180, violet tile with rounded feel via solid brand color
+# Apple touch icon
 $icon = New-Object System.Drawing.Bitmap 180, 180
 $iconGraphics = [System.Drawing.Graphics]::FromImage($icon)
 $iconGraphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
@@ -105,14 +151,11 @@ $iconBackground = New-Object System.Drawing.Drawing2D.LinearGradientBrush (
     $VioletDeep
 )
 $iconGraphics.FillRectangle($iconBackground, 0, 0, 180, 180)
-$iconFont = New-Object System.Drawing.Font "Segoe UI", 96, ([System.Drawing.FontStyle]::Bold)
-$iconTextBrush = New-Object System.Drawing.SolidBrush $White
-$iconGraphics.DrawString("3T", $iconFont, $iconTextBrush, 26, 40)
+$iconFont = New-Font "Segoe UI" 96 ([System.Drawing.FontStyle]::Bold)
+$iconBrush = New-Object System.Drawing.SolidBrush $White
+$iconGraphics.DrawString("3T", $iconFont, $iconBrush, (New-Object System.Drawing.PointF 26, 40))
 $icon.Save((Join-Path $PublicDir "apple-touch-icon.png"), [System.Drawing.Imaging.ImageFormat]::Png)
-
-$graphics.Dispose()
-$bitmap.Dispose()
+$iconFont.Dispose()
 $iconGraphics.Dispose()
 $icon.Dispose()
-
-Write-Output "Wrote og-image.png and apple-touch-icon.png"
+Write-Output "Wrote apple-touch-icon.png"
