@@ -23,15 +23,46 @@ tayyorgarlik uchun.
 │   │       │   └── tutor.ts       AI tutor system prompti
 │   │       └── utils/
 │   └── web/                       React + Vite + Tailwind
+│       ├── public/                og-image*.png, sitemap.xml, robots.txt
+│       ├── scripts/               generate-og-image.ps1 + og-content.json
 │       └── src/
-│           ├── lib/               API client + tiplar
-│           └── pages/             Login, Register, Placement, Dashboard, Study
+│           ├── components/landing/  Sarlavha, Hero, Mahsulot, FAQ, Footer
+│           ├── i18n/              uz.ts (manba), en.ts, ru.ts, config.ts
+│           ├── lib/               API client, SEO, mavzu (theme)
+│           └── pages/             Landing, Login, Register, Placement,
+│                                  Dashboard, Study
 └── docs/
 ```
 
+## Landing sahifasi
+
+Bosh sahifa uchta til mavjudligida ochiladi va `useSeo` orqali qidiruv
+tizimlari uchun mos meta-teglarni o‘rnatadi:
+
+| Yo‘nalish | Til |
+| --------- | --- |
+| `/uz`     | O‘zbekcha (sukut bo‘yicha, `/` shu yerga yo‘naltiriladi) |
+| `/en`     | Inglizcha |
+| `/ru`     | Ruscha |
+
+Xususiyatlar: ochiq/qorong‘i mavzu (`3talab_theme` localStorage’da saqlanadi),
+`taslama` (skip) havolasi, `prefers-color-scheme` bilan moslashuvchan animatsiyalar,
+hamda har bir til uchun alohida Open Graph rasm.
+
+OG rasmlarni qayta yaratish:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File apps\web\scripts\generate-og-image.ps1
+```
+
+Matnlar `scripts/og-content.json` ichida — skript o‘zida ASCII saqlanadi,
+chunki PowerShell BOM’siz `.ps1` fayllarni ANSI sifatida o‘qiydi va
+kirill belgilar buzilishi mumkin.
+
 ## Talablar
 
-- Node.js 20+
+- Node.js 20.19+ yoki 22.12+ (Vite 8 talab qiladi; Netlify’da `netlify.toml`
+  orqali 22 raqamlanadi)
 - SQLite (biror narsa o‘rnatish shart emas) yoki PostgreSQL
 
 ## O‘rnatish
@@ -102,6 +133,20 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | GET | `/api/learning/progress` | O‘rganish statistikasi |
 | POST | `/api/learning/progress` | Bugungi vaqtni yozish |
 
+## Joylashtirish
+
+Sayt Netlify’da `netlify.toml` orqali quriladi:
+
+- **Base directory**: bo‘sh qoldirilishi kerak (konfiguratsiya repo ildizida)
+- **Build**: `apps/web` ichida `npm run build`
+- **Publish**: `apps/web/dist`
+- `/* → /index.html` (200) SPA yo‘naltiruvi bilan
+- `NODE_VERSION = 22`
+
+```bash
+npm run build
+```
+
 ## Muhim tamoyillar
 
 1. **Majburlash yo‘q.** Chiqish hech qachon bloklanmaydi.
@@ -119,7 +164,7 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 ## Tekshiruv
 
 ```bash
+npm run lint
 npm run typecheck
 npm run build
-npm run lint --workspace=@3talab/web
 ```
