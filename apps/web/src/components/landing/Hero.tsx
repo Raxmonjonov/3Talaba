@@ -2,6 +2,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { AUTH_PATHS } from "@/i18n/config";
 import { Link } from "react-router-dom";
 import { ClockIcon, SparkIcon } from "./Icons";
+import HeroScene from "./HeroScene";
 
 /** Deterministic offsets keep the motif stable across renders. */
 const COLUMNS = [
@@ -52,7 +53,8 @@ export function Hero() {
   return (
     <section className="relative isolate overflow-hidden">
       <TimeFlowMotif />
-      <div className="page-shell relative py-16 sm:py-20 lg:py-28">
+      <HeroScene />
+      <div className="page-shell relative z-10 py-16 sm:py-20 lg:py-28">
         <div className="max-w-3xl">
           <p className="eyebrow animate-fade-up">
             <ClockIcon className="h-4 w-4" />
