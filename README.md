@@ -31,7 +31,6 @@ tayyorgarlik uchun.
 │           ├── lib/               API client, SEO, mavzu (theme)
 │           └── pages/             Landing, Login, Register, Placement,
 │                                  Dashboard, Study
-└── docs/
 ```
 
 ## Landing sahifasi
