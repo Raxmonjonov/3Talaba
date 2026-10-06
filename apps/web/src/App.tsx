@@ -5,8 +5,10 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Study from "./pages/Study";
 import Placement from "./pages/Placement";
+import Landing from "./pages/Landing";
 import { api } from "./lib/api";
 import type { User } from "./lib/types";
+import { DEFAULT_LOCALE, landingPath, LOCALES } from "./i18n/config";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -45,16 +47,16 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            user ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+        {/* Localized landing pages */}
+        <Route path="/" element={<Navigate to={landingPath(DEFAULT_LOCALE)} replace />} />
+        {LOCALES.map((option) => (
+          <Route
+            key={option.code}
+            path={landingPath(option.code)}
+            element={<Landing locale={option.code} user={user} onLogout={logout} />}
+          />
+        ))}
+
         <Route
           path="/login"
           element={
@@ -109,7 +111,14 @@ export default function App() {
           path="/study/:id?"
           element={user ? <Study user={user} /> : <Navigate to="/login" replace />}
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="*"
+          element={
+            // Any other unknown locale prefix falls back to the default landing
+            // page instead of a redirect loop.
+            <Navigate to={landingPath(DEFAULT_LOCALE)} replace />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

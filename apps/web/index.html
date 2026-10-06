@@ -3,11 +3,60 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3Talab — tinch va samarali o‘rganish</title>
+    <title>3Talab — bir yil ichida nufuzli oliygohga tayyorlik</title>
     <meta
       name="description"
-      content="3Talab — SAT, IELTS va oliygoh kirishga tayyorgarlik uchun shaxsiy o‘quv platformasi."
+      content="Daraja testi, kunlik reja va AI-ustoz yordamida SAT, IELTS hamda oliygoh kirishiga shaxsiy tayyorgarlik."
     />
+
+    <link rel="canonical" href="https://3talaba.netlify.app/uz" />
+    <link rel="alternate" hreflang="uz" href="https://3talaba.netlify.app/uz" />
+    <link rel="alternate" hreflang="en" href="https://3talaba.netlify.app/en" />
+    <link rel="alternate" hreflang="ru" href="https://3talaba.netlify.app/ru" />
+    <link rel="alternate" hreflang="x-default" href="https://3talaba.netlify.app/uz" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="3Talab" />
+    <meta property="og:title" content="3Talab — bir yil ichida nufuzli oliygohga tayyorlik" />
+    <meta
+      property="og:description"
+      content="Daraja testi, kunlik reja va AI-ustoz yordamida SAT, IELTS hamda oliygoh kirishiga shaxsiy tayyorgarlik."
+    />
+    <meta property="og:url" content="https://3talaba.netlify.app/uz" />
+    <meta property="og:locale" content="uz_UZ" />
+    <meta property="og:image" content="https://3talaba.netlify.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="3Talab boshlang'ich sahifa" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="3Talab — bir yil ichida nufuzli oliygohga tayyorlik" />
+    <meta
+      name="twitter:description"
+      content="Daraja testi, kunlik reja va AI-ustoz yordamida SAT, IELTS hamda oliygoh kirishiga shaxsiy tayyorgarlik."
+    />
+    <meta name="twitter:image" content="https://3talaba.netlify.app/og-image.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#7e14ff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16121f" media="(prefers-color-scheme: dark)" />
+
+    <script>
+      // Applied before first paint so the page never flashes the wrong theme.
+      (function () {
+        try {
+          var stored = localStorage.getItem("3talab_theme");
+          var dark =
+            stored === "dark" ||
+            (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+        } catch (error) {
+          document.documentElement.classList.remove("dark");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

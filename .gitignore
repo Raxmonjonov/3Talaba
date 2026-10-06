@@ -4,3 +4,10 @@ dist
 .DS_Store
 *.local
 
+# Prisma / local databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+

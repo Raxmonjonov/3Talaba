@@ -1,0 +1,68 @@
+import { en } from "./en";
+import { ru } from "./ru";
+import { uz, type Dictionary } from "./uz";
+
+export type Locale = "uz" | "en" | "ru";
+
+export type LocaleOption = {
+  code: Locale;
+  /** Name of the language, written in that language. */
+  label: string;
+  /** Endonym shown in the switcher. */
+  endonym: string;
+  hreflang: string;
+  ogLocale: string;
+};
+
+export const LOCALES: readonly LocaleOption[] = [
+  { code: "uz", label: "Uzbekcha", endonym: "O'zbekcha", hreflang: "uz", ogLocale: "uz_UZ" },
+  { code: "en", label: "English", endonym: "English", hreflang: "en", ogLocale: "en_US" },
+  { code: "ru", label: "Russian", endonym: "Русский", hreflang: "ru", ogLocale: "ru_RU" },
+];
+
+export const DEFAULT_LOCALE: Locale = "uz";
+
+const dictionaries: Record<Locale, Dictionary> = { uz, en, ru };
+
+export function isLocale(value: string | undefined): value is Locale {
+  return value === "uz" || value === "en" || value === "ru";
+}
+
+export function getDictionary(locale: Locale): Dictionary {
+  return dictionaries[locale];
+}
+
+export function getLocaleOption(locale: Locale): LocaleOption {
+  return LOCALES.find((option) => option.code === locale) ?? LOCALES[0];
+}
+
+/** Canonical origin, overridable for preview deployments. */
+export const SITE_URL = (
+  import.meta.env.VITE_SITE_URL ?? "https://3talaba.netlify.app"
+).replace(/\/+$/, "");
+
+/** Landing pages are locale-prefixed: /uz, /en, /ru. */
+export function landingPath(locale: Locale): string {
+  return `/${locale}`;
+}
+
+export function absoluteUrl(path: string): string {
+  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+/** Existing auth and app routes stay unprefixed so nothing about them changes. */
+export const AUTH_PATHS = {
+  login: "/login",
+  register: "/register",
+} as const;
+
+export function seoMeta(locale: Locale) {
+  const dictionary = dictionaries[locale];
+  return {
+    title: dictionary.meta.title,
+    description: dictionary.meta.description,
+    image: absoluteUrl("/og-image.png"),
+    locale,
+    option: getLocaleOption(locale),
+  };
+}

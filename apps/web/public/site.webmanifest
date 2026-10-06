@@ -1,0 +1,21 @@
+{
+  "name": "3Talab",
+  "short_name": "3Talab",
+  "description": "SAT, IELTS va oliygoh kirishiga shaxsiy tayyorgarlik.",
+  "start_url": "/uz",
+  "display": "standalone",
+  "background_color": "#fdfcfa",
+  "theme_color": "#7e14ff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    }
+  ]
+}
