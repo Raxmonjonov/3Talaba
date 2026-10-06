@@ -1,14 +1,24 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Study from "./pages/Study";
 import Placement from "./pages/Placement";
-import Landing from "./pages/Landing";
 import { api } from "./lib/api";
 import type { User } from "./lib/types";
 import { DEFAULT_LOCALE, landingPath, LOCALES } from "./i18n/config";
+
+// Keeps the three translation dictionaries out of the initial bundle.
+const Landing = lazy(() => import("./pages/Landing"));
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <p className="text-sm text-muted-foreground">Yuklanmoqda…</p>
+    </div>
+  );
+}
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -53,7 +63,11 @@ export default function App() {
           <Route
             key={option.code}
             path={landingPath(option.code)}
-            element={<Landing locale={option.code} user={user} onLogout={logout} />}
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <Landing locale={option.code} user={user} onLogout={logout} />
+              </Suspense>
+            }
           />
         ))}
 
