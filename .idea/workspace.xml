@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5ad8ade1-4cdf-4bc9-b38c-d5879ea9b433" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ARCHITECTURE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/UI_IMPLEMENTATION_PLAN.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/ui/DETAILED_UI_PLAN.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/eslint.config.mjs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/postcss.config.mjs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/migrations/20261002150647_init/migration.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/migrations/migration_lock.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses-index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses/academic-english.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses/applications.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses/ielts.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses/logic.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses/mathematics.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses/sat.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/courses/writing.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/mock-exams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-academic.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-extra.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-ielts.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-logic.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-math.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-sat.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/questions-writing.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/data/skills.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/types.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/validate.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/seed/verify.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/file.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/globe.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/icon-192.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/icon-512.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/manifest.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/next.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/vercel.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/window.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/[locale]/auth/login/LoginForm.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/[locale]/auth/login/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/[locale]/auth/register/RegisterForm.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/[locale]/auth/register/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/[locale]/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/auth/[...nextauth]/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/auth/register/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/health/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/onboarding/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/placement/answer/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/placement/finish/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/placement/start/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/session/end/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/session/start/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/session/step/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/env.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/i18n/config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/i18n/dictionaries/en.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/i18n/dictionaries/uz.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/i18n/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/i18n/types.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/ai/client.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/ai/guard.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/ai/mock.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/ai/prompts.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/ai/tools.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/ai/tutor.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/analytics/projection.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/api.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/auth/config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/auth/password.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/auth/rbac.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/curriculum/generator.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/db.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/gamification/achievements.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/gamification/xp.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/json-l10n.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/logger.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/placement/adaptive.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/rate-limit.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/srs/fsrs.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/server/validation/schemas.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/utils.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/middleware.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/curriculum.test.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/placement.test.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tmp.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vitest.config.ts" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 2,
+  "fromUser": false
+}]]></component>
+  <component name="ProjectId" id="3KJ02sk8WMSyzI6LOYPoS8CuRnW" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "nodejs_package_manager_path": "npm"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-821f704e66d9-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.9437.214" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5ad8ade1-4cdf-4bc9-b38c-d5879ea9b433" name="Changes" comment="" />
+      <created>1791260161301</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1791260161301</updated>
+      <workItem from="1791260163337" duration="14000" />
+    </task>
+    <servers />
+  </component>
+</project>
