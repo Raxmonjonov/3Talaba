@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── O'quvchi ────────────────────────────────────────────────────────────────
+
+model User {
+  id             String   @id @default(uuid())
+  firstName      String
+  lastName       String?
+  email          String   @unique
+  password       String
+  gender         String   @default("OTHER")
+  age            Int?
+  target         String?
+  preferredTitle String?
+  currentLevel   Int      @default(0)
+  focusMode      Boolean  @default(false)
+  softConfirm    Boolean  @default(true)
+  locale         String   @default("uz")
+  role           String   @default("STUDENT")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  sessions    Session[]
+  messages    Message[]
+  progress    Progress[]
+  answers     Answer[]
+  enrollments Enrollment[]
+  reviewCards ReviewCard[]
+  achievements UserAchievement[]
+
+  @@index([email])
+}
+
+model Session {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String?
+  courseId     String?
+  course       Course?   @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  lessonId     String?
+  lesson       Lesson?   @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  startedAt    DateTime  @default(now())
+  endedAt      DateTime?
+  totalMinutes Int       @default(0)
+  /// Engine state stored as JSON (SQLite has no native Json type).
+  engineState  String?
+
+  messages Message[]
+
+  @@index([userId, startedAt])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+}
+
+model Progress {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  minutes   Int      @default(0)
+  completed Int      @default(0)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+// ── Ta'lim mazmuni ──────────────────────────────────────────────────────────
+
+model Skill {
+  slug    String @id
+  subject String
+  nameUz  String
+  nameEn  String
+  parent  String?
+
+  questions Question[]
+
+  @@index([subject])
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  subject     String
+  titleUz     String
+  titleEn     String
+  descriptionUz String
+  descriptionEn String
+
+  modules    Module[]
+  sessions   Session[]
+  enrollments Enrollment[]
+
+  @@index([subject])
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  slug        String
+  titleUz     String
+  titleEn     String
+  descriptionUz String
+  descriptionEn String
+  levelRange  String
+  order       Int      @default(0)
+
+  lessons Lesson[]
+
+  @@unique([courseId, slug])
+}
+
+model Lesson {
+  id          String  @id @default(uuid())
+  moduleId    String
+  module      Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  slug        String  @unique
+  titleUz     String
+  titleEn     String
+  summaryUz   String
+  summaryEn   String
+  objectives  String
+  storyAct    Int     @default(1)
+  storyTitleUz String?
+  storyTitleEn String?
+  levelRange  String
+  estMinutes  Int     @default(30)
+  xpReward    Int     @default(50)
+  order       Int     @default(0)
+
+  blocks  LessonBlock[]
+  sessions Session[]
+
+  @@index([moduleId, order])
+  @@index([levelRange])
+}
+
+model LessonBlock {
+  id          String @id @default(uuid())
+  lessonId    String
+  lesson      Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  order       Int    @default(0)
+  kind        String
+  titleUz     String
+  titleEn     String
+  minMinutes  Int    @default(3)
+  contentUz   String
+  contentEn   String
+  skills      String
+
+  @@unique([lessonId, order])
+  @@index([lessonId, order])
+}
+
+// ── Savollar va imtihonlar ─────────────────────────────────────────────────
+
+model Question {
+  id        String   @id @default(uuid())
+  skillSlug String
+  skill     Skill    @relation(fields: [skillSlug], references: [slug], onDelete: Cascade)
+  type      String
+  promptUz  String
+  promptEn  String
+  /// -3 (eng oson) … +3 (eng qiyin)
+  difficulty Int     @default(0)
+  passageUz String?
+  passageEn String?
+  /// JSON: SeedOption[]
+  options   String
+  seconds   Int?
+  source    String?
+
+  answers    Answer[]
+  mockItems  MockExamItem[]
+
+  @@index([skillSlug, difficulty])
+}
+
+model MockExam {
+  id          String @id @default(uuid())
+  slug        String @unique
+  exam        String
+  titleUz     String
+  titleEn     String
+  descriptionUz String
+  descriptionEn String
+  durationMin Int    @default(60)
+
+  items MockExamItem[]
+}
+
+model MockExamItem {
+  id         String    @id @default(uuid())
+  mockExamId String
+  mockExam   MockExam  @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  section    String
+  points     Int       @default(1)
+
+  @@unique([mockExamId, questionId])
+}
+
+// ── O'quvchi faolligi ──────────────────────────────────────────────────────
+
+model Enrollment {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  progressPct Int       @default(0)
+
+  @@unique([userId, courseId])
+}
+
+model Answer {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  given      String
+  correct    Boolean
+  /// Milliseconds taken — feeds the spaced-repetition scheduler.
+  ms         Int?
+  answeredAt DateTime @default(now())
+
+  @@index([userId, answeredAt])
+}
+
+/// FSRS state for one question. `stability` and `difficulty` drive the
+/// next-review interval so weak items come back sooner.
+model ReviewCard {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  stability Float    @default(0)
+  difficulty Float   @default(0)
+due         DateTime
+  /// FSRS card state: 0=NEW 1=LEARNING 2=REVIEW 3=RELEARNING
+  state       Int      @default(0)
+  reps        Int      @default(0)
+  lapses      Int      @default(0)
+  lastGrade   Int?
+  lastReviewAt DateTime?
+
+  @@unique([userId, questionId])
+  @@index([userId, due])
+}
+
+model UserAchievement {
+  id       String   @id @default(uuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug     String
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, slug])
+}

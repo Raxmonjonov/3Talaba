@@ -1,31 +1,9 @@
 [build]
+  base = "apps/web"
   command = "npm run build"
-  publish = ".next"
+  publish = "dist"
 
-[build.environment]
-  NODE_VERSION = "22"
-  # `prisma generate` Prisma 6.x binary engine yuklaydi; binary target
-  # Netlify build image bilan mos bo'lishi uchun.
-  PRISMA_SKIP_POSTINSTALL_GENERATE = "false"
-  NEXT_TELEMETRY_DISABLED = "1"
-  # Build paytida route modullari import qilinadi. Haqiqiy `DATABASE_URL`
-  # va `AUTH_SECRET` Netlify Site sozlamalarida (Environment) beriladi —
-  # bu yerda faqat build uchun xavfsiz placeholder qo'yiladi, chunki
-  # build vaqtida ulanish ochilmaydi.
-  DATABASE_URL = "postgresql://build:build@127.0.0.1:5432/build"
-  AUTH_SECRET = "build-only-placeholder-secret-not-used-at-runtime"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-[build.processing]
-  skip_processing = false
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
