@@ -50,7 +50,9 @@
     --card-foreground: 40 30% 96%;
 
     --primary: 262 90% 69%;
-    --primary-foreground: 256 44% 8%;
+    /* Near-black on the light violet --primary above: 8% lightness only
+       reached 4.17:1 (WCAG AA needs 4.5:1 for body text). */
+    --primary-foreground: 256 44% 5%;
 
     --secondary: 256 18% 16%;
     --secondary-foreground: 40 25% 94%;

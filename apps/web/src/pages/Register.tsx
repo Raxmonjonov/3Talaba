@@ -71,44 +71,60 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
         >
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Ism</label>
+              <label className="text-sm font-medium" htmlFor="firstName">
+                Ism
+              </label>
               <input
+                id="firstName"
                 value={form.firstName}
                 onChange={(e) => update("firstName", e.target.value)}
                 required
                 minLength={2}
+                autoComplete="given-name"
                 className="w-full px-3 py-2.5 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Familiya</label>
+              <label className="text-sm font-medium" htmlFor="lastName">
+                Familiya
+              </label>
               <input
+                id="lastName"
                 value={form.lastName}
                 onChange={(e) => update("lastName", e.target.value)}
+                autoComplete="family-name"
                 className="w-full px-3 py-2.5 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Email</label>
+            <label className="text-sm font-medium" htmlFor="email">
+              Email
+            </label>
             <input
+              id="email"
               value={form.email}
               onChange={(e) => update("email", e.target.value)}
               type="email"
               required
+              autoComplete="email"
               className="w-full px-3 py-2.5 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Parol</label>
+            <label className="text-sm font-medium" htmlFor="password">
+              Parol
+            </label>
             <input
+              id="password"
               value={form.password}
               onChange={(e) => update("password", e.target.value)}
               type="password"
               required
               minLength={6}
+              autoComplete="new-password"
               className="w-full px-3 py-2.5 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <p className="text-xs text-muted-foreground">Kamida 6 ta belgi</p>
@@ -125,6 +141,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
                 <button
                   key={o.v}
                   type="button"
+                  aria-pressed={form.gender === o.v}
                   onClick={() => update("gender", o.v)}
                   className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
                     form.gender === o.v
@@ -142,8 +159,11 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Yosh (ixtiyoriy)</label>
+            <label className="text-sm font-medium" htmlFor="age">
+              Yosh (ixtiyoriy)
+            </label>
             <input
+              id="age"
               value={form.age}
               onChange={(e) => update("age", e.target.value)}
               type="number"
@@ -160,6 +180,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
                 <button
                   key={g.id}
                   type="button"
+                  aria-pressed={form.target === g.id}
                   onClick={() => update("target", g.id)}
                   className={`px-3 py-2.5 rounded-lg border text-left transition-colors ${
                     form.target === g.id
@@ -170,9 +191,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
                   <div className="text-sm font-medium">{g.label}</div>
                   <div
                     className={`text-xs ${
-                      form.target === g.id
-                        ? "opacity-80"
-                        : "text-muted-foreground"
+                      form.target === g.id ? "" : "text-muted-foreground"
                     }`}
                   >
                     {g.hint}
@@ -190,7 +209,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
 
           <button
             disabled={loading || !form.gender}
-            className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:bg-secondary disabled:text-secondary-foreground disabled:cursor-not-allowed transition"
           >
             {loading ? "Kutilmoqda…" : "Davom etish"}
           </button>

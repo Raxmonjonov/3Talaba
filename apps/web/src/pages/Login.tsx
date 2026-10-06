@@ -81,7 +81,7 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
 
           <button
             disabled={loading}
-            className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:bg-secondary disabled:text-secondary-foreground disabled:cursor-not-allowed transition"
           >
             {loading ? "Kutilmoqda…" : "Kirish"}
           </button>
