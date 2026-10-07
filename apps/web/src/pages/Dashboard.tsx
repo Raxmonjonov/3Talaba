@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import type { ProgressResponse, Session, SettingsResponse, User } from "../lib/types";
+
+const HeroScene = lazy(() => import("@/components/landing/HeroScene"));
 
 const TARGET_LABELS: Record<string, string> = {
   SAT: "SAT",
@@ -113,7 +115,13 @@ export default function Dashboard({
   const spark = progress?.series.map((p) => p.minutes) ?? [];
 
   return (
-    <div className="min-h-screen">
+    <div className="relative isolate min-h-screen overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <Suspense fallback={null}>
+          <HeroScene />
+        </Suspense>
+      </div>
+
       <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4">
           <div>
@@ -131,14 +139,14 @@ export default function Dashboard({
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl space-y-6 px-5 py-10">
+      <main className="relative z-10 mx-auto max-w-4xl space-y-6 px-5 py-10">
         {error ? (
           <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </p>
         ) : null}
 
-        <section className="space-y-4 rounded-2xl border bg-card p-8 shadow-sm">
+        <section className="auth-card space-y-4 rounded-2xl border bg-card p-8 shadow-sm">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-2xl font-semibold">O‘rganishni davom ettiramizmi?</h2>
             <span className="rounded-full border px-3 py-1 text-xs text-muted-foreground">
@@ -171,19 +179,25 @@ export default function Dashboard({
         </section>
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <div className="space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
-            <p className="text-xs text-muted-foreground">Jami vaqt</p>
-            <p className="text-xl font-semibold">
-              {formatMinutes(progress?.totals.minutes ?? 0)}
-            </p>
+          <div className="subject-scene">
+            <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+              <p className="text-xs text-muted-foreground">Jami vaqt</p>
+              <p className="text-xl font-semibold">
+                {formatMinutes(progress?.totals.minutes ?? 0)}
+              </p>
+            </div>
           </div>
-          <div className="space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
-            <p className="text-xs text-muted-foreground">Faol kunlar</p>
-            <p className="text-xl font-semibold">{progress?.totals.activeDays ?? 0}</p>
+          <div className="subject-scene">
+            <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+              <p className="text-xs text-muted-foreground">Faol kunlar</p>
+              <p className="text-xl font-semibold">{progress?.totals.activeDays ?? 0}</p>
+            </div>
           </div>
-          <div className="space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
-            <p className="text-xs text-muted-foreground">Tuzilgan savollar</p>
-            <p className="text-xl font-semibold">{progress?.totals.completed ?? 0}</p>
+          <div className="subject-scene">
+            <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+              <p className="text-xs text-muted-foreground">Tuzilgan savollar</p>
+              <p className="text-xl font-semibold">{progress?.totals.completed ?? 0}</p>
+            </div>
           </div>
         </section>
 

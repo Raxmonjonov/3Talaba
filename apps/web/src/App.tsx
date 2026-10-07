@@ -1,16 +1,17 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Study from "./pages/Study";
-import Placement from "./pages/Placement";
 import { api } from "./lib/api";
 import type { User } from "./lib/types";
 import { DEFAULT_LOCALE, landingPath, LOCALES } from "./i18n/config";
 
-// Keeps the three translation dictionaries out of the initial bundle.
+// Keeps the translation dictionaries and each routed page out of the initial
+// bundle so the app shell paints before any page code arrives.
 const Landing = lazy(() => import("./pages/Landing"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Study = lazy(() => import("./pages/Study"));
+const Placement = lazy(() => import("./pages/Placement"));
 
 function RouteFallback() {
   return (
@@ -77,7 +78,9 @@ export default function App() {
             user ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Login onLogin={setUser} />
+              <Suspense fallback={<RouteFallback />}>
+                <Login onLogin={setUser} />
+              </Suspense>
             )
           }
         />
@@ -87,7 +90,9 @@ export default function App() {
             user ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Register onLogin={setUser} />
+              <Suspense fallback={<RouteFallback />}>
+                <Register onLogin={setUser} />
+              </Suspense>
             )
           }
         />
@@ -95,11 +100,13 @@ export default function App() {
           path="/placement"
           element={
             user ? (
-              <Placement
-                onFinish={(level) =>
-                  setUser((prev) => (prev ? { ...prev, currentLevel: level } : prev))
-                }
-              />
+              <Suspense fallback={<RouteFallback />}>
+                <Placement
+                  onFinish={(level) =>
+                    setUser((prev) => (prev ? { ...prev, currentLevel: level } : prev))
+                  }
+                />
+              </Suspense>
             ) : (
               <Navigate to="/login" replace />
             )
@@ -109,13 +116,15 @@ export default function App() {
           path="/dashboard"
           element={
             user ? (
-              <Dashboard
-                user={user}
-                onLogout={logout}
-                onStartPlacement={() => {
-                  window.location.href = "/placement";
-                }}
-              />
+              <Suspense fallback={<RouteFallback />}>
+                <Dashboard
+                  user={user}
+                  onLogout={logout}
+                  onStartPlacement={() => {
+                    window.location.href = "/placement";
+                  }}
+                />
+              </Suspense>
             ) : (
               <Navigate to="/login" replace />
             )
@@ -123,7 +132,15 @@ export default function App() {
         />
         <Route
           path="/study/:id?"
-          element={user ? <Study user={user} /> : <Navigate to="/login" replace />}
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <Study user={user} />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
         />
         <Route
           path="*"

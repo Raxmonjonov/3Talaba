@@ -178,9 +178,9 @@ export default function Study({ user }: { user: User }) {
             </button>
           </div>
         </div>
-        <div className="h-0.5 w-full bg-secondary">
+        <div className="mx-auto mb-3 h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-secondary">
           <div
-            className="h-full bg-primary/60 transition-all"
+            className="h-full rounded-full bg-primary/60 transition-all"
             style={{ width: `${cycleProgress}%` }}
           />
         </div>

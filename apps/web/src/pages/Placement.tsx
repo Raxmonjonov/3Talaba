@@ -110,7 +110,7 @@ export default function Placement({
             </p>
           </div>
 
-          <div className="space-y-2 rounded-2xl border bg-card p-8 text-center shadow-sm">
+          <div className="auth-card space-y-2 rounded-2xl border bg-card p-8 text-center shadow-sm">
             <div className="text-5xl font-semibold">{level}</div>
             <p className="text-sm text-muted-foreground">{summary}</p>
           </div>
@@ -165,7 +165,7 @@ export default function Placement({
           </div>
         </div>
 
-        <div className="space-y-6 rounded-2xl border bg-card p-8 shadow-sm">
+        <div className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm">
           <h1 className="text-xl font-medium">{question.question}</h1>
           <div className="grid gap-2">
             {question.options.map((option, i) => (
