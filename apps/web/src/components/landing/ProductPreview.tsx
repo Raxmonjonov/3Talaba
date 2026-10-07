@@ -4,8 +4,8 @@ import { ClockIcon, SparkIcon } from "./Icons";
 
 function WindowFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-2xl border bg-card shadow-[0_20px_60px_-30px_hsl(var(--glow)/0.55)]">
-      <div className="flex items-center gap-2 border-b bg-surface px-4 py-3">
+    <div className="overflow-hidden rounded-2xl border bg-card shadow-[0_20px_60px_-30px_hsl(var(--glow)/0.55),inset_0_1px_0_0_hsl(var(--border)/0.7)]">
+      <div className="flex items-center gap-2 border-b bg-gradient-to-b from-surface to-surface/60 px-4 py-3">
         <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-border" />
         <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-border" />
         <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-border" />
@@ -44,10 +44,14 @@ export function ProductPreview() {
               className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted"
               role="presentation"
             >
-              <div className="h-full w-[35%] rounded-full bg-primary" />
+              <div className="shimmer h-full w-[35%] rounded-full bg-primary" />
             </div>
 
-            <p className="mt-5 font-medium leading-relaxed">{t.preview.placementQuestion}</p>
+            <div className="question-stack mt-5 rounded-xl border bg-surface px-4 py-3.5">
+              <p className="font-medium leading-relaxed">
+                {t.preview.placementQuestion}
+              </p>
+            </div>
 
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {t.preview.placementOptions.map((option, index) => (

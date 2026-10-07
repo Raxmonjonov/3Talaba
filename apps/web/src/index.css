@@ -238,6 +238,79 @@
   .subject-scene:focus-within .subject-plate {
     box-shadow: 0 26px 46px -28px hsl(258 60% 12% / 0.55);
   }
+
+  /* Timeline numbers are extruded discs: a second face a few pixels behind
+     the badge shows its thickness, and the badge lifts on hover. */
+  .step-scene {
+    perspective: 700px;
+  }
+
+  .step-badge {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  .step-badge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    transform: translateZ(-7px) translate(3px, 4px);
+    background: hsl(var(--primary) / 0.38);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .step-scene:hover .step-badge {
+      transform: translateZ(16px);
+    }
+  }
+
+  /* The placement question reads as the top sheet of a small stack. */
+  .question-stack {
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  .question-stack::before,
+  .question-stack::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    pointer-events: none;
+  }
+
+  .question-stack::before {
+    transform: translateZ(-12px) translateY(7px) rotate(-1.4deg) scale(0.99);
+    opacity: 0.8;
+  }
+
+  .question-stack::after {
+    transform: translateZ(-24px) translateY(13px) rotate(1.6deg) scale(0.98);
+    opacity: 0.55;
+  }
+
+  /* A highlight sweeps the placement progress bar. */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.55),
+      transparent
+    );
+    animation: shimmer 2.8s ease-in-out infinite;
+  }
 }
 
 @keyframes drift {
@@ -257,6 +330,15 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(240%);
   }
 }
 
