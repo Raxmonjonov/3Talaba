@@ -146,7 +146,38 @@ Sayt Netlify’da `netlify.toml` orqali quriladi:
 npm run build
 ```
 
-## Muhim tamoyillar
+### API
+
+API alohida hostga joylanadi (Node.js 22+ va doimiy ma'lumotlar bazasi bilan):
+
+```bash
+npm run build --workspace=@3talab/api   # dist/ chiqadi
+npm start --workspace=@3talab/api       # node apps/api/dist/index.js
+```
+
+Ishlayotganini tekshirish: `GET /health` → `{"ok":true,"service":"3talab-api"}`.
+
+Muhit o‘zgaruvchilari:
+
+| O‘zgaruvchi | Vazifa |
+| ----------- | ------ |
+| `PORT` | Port (sukut: `4000`) |
+| `DATABASE_URL` | SQLite: `file:./dev.db`; ishlab chiqarishda PostgreSQL. Schema'ni almashtirish uchun yuqoridagi bo‘limga qarang |
+| `JWT_SECRET` | Token imzosi — yashirin saqlansin |
+| `JWT_EXPIRES_IN` | Token muddati, mas. `7d` |
+| `SITE_URL` | Ruxsat berilgan origin(lar). Vergul bilan bir nechta kiritish mumkin: `https://site.app,https://preview.app` |
+| `OPENROUTER_API_KEY` | AI qatlami (ixtiyoriy — kalit bo‘lmasa ichki dvigotel ishlaydi) |
+| `OPENROUTER_MODEL` | Model nomi (sukut: `deepseek/deepseek-chat-v3-0324:free`) |
+
+Web bundle‘ning API manzili **qurilish vaqtida** `VITE_API_URL` orqali kiradi.
+Netlify‘da build environment‘ga o‘rnatilishi shart:
+
+```bash
+VITE_API_URL=https://api.example.com
+```
+
+O‘rnatilmasa sukut bo‘yicha `http://localhost:4000` ishlatiladi (faqat mahalliy
+ishlash uchun).
 
 1. **Majburlash yo‘q.** Chiqish hech qachon bloklanmaydi.
 2. **Sog‘lom tempo.** Dam olish tavsiya qilinadi (25 daqiqalik sikl,
