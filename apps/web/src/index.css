@@ -311,6 +311,67 @@
     );
     animation: shimmer 2.8s ease-in-out infinite;
   }
+
+  /* Auth pages: the form is a slab resting on the scene, with a colour plate a
+     few pixels behind it so the card reads as a physical object. */
+  .auth-card {
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  .auth-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    transform: translateZ(-18px) scale(1.03);
+    background: linear-gradient(
+      155deg,
+      hsl(var(--primary) / 0.3),
+      hsl(var(--accent) / 0.16) 50%,
+      transparent 82%
+    );
+    pointer-events: none;
+  }
+
+  /* Three cards lying on the brand panel, receding into the distance. */
+  .auth-stack {
+    position: relative;
+    height: 15rem;
+    perspective: 1000px;
+  }
+
+  .auth-chip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 8rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    background: linear-gradient(
+      150deg,
+      hsl(var(--card) / 0.94),
+      hsl(var(--card) / 0.62)
+    );
+    box-shadow: 0 26px 50px -36px hsl(258 60% 12% / 0.75);
+  }
+
+  .auth-chip-back {
+    top: 0;
+    transform: rotateX(30deg) scale(0.86);
+    opacity: 0.55;
+  }
+
+  .auth-chip-mid {
+    top: 2.75rem;
+    transform: rotateX(22deg) scale(0.93);
+    opacity: 0.75;
+  }
+
+  .auth-chip-front {
+    top: 5.5rem;
+    transform: rotateX(15deg);
+  }
 }
 
 @keyframes drift {

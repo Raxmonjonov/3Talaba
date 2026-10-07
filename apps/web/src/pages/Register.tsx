@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { api } from "../lib/api";
 import type { AuthResponse } from "../lib/types";
 
@@ -56,19 +57,21 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 py-10">
-      <div className="w-full max-w-lg space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">3Talab</h1>
-          <p className="text-muted-foreground text-sm">
-            Ro‘yxatdan o‘ting — sizning darajangizni aniqlab, reja tuzamiz
-          </p>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card border rounded-2xl p-6 shadow-sm space-y-5"
-        >
+    <AuthShell
+      tagline="Ro‘yxatdan o‘ting — sizning darajangizni aniqlab, reja tuzamiz"
+      footnote={
+        <>
+          Hisobingiz bormi?{" "}
+          <Link
+            to="/login"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            Kirish
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="firstName">
@@ -214,14 +217,6 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
             {loading ? "Kutilmoqda…" : "Davom etish"}
           </button>
         </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Hisobingiz bormi?{" "}
-          <Link to="/login" className="underline underline-offset-4 hover:text-foreground">
-            Kirish
-          </Link>
-        </p>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

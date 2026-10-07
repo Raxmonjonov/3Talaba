@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { api } from "../lib/api";
 import type { AuthResponse } from "../lib/types";
 
@@ -30,19 +31,21 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">3Talab</h1>
-          <p className="text-muted-foreground text-sm">
-            Tinch, sabrli va samarali o‘rganish muhiti
-          </p>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card border rounded-2xl p-6 shadow-sm space-y-4"
-        >
+    <AuthShell
+      tagline="Tinch, sabrli va samarali o‘rganish muhiti"
+      footnote={
+        <>
+          Hisob yo‘qmi?{" "}
+          <Link
+            to="/register"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            Ro‘yxatdan o‘tish
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="email">
               Email
@@ -86,14 +89,6 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
             {loading ? "Kutilmoqda…" : "Kirish"}
           </button>
         </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Hisob yo‘qmi?{" "}
-          <Link to="/register" className="underline underline-offset-4 hover:text-foreground">
-            Ro‘yxatdan o‘tish
-          </Link>
-        </p>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
