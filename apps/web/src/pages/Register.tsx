@@ -1,17 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { authPath } from "@/i18n/config";
+import { useAuthLocale } from "@/i18n/useAuthLocale";
 import { api } from "../lib/api";
 import type { AuthResponse } from "../lib/types";
 
-const GOALS = [
-  { id: "SAT", label: "SAT", hint: "Matematika, o‘qish, yozish" },
-  { id: "IELTS", label: "IELTS", hint: "Listening, Reading, Writing, Speaking" },
-  { id: "UNIVERSITY", label: "Oliygoh kirish", hint: "Umumiy tayyorgarlik" },
-  { id: "GENERAL", label: "Umumiy bilim", hint: "Noldan to‘liq qayta qurish" },
-];
-
 export default function Register({ onLogin }: { onLogin: (user: AuthResponse["user"]) => void }) {
+  const { locale, t } = useAuthLocale();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -50,7 +46,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
       onLogin(res.user);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Xatolik yuz berdi");
+      setError(err.message || t.auth.errorFallback);
     } finally {
       setLoading(false);
     }
@@ -58,15 +54,15 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
 
   return (
     <AuthShell
-      tagline="Ro‘yxatdan o‘ting — sizning darajangizni aniqlab, reja tuzamiz"
+      tagline={t.auth.registerTagline}
       footnote={
         <>
-          Hisobingiz bormi?{" "}
+          {t.auth.haveAccount}{" "}
           <Link
-            to="/login"
+            to={authPath("login", locale)}
             className="underline underline-offset-4 hover:text-foreground"
           >
-            Kirish
+            {t.auth.loginCta}
           </Link>
         </>
       }
@@ -75,7 +71,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="firstName">
-                Ism
+                {t.auth.firstName}
               </label>
               <input
                 id="firstName"
@@ -89,7 +85,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="lastName">
-                Familiya
+                {t.auth.lastName}
               </label>
               <input
                 id="lastName"
@@ -103,7 +99,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
 
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="email">
-              Email
+              {t.auth.email}
             </label>
             <input
               id="email"
@@ -118,7 +114,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
 
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="password">
-              Parol
+              {t.auth.password}
             </label>
             <input
               id="password"
@@ -130,17 +126,13 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
               autoComplete="new-password"
               className="w-full px-3 py-2.5 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            <p className="text-xs text-muted-foreground">Kamida 6 ta belgi</p>
+            <p className="text-xs text-muted-foreground">{t.auth.minCharacters}</p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Jins</label>
+            <label className="text-sm font-medium">{t.auth.gender}</label>
             <div className="grid grid-cols-3 gap-2">
-              {[
-                { v: "MALE", l: "Erkak" },
-                { v: "FEMALE", l: "Ayol" },
-                { v: "OTHER", l: "Boshqa" },
-              ].map((o) => (
+              {t.auth.genders.map((o) => (
                 <button
                   key={o.v}
                   type="button"
@@ -157,13 +149,13 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Bu sizga murojaat uslubini belgilaydi — keyin o‘zgartirishingiz mumkin.
+              {t.auth.genderHint}
             </p>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="age">
-              Yosh (ixtiyoriy)
+              {t.auth.ageLabel}
             </label>
             <input
               id="age"
@@ -177,15 +169,15 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Maqsadingiz</label>
+            <label className="text-sm font-medium">{t.auth.goal}</label>
             <div className="grid grid-cols-2 gap-2">
-              {GOALS.map((g) => (
+              {t.auth.goals.map((g) => (
                 <button
                   key={g.id}
                   type="button"
                   aria-pressed={form.target === g.id}
                   onClick={() => update("target", g.id)}
-                  className={`px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                  className={`px-3 py-2 rounded-lg border text-left transition-colors ${
                     form.target === g.id
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background hover:bg-secondary"
@@ -214,7 +206,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
             disabled={loading || !form.gender}
             className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:bg-secondary disabled:text-secondary-foreground disabled:cursor-not-allowed transition"
           >
-            {loading ? "Kutilmoqda…" : "Davom etish"}
+            {loading ? t.auth.loading : t.auth.registerSubmit}
           </button>
         </form>
     </AuthShell>

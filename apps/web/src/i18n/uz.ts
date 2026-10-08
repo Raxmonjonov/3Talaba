@@ -247,6 +247,40 @@
     rights: "Barcha huquqlar himoyalangan.",
     language: "Til",
   },
+
+  auth: {
+    loginTagline: "Tinch, sabrli va samarali o'rganish muhiti",
+    registerTagline: "Ro'yxatdan o'ting — sizning darajangizni aniqlab, reja tuzamiz",
+    email: "Email",
+    password: "Parol",
+    firstName: "Ism",
+    lastName: "Familiya",
+    minCharacters: "Kamida 6 ta belgi",
+    gender: "Jins",
+    genderHint: "Bu sizga murojaat uslubini belgilaydi — keyin o'zgartirishingiz mumkin.",
+    ageLabel: "Yosh (ixtiyoriy)",
+    goal: "Maqsadingiz",
+    loading: "Kutilmoqda…",
+    loginSubmit: "Kirish",
+    registerSubmit: "Davom etish",
+    noAccount: "Hisob yo'qmi?",
+    haveAccount: "Hisobingiz bormi?",
+    registerCta: "Ro'yxatdan o'tish",
+    loginCta: "Kirish",
+    errorFallback: "Xatolik yuz berdi",
+    language: "Til",
+    genders: [
+      { v: "MALE", l: "Erkak" },
+      { v: "FEMALE", l: "Ayol" },
+      { v: "OTHER", l: "Boshqa" },
+    ],
+    goals: [
+      { id: "SAT", label: "SAT", hint: "Matematika, o'qish, yozish" },
+      { id: "IELTS", label: "IELTS", hint: "Listening, Reading, Writing, Speaking" },
+      { id: "UNIVERSITY", label: "Oliygoh kirish", hint: "Umumiy tayyorgarlik" },
+      { id: "GENERAL", label: "Umumiy bilim", hint: "Noldan to'liq qayta qurish" },
+    ],
+  },
 };
 
 export type Dictionary = typeof uz;

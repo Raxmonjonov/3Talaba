@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "@/i18n/useTranslation";
-import { AUTH_PATHS } from "@/i18n/config";
+import { authPath } from "@/i18n/config";
 import type { User } from "@/lib/types";
 import { CloseIcon, MenuIcon } from "./Icons";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -13,7 +13,7 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ user, onLogout }: SiteHeaderProps) {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -74,10 +74,10 @@ export function SiteHeader({ user, onLogout }: SiteHeaderProps) {
             </>
           ) : (
             <>
-              <Link to={AUTH_PATHS.login} className="btn-secondary text-sm">
+              <Link to={authPath("login", locale)} className="btn-secondary text-sm">
                 {t.nav.login}
               </Link>
-              <Link to={AUTH_PATHS.register} className="btn-primary text-sm">
+              <Link to={authPath("register", locale)} className="btn-primary text-sm">
                 {t.nav.register}
               </Link>
             </>
@@ -133,14 +133,14 @@ export function SiteHeader({ user, onLogout }: SiteHeaderProps) {
               ) : (
                 <>
                   <Link
-                    to={AUTH_PATHS.login}
+                    to={authPath("login", locale)}
                     className="btn-secondary w-full"
                     onClick={() => setOpen(false)}
                   >
                     {t.nav.login}
                   </Link>
                   <Link
-                    to={AUTH_PATHS.register}
+                    to={authPath("register", locale)}
                     className="btn-primary w-full"
                     onClick={() => setOpen(false)}
                   >

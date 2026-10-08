@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { authPath } from "@/i18n/config";
+import { useAuthLocale } from "@/i18n/useAuthLocale";
 import { api } from "../lib/api";
 import type { AuthResponse } from "../lib/types";
 
 export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"]) => void }) {
+  const { locale, t } = useAuthLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,7 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
       onLogin(res.user);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Xatolik yuz berdi");
+      setError(err.message || t.auth.errorFallback);
     } finally {
       setLoading(false);
     }
@@ -32,15 +35,15 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
 
   return (
     <AuthShell
-      tagline="Tinch, sabrli va samarali o‘rganish muhiti"
+      tagline={t.auth.loginTagline}
       footnote={
         <>
-          Hisob yo‘qmi?{" "}
+          {t.auth.noAccount}{" "}
           <Link
-            to="/register"
+            to={authPath("register", locale)}
             className="underline underline-offset-4 hover:text-foreground"
           >
-            Ro‘yxatdan o‘tish
+            {t.auth.registerCta}
           </Link>
         </>
       }
@@ -48,7 +51,7 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
       <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="email">
-              Email
+              {t.auth.email}
             </label>
             <input
               id="email"
@@ -63,7 +66,7 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
 
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="password">
-              Parol
+              {t.auth.password}
             </label>
             <input
               id="password"
@@ -86,7 +89,7 @@ export default function Login({ onLogin }: { onLogin: (user: AuthResponse["user"
             disabled={loading}
             className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:bg-secondary disabled:text-secondary-foreground disabled:cursor-not-allowed transition"
           >
-            {loading ? "Kutilmoqda…" : "Kirish"}
+            {loading ? t.auth.loading : t.auth.loginSubmit}
           </button>
         </form>
     </AuthShell>

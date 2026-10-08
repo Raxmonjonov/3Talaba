@@ -1,5 +1,5 @@
 import { useTranslation } from "@/i18n/useTranslation";
-import { AUTH_PATHS } from "@/i18n/config";
+import { authPath } from "@/i18n/config";
 import { Link } from "react-router-dom";
 import { ClockIcon, SparkIcon } from "./Icons";
 import HeroScene from "./HeroScene";
@@ -48,7 +48,7 @@ export function TimeFlowMotif() {
 }
 
 export function Hero() {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
 
   return (
     <section className="relative isolate overflow-hidden">
@@ -73,13 +73,13 @@ export function Hero() {
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link to={AUTH_PATHS.register} className="btn-primary btn-lg text-center">
+            <Link to={authPath("register", locale)} className="btn-primary btn-lg text-center">
               <span className="inline-flex items-center gap-2">
                 <SparkIcon className="h-5 w-5" />
                 {t.hero.ctaPrimary}
               </span>
             </Link>
-            <Link to={AUTH_PATHS.login} className="btn-secondary btn-lg text-center">
+            <Link to={authPath("login", locale)} className="btn-secondary btn-lg text-center">
               {t.hero.ctaSecondary}
             </Link>
           </div>

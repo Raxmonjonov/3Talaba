@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { api } from "./lib/api";
 import type { User } from "./lib/types";
 import { DEFAULT_LOCALE, landingPath, LOCALES } from "./i18n/config";
+import { AuthLocaleProvider } from "./i18n/AuthLocaleProvider";
 
 // Keeps the translation dictionaries and each routed page out of the initial
 // bundle so the app shell paints before any page code arrives.
@@ -78,9 +79,11 @@ export default function App() {
             user ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Suspense fallback={<RouteFallback />}>
-                <Login onLogin={setUser} />
-              </Suspense>
+              <AuthLocaleProvider>
+                <Suspense fallback={<RouteFallback />}>
+                  <Login onLogin={setUser} />
+                </Suspense>
+              </AuthLocaleProvider>
             )
           }
         />
@@ -90,9 +93,11 @@ export default function App() {
             user ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Suspense fallback={<RouteFallback />}>
-                <Register onLogin={setUser} />
-              </Suspense>
+              <AuthLocaleProvider>
+                <Suspense fallback={<RouteFallback />}>
+                  <Register onLogin={setUser} />
+                </Suspense>
+              </AuthLocaleProvider>
             )
           }
         />
