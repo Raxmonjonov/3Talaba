@@ -22,32 +22,33 @@ export function SiteFooter() {
               <p className="text-sm font-semibold">{t.footer.contact}</p>
               <ul className="mt-3 space-y-2 text-sm">
                 <li>
-                  {/* Placeholder until the official Telegram channel is created. */}
-                  <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <a
+                    href="https://t.me/your_telegram_channel"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
                     {t.footer.telegram}
-                    <span className="text-xs text-muted-foreground">
-                      ({t.footer.telegramPlaceholder})
-                    </span>
-                  </span>
+                  </a>
                 </li>
                 <li>
-                  <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <a
+                    href="/privacy"
+                    className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     <span className="h-1.5 w-1.5 rounded-full bg-border" aria-hidden="true" />
                     {t.footer.privacy}
-                    <span className="text-xs text-muted-foreground">
-                      ({t.footer.telegramPlaceholder})
-                    </span>
-                  </span>
+                  </a>
                 </li>
                 <li>
-                  <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <a
+                    href="/terms"
+                    className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     <span className="h-1.5 w-1.5 rounded-full bg-border" aria-hidden="true" />
                     {t.footer.terms}
-                    <span className="text-xs text-muted-foreground">
-                      ({t.footer.telegramPlaceholder})
-                    </span>
-                  </span>
+                  </a>
                 </li>
               </ul>
             </div>
