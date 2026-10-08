@@ -197,5 +197,11 @@ ishlash uchun).
 npm run lint
 npm run typecheck
 npm run test
+npm run test:e2e
 npm run build
 ```
+
+`npm run test:e2e` runs the Playwright suite (system Chrome, no browser
+download). It builds the SPA, serves it on `:4174`, and expects the API
+running locally on `:4000` (`npm run dev:api`). The tests register their
+own users, so no seed data is required.

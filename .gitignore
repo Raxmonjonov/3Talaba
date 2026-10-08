@@ -10,4 +10,8 @@ dist
 *.sqlite
 *.sqlite3
 
+# Playwright
+test-results
+playwright-report
+
 
