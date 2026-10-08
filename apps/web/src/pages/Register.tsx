@@ -4,10 +4,12 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { authPath } from "@/i18n/config";
 import { useAuthLocale } from "@/i18n/useAuthLocale";
 import { api } from "../lib/api";
+import { useAuthSeo } from "../lib/seo";
 import type { AuthResponse } from "../lib/types";
 
 export default function Register({ onLogin }: { onLogin: (user: AuthResponse["user"]) => void }) {
   const { locale, t } = useAuthLocale();
+  useAuthSeo("register", locale);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",

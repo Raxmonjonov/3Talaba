@@ -7,6 +7,14 @@ test.describe("auth pages resolve their language", () => {
     await expect(page.locator('label[for="password"]')).toHaveText("Пароль");
     await expect(page.getByRole("button", { name: "Войти" })).toBeVisible();
     await expect(page.getByText("Спокойная, терпеливая")).toBeVisible();
+
+    // Head follows the content language.
+    await expect(page).toHaveTitle("Войти   —   3Talab");
+    await expect(page.locator("html")).toHaveAttribute("lang", "ru");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "noindex, follow"
+    );
   });
 
   test("the switcher updates the copy, the URL and the cross link", async ({ page }) => {
@@ -17,6 +25,21 @@ test.describe("auth pages resolve their language", () => {
     await expect(page.locator('label[for="password"]')).toHaveText("Password");
     await expect(page.getByRole("button", { name: "Log in" })).toBeVisible();
     await expect(page.locator('a[href="/register?locale=en"]')).toBeVisible();
+    await expect(page).toHaveTitle("Log in   —   3Talab");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+
+  test("landing returns robots to index, follow", async ({ page }) => {
+    await page.goto("/login");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "noindex, follow"
+    );
+    await page.goto("/uz");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "index, follow"
+    );
   });
 
   test("register honours the stored preference without a query", async ({ page }) => {
@@ -40,5 +63,18 @@ test.describe("auth pages resolve their language", () => {
     await page.goto("/en");
     const href = await page.locator('a[href*="/login"]').first().getAttribute("href");
     expect(href).toBe("/login?locale=en");
+  });
+
+  test("the switcher never covers the form on mobile", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/register");
+    const switcher = await page.locator(".bg-surface").first().boundingBox();
+    const form = await page.locator("form").boundingBox();
+
+    expect(switcher).not.toBeNull();
+    expect(form).not.toBeNull();
+    // The pill floats top-right; the whole form must start below it.
+    const switcherBottom = switcher!.y + switcher!.height;
+    expect(form!.y).toBeGreaterThanOrEqual(switcherBottom);
   });
 });

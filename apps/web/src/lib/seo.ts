@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   absoluteUrl,
+  AUTH_PATHS,
   getDictionary,
   landingPath,
   LOCALES,
@@ -80,6 +82,8 @@ export function useSeo(locale: Locale) {
     document.documentElement.lang = locale;
 
     upsertMeta('meta[name="description"]', { name: "description", content: meta.description });
+    // Landing pages are meant to be indexed; auth pages set noindex again.
+    upsertMeta('meta[name="robots"]', { name: "robots", content: "index, follow" });
 
     upsertLink("canonical", null, canonical);
     for (const option of LOCALES) {
@@ -139,4 +143,43 @@ export function useSeo(locale: Locale) {
     }
     script.textContent = JSON.stringify(structuredData(locale));
   }, [locale]);
+}
+
+/**
+ * Auth pages are personal entry points: a localized tab title, the right
+ * <html lang>, a canonical that ignores the ?locale= variant, and noindex
+ * (they carry no public content). The landing's useSeo flips robots back
+ * to index, follow when the visitor returns.
+ */
+export function useAuthSeo(mode: "login" | "register", locale: Locale) {
+  useEffect(() => {
+    const dictionary = getDictionary(locale);
+    const label = mode === "login" ? dictionary.nav.login : dictionary.nav.register;
+
+    document.title = `${label} — 3Talab`;
+    document.documentElement.lang = locale;
+    upsertMeta('meta[name="robots"]', { name: "robots", content: "noindex, follow" });
+    upsertLink("canonical", null, absoluteUrl(AUTH_PATHS[mode]));
+  }, [mode, locale]);
+}
+
+const APP_ROUTES = ["/dashboard", "/study", "/placement"];
+
+/**
+ * The signed-in app screens are Uzbek-only personal data: keep the tab title
+ * neutral, the language correct for assistive tech, and the pages out of the
+ * index. Renders nothing.
+ */
+export function RouteSeo() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (!APP_ROUTES.some((route) => pathname.startsWith(route))) return;
+
+    document.title = "3Talab";
+    document.documentElement.lang = "uz";
+    upsertMeta('meta[name="robots"]', { name: "robots", content: "noindex, nofollow" });
+  }, [pathname]);
+
+  return null;
 }

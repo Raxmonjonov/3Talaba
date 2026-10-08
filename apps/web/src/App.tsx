@@ -4,6 +4,7 @@ import { api } from "./lib/api";
 import type { User } from "./lib/types";
 import { DEFAULT_LOCALE, landingPath, LOCALES } from "./i18n/config";
 import { AuthLocaleProvider } from "./i18n/AuthLocaleProvider";
+import { RouteSeo } from "./lib/seo";
 
 // Keeps the translation dictionaries and each routed page out of the initial
 // bundle so the app shell paints before any page code arrives.
@@ -58,6 +59,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <RouteSeo />
       <Routes>
         {/* Localized landing pages */}
         <Route path="/" element={<Navigate to={landingPath(DEFAULT_LOCALE)} replace />} />

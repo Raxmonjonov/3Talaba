@@ -22,6 +22,14 @@ async function registerFreshUser(page: Page): Promise<void> {
 test.describe("onboarding flow", () => {
   test("registration lands on the dashboard", async ({ page }) => {
     await registerFreshUser(page);
+
+    // App screens are Uzbek-only personal data: neutral title, uz lang, noindex.
+    await expect(page).toHaveTitle("3Talab");
+    await expect(page.locator("html")).toHaveAttribute("lang", "uz");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "noindex, nofollow"
+    );
   });
 
   test("placement measures a level and the dashboard reflects it", async ({ page }) => {
