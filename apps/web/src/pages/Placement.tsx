@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import type { PlacementQuestion, PlacementResult } from "../lib/types";
+import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
+import { useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
+
+/** How long the verdict stays on the card before it flips to the next one. */
+const VERDICT_HOLD_MS = 240;
 
 export default function Placement({
   onFinish,
@@ -14,6 +19,9 @@ export default function Placement({
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<PlacementResult | null>(null);
   const [error, setError] = useState("");
+  const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
+  const reducedMotion = useReducedMotion();
+  const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,17 +63,48 @@ export default function Placement({
 
   function choose(optionIndex: number) {
     const question = questions[index];
-    if (!question) return;
+    if (!question || submitting) return;
 
     const next = { ...answers, [question.id]: optionIndex };
     setAnswers(next);
+    setVerdict(null);
 
-    if (index + 1 < questions.length) {
-      setIndex(index + 1);
-    } else {
+    if (index + 1 >= questions.length) {
       grade(next);
+      return;
     }
+
+    const advance = () => {
+      setVerdict(null);
+      setSubmitting(false);
+      setIndex(index + 1);
+    };
+
+    // Reduced motion skips the score probe entirely: no animation to feed.
+    if (reducedMotion) {
+      advance();
+      return;
+    }
+
+    setSubmitting(true);
+    api<Pick<PlacementResult, "detail">>("/api/learning/placement", {
+      method: "POST",
+      body: JSON.stringify({ answers: next, check: true }),
+    })
+      .then((checked) => {
+        const row = checked.detail.find((d) => d.id === question.id);
+        setVerdict(row?.correct ? "correct" : "wrong");
+        holdRef.current = setTimeout(advance, VERDICT_HOLD_MS);
+      })
+      .catch(() => advance());
   }
+
+  useEffect(
+    () => () => {
+      if (holdRef.current) clearTimeout(holdRef.current);
+    },
+    [],
+  );
 
   if (loading) {
     return (
@@ -119,13 +158,19 @@ export default function Placement({
             <h2 className="text-sm font-medium">Har bir javob tahlili</h2>
             <ul className="space-y-2">
               {result.detail.map((d) => (
-                <li key={d.id} className="flex gap-2 text-sm">
+                <li
+                  key={d.id}
+                  className={`flex gap-2 text-sm ${
+                    d.correct ? "verdict-correct" : "verdict-wrong"
+                  }`}
+                >
                   <span className={d.correct ? "text-foreground" : "text-red-700"}>
-                    {d.correct ? "✓" : "✗"}
+                    {d.correct ? "\u2713" : "\u2717"}
                   </span>
                   <span className="text-muted-foreground">{d.explain}</span>
                 </li>
               ))}
+
             </ul>
           </div>
 
@@ -165,7 +210,11 @@ export default function Placement({
           </div>
         </div>
 
-        <div className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm">
+        <QuestionCard3D
+          step={index}
+          verdict={verdict}
+          className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm"
+        >
           <h1 className="text-xl font-medium">{question.question}</h1>
           <div className="grid gap-2">
             {question.options.map((option, i) => (
@@ -180,7 +229,7 @@ export default function Placement({
               </button>
             ))}
           </div>
-        </div>
+        </QuestionCard3D>
 
         <p className="text-center text-xs text-muted-foreground">
           Noto‘g‘ri javobdan qo‘rqmaydi — bu sizga moslash uchun.

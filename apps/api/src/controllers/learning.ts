@@ -17,6 +17,9 @@ export async function getPlacementQuestions(_req: Request, res: Response) {
 
 const submitSchema = z.object({
   answers: z.record(z.string(), z.number().int().min(0)),
+  // check: score the answers but leave the stored level alone. The client uses
+  // it for instant per-question feedback; the real submit still runs at the end.
+  check: z.boolean().optional(),
 });
 
 /** Scores the diagnostic and stores the resulting level on the user. */
@@ -25,8 +28,13 @@ export async function submitPlacement(req: Request, res: Response) {
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
   try {
-    const { answers } = submitSchema.parse(req.body);
+    const { answers, check } = submitSchema.parse(req.body);
     const result = scorePlacement(answers);
+
+    if (check) {
+      res.json({ ...result, currentLevel: null, checkedOnly: true });
+      return;
+    }
 
     const user = await prisma.user.update({
       where: { id: userId },

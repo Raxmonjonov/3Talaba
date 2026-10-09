@@ -266,6 +266,12 @@
     }
   }
 
+  /* Perspective stage for the 3D card layers (hero, placement). */
+  .stage-3d {
+    perspective: 1100px;
+    perspective-origin: 50% 50%;
+  }
+
   /* The placement question reads as the top sheet of a small stack. */
   .question-stack {
     position: relative;
@@ -290,6 +296,52 @@
   .question-stack::after {
     transform: translateZ(-24px) translateY(13px) rotate(1.6deg) scale(0.98);
     opacity: 0.55;
+  }
+
+  /* Placement verdicts: a soft green bloom for a right answer, a short
+     sideways nudge for a wrong one. Both stand down under reduced motion. */
+  .verdict-correct {
+    animation: verdict-glow 0.7s ease-out;
+    border-radius: 0.5rem;
+  }
+
+  .verdict-wrong {
+    animation: verdict-shake 0.4s ease-in-out;
+  }
+
+  @keyframes verdict-glow {
+    0% {
+      box-shadow: 0 0 0 0 hsl(142 70% 45% / 0);
+      background-color: transparent;
+    }
+    35% {
+      box-shadow: 0 0 24px 2px hsl(142 70% 45% / 0.45);
+      background-color: hsl(142 70% 45% / 0.14);
+    }
+    100% {
+      box-shadow: 0 0 0 0 hsl(142 70% 45% / 0);
+      background-color: transparent;
+    }
+  }
+
+  @keyframes verdict-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-5px);
+    }
+    75% {
+      transform: translateX(5px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .verdict-correct,
+    .verdict-wrong {
+      animation: none;
+    }
   }
 
   /* A highlight sweeps the placement progress bar. */
