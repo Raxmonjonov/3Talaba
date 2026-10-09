@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type { ChatResponse, Message, Session, SessionWithMessages, User } from "../lib/types";
+import { TutorOrb } from "@/components/3d/elements/TutorOrb";
 
 /** Soft reminder after this many focused minutes. Never forced. */
 const BREAK_AFTER_MINUTES = 45;
@@ -159,12 +160,15 @@ export default function Study({ user }: { user: User }) {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
-          <div>
-            <h1 className="text-lg font-semibold">Dars</h1>
-            <p className="text-xs text-muted-foreground">
-              {address} bilan birga
-              {user.focusMode ? " · fokus rejimi" : ""}
-            </p>
+          <div className="flex min-w-0 items-center gap-3">
+            <TutorOrb thinking={sending} />
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold">Dars</h1>
+              <p className="truncate text-xs text-muted-foreground">
+                {address} bilan birga
+                {user.focusMode ? " · fokus rejimi" : ""}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="font-mono text-sm text-muted-foreground">
