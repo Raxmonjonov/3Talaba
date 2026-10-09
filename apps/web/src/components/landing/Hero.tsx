@@ -1,8 +1,8 @@
-import { useTranslation } from "@/i18n/useTranslation";
+﻿import { useTranslation } from "@/i18n/useTranslation";
 import { authPath } from "@/i18n/config";
 import { Link } from "react-router-dom";
 import { ClockIcon, SparkIcon } from "./Icons";
-import HeroScene from "./HeroScene";
+import Hero3DLazy from "@/components/3d/scenes/Hero3DLazy";
 
 /** Deterministic offsets keep the motif stable across renders. */
 const COLUMNS = [
@@ -18,10 +18,6 @@ const COLUMNS = [
   { left: "91%", height: "55%", delay: "-3s", duration: "25s" },
 ];
 
-/**
- * A quiet nod to time flowing through a study year: a grid, a glow and a few
- * drifting light columns. Fully decorative and silenced under reduced motion.
- */
 export function TimeFlowMotif() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -49,29 +45,25 @@ export function TimeFlowMotif() {
 
 export function Hero() {
   const { locale, t } = useTranslation();
-
   return (
     <section className="relative isolate overflow-hidden">
       <TimeFlowMotif />
-      <HeroScene />
+      <Hero3DLazy />
       <div className="page-shell relative z-10 py-16 sm:py-20 lg:py-28">
         <div className="max-w-3xl">
           <p className="eyebrow animate-fade-up">
             <ClockIcon className="h-4 w-4" />
             {t.hero.eyebrow}
           </p>
-
           <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
             {t.hero.title}{" "}
             <span className="bg-gradient-to-r from-primary to-gradient-end bg-clip-text text-transparent">
               {t.hero.titleAccent}
             </span>
           </h1>
-
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
             {t.hero.subtitle}
           </p>
-
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link to={authPath("register", locale)} className="btn-primary btn-lg text-center">
               <span className="inline-flex items-center gap-2">
@@ -83,11 +75,9 @@ export function Hero() {
               {t.hero.ctaSecondary}
             </Link>
           </div>
-
           <p className="mt-4 text-sm text-muted-foreground">{t.hero.note}</p>
-
           <ul className="mt-12 grid gap-6 border-t border-border pt-8 sm:grid-cols-3">
-            {t.hero.benefits.map((benefit) => (
+            {t.hero.benefits.map((benefit: any) => (
               <li key={benefit.value} className="space-y-1">
                 <p className="text-lg font-semibold text-foreground">{benefit.value}</p>
                 <p className="text-sm leading-relaxed text-muted-foreground">{benefit.label}</p>
@@ -99,3 +89,4 @@ export function Hero() {
     </section>
   );
 }
+
