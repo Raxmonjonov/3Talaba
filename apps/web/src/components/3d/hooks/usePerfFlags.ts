@@ -1,4 +1,5 @@
 ﻿import { useState, useSyncExternalStore } from "react";
+import { is3DEnabled, subscribe3D } from "@/lib/featureFlags";
 
 function subscribeMotion(onChange: () => void) {
   const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -32,7 +33,6 @@ export function useWebGL() {
   return supported;
 }
 
-/** coarse | fine | low — picked once so the scene never has to renegotiate. */
 export type Quality = "low" | "medium" | "high";
 
 function detectQuality(): Quality {
@@ -46,7 +46,25 @@ function detectQuality(): Quality {
   return "high";
 }
 
+/** Picked once so a scene never has to renegotiate mid-session. */
 export function useDeviceQuality() {
   const [quality] = useState(detectQuality);
   return quality;
+}
+
+/** The student's own switch in the dashboard settings. */
+export function use3DEnabled() {
+  return useSyncExternalStore(subscribe3D, is3DEnabled, () => true);
+}
+
+/**
+ * Whether a 3D layer may mount at all. Low-power devices still get 3D — they
+ * just get the simplified tier — so only a missing GPU, reduced motion or an
+ * explicit opt-out sends the caller back to the 2D fallback.
+ */
+export function use3DReady() {
+  const enabled = use3DEnabled();
+  const reduced = useReducedMotion();
+  const webgl = useWebGL();
+  return enabled && !reduced && webgl;
 }

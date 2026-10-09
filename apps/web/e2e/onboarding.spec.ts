@@ -56,6 +56,26 @@ test.describe("onboarding flow", () => {
     await expect(page.getByText(/Daraja .+\(\d{1,2}\)/)).toBeVisible();
   });
 
+  test("the dashboard shows the progress stairs and can opt out of 3D", async ({
+    page,
+  }) => {
+    await registerFreshUser(page);
+
+    // The staircase is always present: WebGL devices get the 3D one, every
+    // other device gets the plain treads underneath the same copy.
+    await expect(page.getByText("Tepada maqsadingiz")).toBeVisible();
+    await expect(page.getByText("Har bir")).toBeVisible();
+
+    await page.getByText("3D effektlarni").click();
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("3talab_3d")))
+      .toBe("off");
+
+    // Turning the scenes off must never take the dashboard down with it.
+    await expect(page.getByText("Xush kelibsiz, E2E")).toBeVisible();
+    await expect(page.getByText("Tepada maqsadingiz")).toBeVisible();
+  });
+
   test("the tutor opens a lesson on the first message", async ({ page }) => {
     await registerFreshUser(page);
 

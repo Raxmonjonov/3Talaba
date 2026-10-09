@@ -2,6 +2,9 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import type { ProgressResponse, Session, SettingsResponse, User } from "../lib/types";
+import { set3DEnabled } from "../lib/featureFlags";
+import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
+import { ProgressStairs3D } from "@/components/3d/elements/ProgressStairs3D";
 
 const HeroScene = lazy(() => import("@/components/landing/HeroScene"));
 
@@ -64,6 +67,7 @@ export default function Dashboard({
   const [starting, setStarting] = useState(false);
   const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [error, setError] = useState("");
+  const threeDEnabled = use3DEnabled();
 
   useEffect(() => {
     let cancelled = false;
@@ -178,6 +182,22 @@ export default function Dashboard({
           </div>
         </section>
 
+        <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-semibold">Yo‘lingiz</h3>
+            <span className="text-xs text-muted-foreground">
+              Tepada maqsadingiz
+            </span>
+          </div>
+
+          <ProgressStairs3D level={user.currentLevel} />
+
+          <p className="text-xs text-muted-foreground">
+            Har bir pog‘ona — bir daraja. Hozir {levelText}. Orqadagi
+            pog‘onalar yonib turadi, oldindagilar tinchoq kutmoqda.
+          </p>
+        </section>
+
         <section className="grid gap-4 sm:grid-cols-3">
           <div className="subject-scene">
             <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
@@ -266,6 +286,25 @@ export default function Dashboard({
               <span className="block text-xs text-muted-foreground">
                 Dam olish vaqti kelganda yumshoq taklif qilamiz. Majburlamaymiz —
                 o‘zingiz qaror qilasiz.
+              </span>
+            </span>
+          </label>
+
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={!threeDEnabled}
+              onChange={(e) => set3DEnabled(!e.target.checked)}
+              className="mt-1 h-4 w-4"
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-medium">
+                3D effektlarni o‘chirish
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                Sahnalar oddiy ko‘rinishga o‘tadi. Darslar, test va barcha
+                funksiyalar o‘z joyida qoladi. Bu sozlama shu qurilmada
+                saqlanadi.
               </span>
             </span>
           </label>
