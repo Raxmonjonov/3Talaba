@@ -97,6 +97,25 @@ export interface PlacementResult {
   }[];
 }
 
+export interface PracticeAnswerResponse {
+  correct: boolean;
+  explanation?: string;
+  expected?: string;
+  review?: { grade: number; dueAt: string; interval: string };
+}
+
+export interface ReviewSummary {
+  dueNow: number;
+  totalCards: number;
+  weakSkills: { skill: string; accuracy: number; attempts: number }[];
+  next7Days: number[];
+}
+
+export interface ReviewsResponse {
+  due: { questionId: string; due: string }[];
+  summary: ReviewSummary;
+}
+
 export interface ProgressPoint {
   date: string;
   minutes: number;

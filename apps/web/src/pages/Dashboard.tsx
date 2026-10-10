@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import type { ProgressResponse, Session, SettingsResponse, User } from "../lib/types";
+import type { ProgressResponse, ReviewsResponse, Session, SettingsResponse, User } from "../lib/types";
 import { set3DEnabled } from "../lib/featureFlags";
 import { useAchievements } from "../lib/useAchievements";
 import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
@@ -69,6 +69,7 @@ export default function Dashboard({
   const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [statsError, setStatsError] = useState("");
   const [openSession, setOpenSession] = useState<Session | null>(null);
+  const [reviews, setReviews] = useState<ReviewsResponse | null>(null);
   const [error, setError] = useState("");
   const threeDEnabled = use3DEnabled();
   const {
@@ -101,6 +102,13 @@ export default function Dashboard({
       })
       .catch(() => {
         /* resume is optional — a fresh session still works */
+      });
+    api<ReviewsResponse>("/api/content/reviews")
+      .then((data) => {
+        if (!cancelled) setReviews(data);
+      })
+      .catch(() => {
+        /* review counts are optional */
       });
     return () => {
       cancelled = true;
@@ -217,6 +225,41 @@ export default function Dashboard({
               Darajani tekshirish
             </button>
           </div>
+        </section>
+
+        <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-semibold">Takrorlash</h3>
+            <span className="text-xs text-muted-foreground">
+              {reviews
+                ? reviews.summary.dueNow > 0
+                  ? `${reviews.summary.dueNow} savol navbatda`
+                  : "Hozircha navbat yo‘q"
+                : "Yuklanmoqda…"}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Xatolar va zaif mavzular qisqa fursatdan keyin qayta keladi.
+            {reviews && reviews.summary.totalCards > 0
+              ? ` Jami ${reviews.summary.totalCards} karta mashqda.`
+              : ""}
+          </p>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <button onClick={() => navigate("/practice")} className="btn-secondary">
+              {reviews && reviews.summary.dueNow > 0
+                ? "Navbatdagi savollarni mashq qilish"
+                : "Mashqni boshlash"}
+            </button>
+          </div>
+          {reviews && reviews.summary.weakSkills.length > 0 ? (
+            <p className="text-xs text-muted-foreground">
+              E’tibor:{" "}
+              {reviews.summary.weakSkills
+                .slice(0, 3)
+                .map((s) => s.skill)
+                .join(", ")}
+            </p>
+          ) : null}
         </section>
 
         <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">

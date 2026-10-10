@@ -14,6 +14,7 @@ const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Study = lazy(() => import("./pages/Study"));
 const Placement = lazy(() => import("./pages/Placement"));
+const Practice = lazy(() => import("./pages/Practice"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
 
 function RouteFallback() {
@@ -149,6 +150,18 @@ export default function App() {
             user ? (
               <Suspense fallback={<RouteFallback />}>
                 <Study user={user} />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/practice"
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <Practice />
               </Suspense>
             ) : (
               <Navigate to="/login" replace />
