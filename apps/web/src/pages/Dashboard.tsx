@@ -224,6 +224,9 @@ export default function Dashboard({
             <button onClick={() => navigate("/placement")} className="btn-secondary">
               Darajani tekshirish
             </button>
+            <button onClick={() => navigate("/courses")} className="btn-secondary">
+              Kurslar
+            </button>
           </div>
         </section>
 

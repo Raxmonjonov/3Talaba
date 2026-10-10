@@ -84,19 +84,6 @@ export interface PlacementAnswerResponse {
   correctCount?: number;
 }
 
-export interface PlacementResult {
-  earned: number;
-  possible: number;
-  level: number;
-  currentLevel: number;
-  detail: {
-    id: string;
-    correct: boolean;
-    chosen: number;
-    explain: string;
-  }[];
-}
-
 export interface PracticeAnswerResponse {
   correct: boolean;
   explanation?: string;
@@ -114,6 +101,20 @@ export interface ReviewSummary {
 export interface ReviewsResponse {
   due: { questionId: string; due: string }[];
   summary: ReviewSummary;
+}
+
+export interface CourseListItem {
+  slug: string;
+  subject: string;
+  title: string;
+  description: string;
+  moduleCount: number;
+  lessonCount: number;
+}
+
+export interface EnrollResponse {
+  courseSlug: string;
+  enrolled: boolean;
 }
 
 export interface ProgressPoint {
