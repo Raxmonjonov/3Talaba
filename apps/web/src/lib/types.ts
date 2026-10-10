@@ -156,6 +156,16 @@ export interface EnrollResponse {
   enrolled: boolean;
 }
 
+export interface SkillMapItem {
+  slug: string;
+  subject: string;
+  name: string;
+  parent: string | null;
+  questionCount: number;
+  attempts: number;
+  mastery: number | null;
+}
+
 export interface ProgressPoint {
   date: string;
   minutes: number;

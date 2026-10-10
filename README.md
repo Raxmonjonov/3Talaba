@@ -31,7 +31,7 @@ tayyorgarlik uchun.
 │           ├── lib/               API client, SEO, mavzu (theme)
 │           └── pages/             Landing, Login, Register, Placement,
 │                                  Dashboard, Study, Practice, Courses,
-│                                  CourseDetail, Lesson
+│                                  CourseDetail, Lesson, Skills
 ```
 
 ## Landing sahifasi
@@ -140,6 +140,7 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | GET | `/api/content/courses/:slug` | Kurs: modul va darslar daraxti |
 | POST | `/api/content/courses/:slug/enroll` | Kursga yozilish |
 | GET | `/api/content/lessons/:slug` | Dars matni + o‘quv bloklari |
+| GET | `/api/content/skills` | Mavzular daraxti + ustunlik |
 | GET | `/api/content/placement/start` | Adaptiv daraja o‘lchovi (birinchi savol) |
 | POST | `/api/content/placement/answer` | Javob yuborish, keyingi savol yoki natija |
 | GET | `/api/content/practice/next?exclude=` | Mashq savoli (FSRS navbati) |

@@ -154,13 +154,15 @@ export async function getQuestionRow(id: string) {
 export async function nextPracticeQuestion(
   level: number,
   subject: string | null,
-  exclude: string[]
+  exclude: string[],
+  skill: string | null = null
 ): Promise<any | null> {
   // Map the 0-10 level onto the Rasch range so level 0 really is easiest.
   const target = Math.max(-3, Math.min(3, (level - 5) * 0.6));
   const all = await prisma.question.findMany({
     where: {
       ...(subject ? { skill: { subject } } : {}),
+      ...(skill ? { skillSlug: skill } : {}),
       ...(exclude.length ? { id: { notIn: exclude } } : {}),
     },
     select: { id: true, difficulty: true },

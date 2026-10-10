@@ -227,6 +227,9 @@ export default function Dashboard({
             <button onClick={() => navigate("/courses")} className="btn-secondary">
               Kurslar
             </button>
+            <button onClick={() => navigate("/skills")} className="btn-secondary">
+              Mavzular
+            </button>
           </div>
         </section>
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type {
   PracticeAnswerResponse,
@@ -11,6 +11,9 @@ const MAX_DRILL = 12;
 
 export default function Practice() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const subject = searchParams.get("subject");
+  const skill = searchParams.get("skill");
   const [question, setQuestion] = useState<ServedQuestion | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -26,13 +29,20 @@ export default function Practice() {
   const seenRef = useRef<string[]>([]);
   const startedRef = useRef(0);
 
-  const loadNext = useCallback(async (exclude: string[]) => {
-    const query = exclude.length ? `?exclude=${encodeURIComponent(exclude.join(","))}` : "";
-    const data = await api<{ question: ServedQuestion }>(
-      `/api/content/practice/next${query}`
-    );
-    setQuestion(data.question);
-  }, []);
+  const loadNext = useCallback(
+    async (exclude: string[]) => {
+      const params = new URLSearchParams();
+      if (exclude.length) params.set("exclude", exclude.join(","));
+      if (subject) params.set("subject", subject);
+      if (skill) params.set("skill", skill);
+      const query = params.toString() ? `?${params.toString()}` : "";
+      const data = await api<{ question: ServedQuestion }>(
+        `/api/content/practice/next${query}`
+      );
+      setQuestion(data.question);
+    },
+    [subject, skill]
+  );
 
   useEffect(() => {
     let cancelled = false;

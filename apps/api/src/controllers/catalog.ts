@@ -188,6 +188,7 @@ export async function getPracticeQuestion(req: Request, res: Response) {
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
   const subject = (req.query.subject as string) || null;
+  const skill = (req.query.skill as string) || null;
   const exclude = String(req.query.exclude ?? "")
     .split(",")
     .map((s) => s.trim())
@@ -198,7 +199,7 @@ export async function getPracticeQuestion(req: Request, res: Response) {
     select: { currentLevel: true },
   });
 
-  const row = await nextPracticeQuestion(user?.currentLevel ?? 0, subject, exclude);
+  const row = await nextPracticeQuestion(user?.currentLevel ?? 0, subject, exclude, skill);
   if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
   res.json({ question: serveQuestion(row, localeOf(req)) });
