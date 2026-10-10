@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "./test";
+import { answerCurrentQuestion, expect, test, type Page } from "./test";
 
 async function registerFreshUser(page: Page): Promise<void> {
   const unique = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
@@ -39,14 +39,11 @@ test.describe("achievements", () => {
     });
 
     // Adaptive length is 15–25 items; click through until the result screen.
-    // Some bank items are single-option; always pick the last available choice.
+    // Free-text NUMERIC cards and single-option MCQs are both handled.
     const resultHeading = page.getByRole("heading", { name: "Darajangiz aniqlandi" });
     for (let i = 0; i < 30; i++) {
       if (await resultHeading.isVisible().catch(() => false)) break;
-      const options = page.locator(".auth-card button");
-      await expect(options.first()).toBeVisible({ timeout: 10_000 });
-      const count = await options.count();
-      await options.nth(count - 1).click();
+      await answerCurrentQuestion(page);
       await page.waitForTimeout(450);
     }
 

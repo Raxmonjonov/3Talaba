@@ -61,7 +61,6 @@ export interface SettingsResponse {
 
 export interface PlacementOption {
   label: string;
-  accepts?: string[];
 }
 
 export interface ServedQuestion {

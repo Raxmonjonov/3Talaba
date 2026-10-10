@@ -1,5 +1,5 @@
 // oxlint-disable react-hooks/rules-of-hooks -- Playwright fixture API, not React
-import { test as base, expect } from "@playwright/test";
+import { test as base, expect, type Page } from "@playwright/test";
 
 /**
  * Every suite shares one Chrome process. Dashboard/placement/landing scenes
@@ -20,5 +20,23 @@ export const test = base.extend({
     await use(page);
   },
 });
+
+/**
+ * Answers whatever the current Practice/Placement card shows.
+ * Free-text (NUMERIC) cards have a single disabled submit until the input
+ * is filled; choice cards keep the old "last option" click.
+ */
+export async function answerCurrentQuestion(page: Page): Promise<void> {
+  const freeInput = page.getByRole("textbox", { name: "Javob" });
+  if (await freeInput.isVisible().catch(() => false)) {
+    await freeInput.fill("1");
+    await page.getByRole("button", { name: "Yuborish" }).click();
+    return;
+  }
+  const options = page.locator(".auth-card button:not([type='submit'])");
+  await expect(options.first()).toBeVisible({ timeout: 15_000 });
+  const count = await options.count();
+  await options.nth(count - 1).click();
+}
 
 export { expect };

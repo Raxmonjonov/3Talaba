@@ -106,7 +106,7 @@ async function main() {
   check("answer key never sent to client",
     !q.options.some((o: any) => "correct" in o));
   check("no 'accepts' leaked for MCQ",
-    q.options.every((o: any) => !("accepts" in o) || q.type !== "MCQ_SINGLE"));
+    q.options.every((o: any) => !("accepts" in o)));
 
   const seen = new Set<string>();
   let items = 0;

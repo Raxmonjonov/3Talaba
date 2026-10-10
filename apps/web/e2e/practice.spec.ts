@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "./test";
+import { answerCurrentQuestion, expect, test, type Page } from "./test";
 
 async function registerFreshUser(page: Page): Promise<void> {
   const unique = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
@@ -31,11 +31,8 @@ test.describe("practice", () => {
       timeout: 15_000,
     });
 
-    // Answer one item from the seeded bank.
-    const options = page.locator(".auth-card button");
-    await expect(options.first()).toBeVisible({ timeout: 15_000 });
-    const count = await options.count();
-    await options.nth(count - 1).click();
+    // Answer one item from the seeded bank (choice or free-text).
+    await answerCurrentQuestion(page);
 
     await expect(page.getByRole("status")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole("button", { name: "Keyingi savol" })).toBeVisible();

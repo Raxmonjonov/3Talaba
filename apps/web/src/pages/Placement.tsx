@@ -11,6 +11,7 @@ import type {
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
+import { QuestionBody } from "@/components/QuestionBody";
 import { PLACEMENT_SUBJECTS, subjectLabel } from "@/lib/subjects";
 
 /** How long the verdict stays on the card before it flips to the next one. */
@@ -40,6 +41,7 @@ export default function Placement({
   const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
   const [earnedMedals, setEarnedMedals] = useState<Achievement[]>([]);
   const [resumed, setResumed] = useState(false);
+  const [freeText, setFreeText] = useState("");
   const [subject, setSubject] = useState<string | null>(
     () => new URLSearchParams(window.location.search).get("subject")
   );
@@ -67,6 +69,7 @@ export default function Placement({
         setResumed(Boolean(data.resumed));
         setVerdict(null);
         setSubmitting(false);
+        setFreeText("");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Savollar yuklanmadi");
       } finally {
@@ -123,7 +126,7 @@ export default function Placement({
       });
   }, []);
 
-  async function choose(optionIndex: number) {
+  async function choose(given: string) {
     if (!question || submitting) return;
 
     setSubmitting(true);
@@ -136,7 +139,7 @@ export default function Placement({
           method: "POST",
           body: JSON.stringify({
             questionId: question.id,
-            given: String(optionIndex),
+            given,
           }),
         }
       );
@@ -150,6 +153,7 @@ export default function Placement({
         setQuestion(data.question);
         setAnswered(data.answered);
         setSubmitting(false);
+        setFreeText("");
         return;
       }
 
@@ -159,6 +163,7 @@ export default function Placement({
         setQuestion(data.question ?? null);
         setAnswered(data.answered);
         setSubmitting(false);
+        setFreeText("");
       }, VERDICT_HOLD_MS);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Javob yuborilmadi");
@@ -360,20 +365,13 @@ export default function Placement({
           verdict={verdict}
           className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm"
         >
-          <h1 className="text-xl font-medium">{question.prompt}</h1>
-          <div className="grid gap-2">
-            {question.options.map((option, i) => (
-              <button
-                key={i}
-                onClick={() => choose(i)}
-                disabled={submitting}
-                className="rounded-xl border bg-background px-4 py-3 text-left transition-colors hover:bg-secondary disabled:opacity-50"
-              >
-                <span className="mr-2 text-muted-foreground">{i + 1}.</span>
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <QuestionBody
+            question={question}
+            value={freeText}
+            onChange={setFreeText}
+            disabled={submitting}
+            onChoose={choose}
+          />
         </QuestionCard3D>
 
         <p className="text-center text-xs text-muted-foreground">

@@ -7,8 +7,8 @@ export interface ServedQuestion {
   type: string;
   prompt: string;
   passage?: string;
-  /** Options without the `correct` flag — correctness never leaves the server. */
-  options: { label: string; accepts?: string[] }[];
+  /** Options without the `correct`/`accepts` flags — answers never leave the server. */
+  options: { label: string }[];
   difficulty: number;
   seconds?: number;
 }
@@ -57,7 +57,6 @@ export function serveQuestion(row: any, locale: "uz" | "en"): ServedQuestion {
     passage: locale === "uz" ? row.passageUz ?? undefined : row.passageEn ?? undefined,
     options: parsed.map((o) => ({
       label: labelFor(o, locale),
-      ...(o.accepts ? { accepts: o.accepts } : {}),
     })),
     difficulty: row.difficulty,
     seconds: row.seconds ?? undefined,
@@ -79,11 +78,21 @@ export function gradeAnswer(
 
   const isChoice = row.type === "MCQ_SINGLE" || row.type === "MCQ_MULTI";
   if (!isChoice) {
-    // Short text and numeric answers are matched against `accepts`.
-    const normalized = given.trim().toLowerCase();
+    // Web clients may still send an option index for free-text chips; resolve it.
+    let answerText = given.trim();
+    if (/^\d+$/.test(answerText)) {
+      const idx = Number(answerText);
+      if (Number.isInteger(idx) && idx >= 0 && idx < parsed.length) {
+        answerText = labelFor(parsed[idx], locale);
+      }
+    }
+    const normalized = answerText.trim().toLowerCase();
     const target = parsed[0];
     const accepted = (target?.accepts ?? []).map((a) => a.trim().toLowerCase());
-    const correct = accepted.includes(normalized) || normalized === given.trim();
+    const correct =
+      accepted.length > 0
+        ? accepted.includes(normalized)
+        : normalized === labelFor(target, locale).trim().toLowerCase();
     return {
       correct,
       expected: target ? labelFor(target, locale) : undefined,

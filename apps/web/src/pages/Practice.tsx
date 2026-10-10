@@ -5,6 +5,7 @@ import type {
   PracticeAnswerResponse,
   ServedQuestion,
 } from "../lib/types";
+import { QuestionBody } from "@/components/QuestionBody";
 
 /** Soft cap so a session cannot loop forever on a huge bank. */
 const MAX_DRILL = 12;
@@ -21,6 +22,7 @@ export default function Practice() {
   const [answered, setAnswered] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
+  const [freeText, setFreeText] = useState("");
   const [feedback, setFeedback] = useState<{
     explanation?: string;
     expected?: string;
@@ -40,6 +42,7 @@ export default function Practice() {
         `/api/content/practice/next${query}`
       );
       setQuestion(data.question);
+      setFreeText("");
     },
     [subject, skill]
   );
@@ -61,7 +64,7 @@ export default function Practice() {
     };
   }, [loadNext]);
 
-  async function choose(optionIndex: number) {
+  async function choose(given: string) {
     if (!question || submitting || answered >= MAX_DRILL) return;
 
     setSubmitting(true);
@@ -75,7 +78,7 @@ export default function Practice() {
           method: "POST",
           body: JSON.stringify({
             questionId: question.id,
-            given: String(optionIndex),
+            given,
             ms,
           }),
         }
@@ -205,20 +208,13 @@ export default function Practice() {
 
         {question ? (
           <section className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm">
-            <h2 className="text-xl font-medium">{question.prompt}</h2>
-            <div className="grid gap-2">
-              {question.options.map((option, i) => (
-                <button
-                  key={i}
-                  onClick={() => choose(i)}
-                  disabled={submitting || Boolean(verdict)}
-                  className="rounded-xl border bg-background px-4 py-3 text-left transition-colors hover:bg-secondary disabled:opacity-50"
-                >
-                  <span className="mr-2 text-muted-foreground">{i + 1}.</span>
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            <QuestionBody
+              question={question}
+              value={freeText}
+              onChange={setFreeText}
+              disabled={submitting || Boolean(verdict)}
+              onChoose={choose}
+            />
           </section>
         ) : null}
 
