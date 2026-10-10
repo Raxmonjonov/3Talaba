@@ -87,3 +87,13 @@ export interface ProgressResponse {
     sessions: number;
   };
 }
+
+export type AchievementTier = "bronze" | "silver" | "gold";
+
+export interface Achievement {
+  slug: string;
+  tier: AchievementTier;
+  title: string;
+  description: string;
+  earnedAt: string | null;
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import type { PlacementQuestion, PlacementResult } from "../lib/types";
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
+import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
 
 /** How long the verdict stays on the card before it flips to the next one. */
@@ -140,7 +141,8 @@ export default function Placement({
             : "Yuqori qatlam. Murakkab mavzularga o‘tamiz.";
 
     return (
-      <div className="min-h-screen flex items-center justify-center px-5 py-10">
+      <div className="relative min-h-screen flex items-center justify-center px-5 py-10">
+        <ConfettiBurst trigger={1} />
         <div className="w-full max-w-lg space-y-6">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-semibold">Darajangiz aniqlandi</h1>

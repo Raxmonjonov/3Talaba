@@ -3,8 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import type { ProgressResponse, Session, SettingsResponse, User } from "../lib/types";
 import { set3DEnabled } from "../lib/featureFlags";
+import { useAchievements } from "../lib/useAchievements";
 import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
 import { ProgressStairs3D } from "@/components/3d/elements/ProgressStairs3D";
+import { MedalsShelf } from "@/components/3d/elements/MedalsShelf";
+import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 
 const HeroScene = lazy(() => import("@/components/landing/HeroScene"));
 
@@ -68,6 +71,7 @@ export default function Dashboard({
   const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [error, setError] = useState("");
   const threeDEnabled = use3DEnabled();
+  const { items: achievements, fresh, celebration } = useAchievements();
 
   useEffect(() => {
     let cancelled = false;
@@ -197,6 +201,32 @@ export default function Dashboard({
             pog‘onalar yonib turadi, oldindagilar tinchoq kutmoqda.
           </p>
         </section>
+
+        {achievements.length > 0 ? (
+          <section className="relative space-y-3 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm">
+            <ConfettiBurst trigger={celebration} />
+            {fresh.length > 0 ? (
+              <p
+                role="status"
+                className="rounded-lg border border-[#ffd166]/40 bg-[#ffd166]/10 px-3 py-2 text-sm text-foreground"
+              >
+                Yangi yutuq: {fresh.map((item) => item.title).join(", ")}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-lg font-semibold">Yutuqlar</h3>
+              <span className="text-xs text-muted-foreground">
+                {achievements.filter((a) => a.earnedAt !== null).length} /{" "}
+                {achievements.length} ochilgan
+              </span>
+            </div>
+            <MedalsShelf items={achievements} />
+            <p className="text-xs text-muted-foreground">
+              Medallar daraja, vaqt va faollikka qarab ochiladi. Har biri
+              sizning mehnatingizning belgisi.
+            </p>
+          </section>
+        ) : null}
 
         <section className="grid gap-4 sm:grid-cols-3">
           <div className="subject-scene">

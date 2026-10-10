@@ -64,7 +64,7 @@ test.describe("onboarding flow", () => {
     // The staircase is always present: WebGL devices get the 3D one, every
     // other device gets the plain treads underneath the same copy.
     await expect(page.getByText("Tepada maqsadingiz")).toBeVisible();
-    await expect(page.getByText("Har bir")).toBeVisible();
+    await expect(page.getByText("Har bir pog‘ona — bir daraja")).toBeVisible();
 
     await page.getByText("3D effektlarni").click();
     await expect
