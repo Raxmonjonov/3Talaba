@@ -79,6 +79,7 @@ export interface PlacementStartResponse {
   question: ServedQuestion | null;
   answered: number;
   finished: boolean;
+  resumed?: boolean;
 }
 
 export interface PlacementAnswerResponse {

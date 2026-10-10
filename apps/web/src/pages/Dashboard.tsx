@@ -211,7 +211,9 @@ export default function Dashboard({
                 disabled={starting}
                 className="btn-primary"
               >
-                O‘tagan darsni davom ettirish
+                {openSession.title
+                  ? `Davom: ${openSession.title}`
+                  : "O‘tagan darsni davom ettirish"}
               </button>
             ) : null}
             <button

@@ -108,17 +108,31 @@ export async function enrollCourse(req: Request, res: Response) {
 
 // ── Adaptive placement (Rasch IRT) ──────────────────────────────────────────
 
-/** Starts (or restarts) an adaptive diagnostic and serves the first item. */
+/** Starts (or resumes) an adaptive diagnostic and serves the next item. */
 export async function startPlacement(req: Request, res: Response) {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
   const subject = (req.query.subject as string) || null;
+  const restart = req.query.restart === "1";
   const pool = await buildItemPool(subject);
   if (pool.length === 0) return res.status(503).json({ message: "Savol bazasi bo'sh" });
 
-  const state = initialState();
-  await savePlacementState(uid, state);
+  let state: PlacementState;
+  let resumed = false;
+  if (!restart) {
+    const existing = await loadPlacementState(uid);
+    if (existing && !existing.finished && existing.answered.length > 0) {
+      state = existing;
+      resumed = true;
+    } else {
+      state = initialState();
+      await savePlacementState(uid, state);
+    }
+  } else {
+    state = initialState();
+    await savePlacementState(uid, state);
+  }
 
   const item = selectNextItem(state, pool);
   if (!item) return res.status(503).json({ message: "Savol tanlab bo'lmadi" });
@@ -126,8 +140,9 @@ export async function startPlacement(req: Request, res: Response) {
   const row = await getQuestionRow(item.id);
   res.json({
     question: row ? serveQuestion(row, localeOf(req)) : null,
-    answered: 0,
+    answered: state.answered.length,
     finished: false,
+    resumed,
   });
 }
 

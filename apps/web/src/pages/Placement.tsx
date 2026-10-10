@@ -36,35 +36,48 @@ export default function Placement({
   const [error, setError] = useState("");
   const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
   const [earnedMedals, setEarnedMedals] = useState<Achievement[]>([]);
+  const [resumed, setResumed] = useState(false);
   const reducedMotion = useReducedMotion();
   const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
 
+  const load = useCallback(async (restart = false) => {
+    setLoading(true);
+    setError("");
+    try {
+      const query = restart ? "?restart=1" : "";
+      const data = await api<PlacementStartResponse>(
+        `/api/content/placement/start${query}`
+      );
+      setQuestion(data.question);
+      setAnswered(data.answered);
+      setResumed(Boolean(data.resumed));
+      setVerdict(null);
+      setSubmitting(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Savollar yuklanmadi");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
-
-    async function load() {
-      try {
-        const data = await api<PlacementStartResponse>(
-          "/api/content/placement/start"
-        );
-        if (cancelled) return;
-        setQuestion(data.question);
-        setAnswered(data.answered);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Savollar yuklanmadi");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
+    load().catch(() => {
+      if (!cancelled) setError("Savollar yuklanmadi");
+    });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [load]);
+
+  function restart() {
+    setResult(null);
+    setEarnedMedals([]);
+    load(true).catch(() => {
+      /* load() already sets the error */
+    });
+  }
 
   const finishWith = useCallback((data: PlacementAnswerResponse) => {
     const finished: AdaptiveResult = {
@@ -252,7 +265,14 @@ export default function Placement({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Savol {answered + 1}</span>
-            <span>Adaptiv daraja o‘lchovi</span>
+            <span className="flex items-center gap-2">
+              {resumed ? (
+                <span className="rounded-full bg-secondary px-2 py-0.5 font-medium">
+                  Davom ettirish
+                </span>
+              ) : null}
+              Adaptiv daraja o‘lchovi
+            </span>
           </div>
           <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
             <div
@@ -260,6 +280,14 @@ export default function Placement({
               style={{ width: `${progressPct}%` }}
             />
           </div>
+          {resumed ? (
+            <button
+              onClick={restart}
+              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Boshidan boshlash
+            </button>
+          ) : null}
         </div>
 
         <QuestionCard3D
