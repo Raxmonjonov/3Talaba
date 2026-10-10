@@ -77,7 +77,7 @@ export const ru: Dictionary = {
     placementTitle: "SAT · Математика",
     placementQuestion:
       "Если 3x − 7 = 14 и 2x + 5 = 17, чему равно x?",
-    placementProgress: "Вопрос 7 из 20",
+    placementProgress: "Вопрос 7 / 25",
     placementOptions: ["x = 4", "x = 6", "x = 9", "x = 11"],
     placementHint: "Прибавьте 7 к обеим частям первого уравнения, затем разделите на 3.",
     planLabel: "План на день",

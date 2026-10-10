@@ -76,7 +76,7 @@
     placementTitle: "SAT matematika",
     placementQuestion:
       "3x − 7 = 14. Agar 2x + 5 = 17 bo'lsa, x ning qiymatini toping.",
-    placementProgress: "7-savol / 20",
+    placementProgress: "Savol 7 / 25",
     placementOptions: ["x = 4", "x = 6", "x = 9", "x = 11"],
     placementHint: "Birinchi tenglamada 7 ni ikki tomonga qo'shing va 3 ga bo'ling.",
     planLabel: "Kunlik reja",

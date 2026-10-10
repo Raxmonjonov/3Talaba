@@ -23,7 +23,7 @@ test.describe("achievements", () => {
     await expect(page.getByRole("heading", { name: "Yutuqlar" })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("0 / 11 ochilgan")).toBeVisible();
+    await expect(page.getByText(/^0 \/ \d+ ochilgan$/)).toBeVisible();
     // Catalog titles from the API, rendered on the shelf.
     await expect(page.getByText("Birinchi qadam")).toBeVisible();
     await expect(page.getByText("Daraja aniqlandi")).toBeVisible();
@@ -80,7 +80,7 @@ test.describe("achievements", () => {
     });
     // placement_done is awarded server-side; first_steps may land after the
     // study session starts — either way the counter must move past zero.
-    await expect(page.getByText(/^[1-9]\d? \/ 11 ochilgan$/)).toBeVisible({
+    await expect(page.getByText(/^[1-9]\d? \/ \d+ ochilgan$/)).toBeVisible({
       timeout: 15_000,
     });
   });

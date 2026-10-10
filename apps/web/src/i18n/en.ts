@@ -77,7 +77,7 @@ export const en: Dictionary = {
     placementTitle: "SAT Mathematics",
     placementQuestion:
       "If 3x − 7 = 14 and 2x + 5 = 17, what is the value of x?",
-    placementProgress: "Question 7 of 20",
+    placementProgress: "Question 7 / 25",
     placementOptions: ["x = 4", "x = 6", "x = 9", "x = 11"],
     placementHint: "Add 7 to both sides of the first equation, then divide by 3.",
     planLabel: "Daily plan",

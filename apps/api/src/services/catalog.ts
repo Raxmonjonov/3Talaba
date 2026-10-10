@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma.js";
+import { evaluateLater } from "./achievements.js";
 
 export interface LessonRef {
   id: string;
@@ -281,6 +282,9 @@ export async function completeLesson(userId: string, slug: string) {
     where: { id: userId },
     select: { xp: true },
   });
+
+  // Lesson medals are stat-based; let the evaluator pick them up.
+  evaluateLater(userId);
 
   return {
     lessonSlug: slug,

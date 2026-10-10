@@ -9,6 +9,7 @@ export interface AchievementStats {
   totalCompleted: number;
   sessions: number;
   answers: number;
+  lessonsDone: number;
 }
 
 export interface AchievementDef {
@@ -192,6 +193,51 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     },
     check: (s) => s.answers >= 200 || s.totalCompleted >= 200,
   },
+  {
+    slug: "lessons_1",
+    tier: "bronze",
+    title: {
+      uz: "Birinchi dars",
+      en: "First lesson",
+      ru: "Первый урок",
+    },
+    description: {
+      uz: "Birinchi katalog darsini yakunladingiz.",
+      en: "You finished your first catalog lesson.",
+      ru: "Вы завершили свой первый урок.",
+    },
+    check: (s) => s.lessonsDone >= 1,
+  },
+  {
+    slug: "lessons_5",
+    tier: "silver",
+    title: {
+      uz: "Besh dars",
+      en: "Five lessons",
+      ru: "Пять уроков",
+    },
+    description: {
+      uz: "5 ta darsni yakunladingiz — sur’at bor.",
+      en: "You finished 5 lessons — keep the pace.",
+      ru: "Вы завершили 5 уроков — темп есть.",
+    },
+    check: (s) => s.lessonsDone >= 5,
+  },
+  {
+    slug: "lessons_10",
+    tier: "gold",
+    title: {
+      uz: "O‘n dars",
+      en: "Ten lessons",
+      ru: "Десять уроков",
+    },
+    description: {
+      uz: "10 ta darsni yakunladingiz — katta yo‘l bosildi.",
+      en: "You finished 10 lessons — a real stretch.",
+      ru: "Вы завершили 10 уроков — уже немало.",
+    },
+    check: (s) => s.lessonsDone >= 10,
+  },
 ];
 
 const CATALOG_BY_SLUG = new Map(ACHIEVEMENTS.map((def) => [def.slug, def]));
@@ -208,19 +254,21 @@ export interface AchievementView {
 
 /** All-time counters that drive the stat-based medals. */
 export async function achievementStats(userId: string): Promise<AchievementStats> {
-  const [user, progressAgg, activeDays, sessions, answers] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { currentLevel: true },
-    }),
-    prisma.progress.aggregate({
-      where: { userId },
-      _sum: { minutes: true, completed: true },
-    }),
-    prisma.progress.count({ where: { userId, minutes: { gt: 0 } } }),
-    prisma.session.count({ where: { userId } }),
-    prisma.answer.count({ where: { userId } }),
-  ]);
+  const [user, progressAgg, activeDays, sessions, answers, lessonsDone] =
+    await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { currentLevel: true },
+      }),
+      prisma.progress.aggregate({
+        where: { userId },
+        _sum: { minutes: true, completed: true },
+      }),
+      prisma.progress.count({ where: { userId, minutes: { gt: 0 } } }),
+      prisma.session.count({ where: { userId } }),
+      prisma.answer.count({ where: { userId } }),
+      prisma.lessonCompletion.count({ where: { userId } }),
+    ]);
 
   return {
     currentLevel: user?.currentLevel ?? 0,
@@ -229,6 +277,7 @@ export async function achievementStats(userId: string): Promise<AchievementStats
     activeDays,
     sessions,
     answers,
+    lessonsDone,
   };
 }
 

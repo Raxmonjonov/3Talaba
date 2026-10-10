@@ -11,6 +11,7 @@ const base: AchievementStats = {
   totalCompleted: 0,
   sessions: 0,
   answers: 0,
+  lessonsDone: 0,
 };
 
 const def = (slug: string) => {
@@ -82,6 +83,14 @@ describe("stat thresholds", () => {
     expect(def("questions_50").check({ ...base, totalCompleted: 50 })).toBe(true);
     expect(def("questions_200").check({ ...base, answers: 200 })).toBe(true);
     expect(def("questions_200").check({ ...base, totalCompleted: 200 })).toBe(true);
+  });
+
+  it("lesson medals unlock from LessonCompletion counts", () => {
+    expect(def("lessons_1").check({ ...base, lessonsDone: 1 })).toBe(true);
+    expect(def("lessons_1").check({ ...base, lessonsDone: 0 })).toBe(false);
+    expect(def("lessons_5").check({ ...base, lessonsDone: 4 })).toBe(false);
+    expect(def("lessons_5").check({ ...base, lessonsDone: 5 })).toBe(true);
+    expect(def("lessons_10").check({ ...base, lessonsDone: 10 })).toBe(true);
   });
 
   it("empty stats earn nothing except event-only placeholders stay locked", () => {
