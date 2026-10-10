@@ -34,7 +34,7 @@ test.describe("achievements", () => {
     await registerFreshUser(page);
 
     await page.goto("/placement");
-    await expect(page.getByText("Adaptiv daraja o‘lchovi")).toBeVisible({
+    await expect(page.getByRole("button", { name: "Barchasi" })).toBeVisible({
       timeout: 15_000,
     });
 

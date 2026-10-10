@@ -122,15 +122,22 @@ export async function startPlacement(req: Request, res: Response) {
   let resumed = false;
   if (!restart) {
     const existing = await loadPlacementState(uid);
-    if (existing && !existing.finished && existing.answered.length > 0) {
+    // Resume only when the unfinished session matches the requested subject,
+    // otherwise a mixed-pool diagnostic would bleed into a subject drill.
+    if (
+      existing &&
+      !existing.finished &&
+      existing.answered.length > 0 &&
+      (existing.subject ?? null) === subject
+    ) {
       state = existing;
       resumed = true;
     } else {
-      state = initialState();
+      state = initialState(subject);
       await savePlacementState(uid, state);
     }
   } else {
-    state = initialState();
+    state = initialState(subject);
     await savePlacementState(uid, state);
   }
 
@@ -143,6 +150,7 @@ export async function startPlacement(req: Request, res: Response) {
     answered: state.answered.length,
     finished: false,
     resumed,
+    subject: state.subject ?? null,
   });
 }
 
@@ -168,7 +176,8 @@ export async function answerPlacement(req: Request, res: Response) {
     if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
     const { correct, explanation } = gradeAnswer(row, given, localeOf(req));
-    const pool = await buildItemPool((req.query.subject as string) || null);
+    // Subject lives on the saved session — the web client never re-sends it.
+    const pool = await buildItemPool(state.subject ?? null);
     const item = pool.find((p) => p.id === questionId);
     if (!item) return res.status(404).json({ message: "Savol topilmadi" });
 

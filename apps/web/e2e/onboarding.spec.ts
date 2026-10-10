@@ -39,7 +39,7 @@ test.describe("onboarding flow", () => {
     await registerFreshUser(page);
 
     await page.goto("/placement");
-    await expect(page.getByText("Adaptiv daraja o‘lchovi")).toBeVisible({
+    await expect(page.getByRole("button", { name: "Barchasi" })).toBeVisible({
       timeout: 15_000,
     });
 
@@ -63,6 +63,18 @@ test.describe("onboarding flow", () => {
     await page.goto("/dashboard");
     await expect(page.getByText("Xush kelibsiz, E2E")).toBeVisible();
     await expect(page.getByText(/Daraja .+\(\d{1,2}\)/)).toBeVisible();
+  });
+
+  test("subject placement deep-link starts a filtered diagnostic", async ({ page }) => {
+    await registerFreshUser(page);
+
+    await page.goto("/placement?subject=MATHEMATICS");
+    await expect(page.getByRole("button", { name: "Matematika" }).first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.locator(".auth-card button").first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("the dashboard shows the progress stairs and can opt out of 3D", async ({

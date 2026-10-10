@@ -40,6 +40,8 @@ export type PlacementState = {
   answered: Item[];
   history: AnswerRecord[];
   finished: boolean;
+  /** Subject this diagnostic was started with; null = mixed pool. */
+  subject?: string | null;
 };
 
 export type PlacementConfig = {
@@ -61,8 +63,8 @@ export const DEFAULT_CONFIG: PlacementConfig = {
 export const THETA_MIN = -3;
 export const THETA_MAX = 3;
 
-export function initialState(): PlacementState {
-  return { theta: 0, se: 1, answered: [], history: [], finished: false };
+export function initialState(subject: string | null = null): PlacementState {
+  return { theta: 0, se: 1, answered: [], history: [], finished: false, subject };
 }
 
 /** Rasch ehtimollik modeli. */

@@ -80,6 +80,7 @@ export interface PlacementStartResponse {
   answered: number;
   finished: boolean;
   resumed?: boolean;
+  subject?: string | null;
 }
 
 export interface PlacementAnswerResponse {

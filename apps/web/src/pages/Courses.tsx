@@ -2,15 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import type { CourseListItem, EnrollResponse } from "../lib/types";
-
-const SUBJECT_LABELS: Record<string, string> = {
-  math: "Matematika",
-  english: "Ingliz tili",
-  physics: "Fizika",
-  chemistry: "Kimyo",
-  biology: "Biologiya",
-  literature: "Adabiyot",
-};
+import { subjectLabel } from "@/lib/subjects";
 
 export default function Courses() {
   const navigate = useNavigate();
@@ -102,7 +94,7 @@ export default function Courses() {
                   : "bg-background hover:bg-secondary"
               }`}
             >
-              {SUBJECT_LABELS[s] ?? s}
+              {subjectLabel(s)}
             </button>
           ))}
         </div>
@@ -127,7 +119,7 @@ export default function Courses() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="text-xs text-muted-foreground">
-                      {SUBJECT_LABELS[course.subject] ?? course.subject}
+                      {subjectLabel(course.subject)}
                     </p>
                     <button
                       onClick={() => navigate(`/courses/${course.slug}`)}

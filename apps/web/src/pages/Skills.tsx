@@ -2,15 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import type { SkillMapItem } from "../lib/types";
-
-const SUBJECT_LABELS: Record<string, string> = {
-  math: "Matematika",
-  english: "Ingliz tili",
-  physics: "Fizika",
-  chemistry: "Kimyo",
-  biology: "Biologiya",
-  literature: "Adabiyot",
-};
+import { subjectLabel } from "@/lib/subjects";
 
 function masteryPercent(mastery: number | null): number | null {
   if (mastery === null) return null;
@@ -140,14 +132,24 @@ export default function Skills() {
             <section key={subject} className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-base font-semibold">
-                  {SUBJECT_LABELS[subject] ?? subject}
+                  {subjectLabel(subject)}
                 </h2>
-                <button
-                  onClick={() => navigate(`/practice?subject=${encodeURIComponent(subject)}`)}
-                  className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                >
-                  {SUBJECT_LABELS[subject] ?? subject} mashqi
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() =>
+                      navigate(`/placement?subject=${encodeURIComponent(subject)}`)
+                    }
+                    className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                  >
+                    Daraja testi
+                  </button>
+                  <button
+                    onClick={() => navigate(`/practice?subject=${encodeURIComponent(subject)}`)}
+                    className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                  >
+                    {subjectLabel(subject)} mashqi
+                  </button>
+                </div>
               </div>
               <ul className="space-y-2">
                 {list.map((skill) => {

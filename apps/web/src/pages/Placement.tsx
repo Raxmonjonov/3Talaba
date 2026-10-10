@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type {
   Achievement,
@@ -11,11 +11,14 @@ import type {
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
+import { PLACEMENT_SUBJECTS, subjectLabel } from "@/lib/subjects";
 
 /** How long the verdict stays on the card before it flips to the next one. */
 const VERDICT_HOLD_MS = 400;
 /** Hard ceiling on the adaptive test (server stops earlier when SE is low). */
 const MAX_ITEMS = 25;
+
+const SUBJECT_CHIPS = PLACEMENT_SUBJECTS;
 
 type AdaptiveResult = {
   currentLevel: number;
@@ -37,33 +40,48 @@ export default function Placement({
   const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
   const [earnedMedals, setEarnedMedals] = useState<Achievement[]>([]);
   const [resumed, setResumed] = useState(false);
+  const [subject, setSubject] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get("subject")
+  );
   const reducedMotion = useReducedMotion();
   const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bootRef = useRef(false);
   const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
 
-  const load = useCallback(async (restart = false) => {
-    setLoading(true);
-    setError("");
-    try {
-      const query = restart ? "?restart=1" : "";
-      const data = await api<PlacementStartResponse>(
-        `/api/content/placement/start${query}`
-      );
-      setQuestion(data.question);
-      setAnswered(data.answered);
-      setResumed(Boolean(data.resumed));
-      setVerdict(null);
-      setSubmitting(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Savollar yuklanmadi");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (restart = false, nextSubject?: string | null) => {
+      const s = nextSubject === undefined ? subject : nextSubject;
+      setLoading(true);
+      setError("");
+      try {
+        const params = new URLSearchParams();
+        if (restart) params.set("restart", "1");
+        if (s) params.set("subject", s);
+        const qs = params.toString();
+        const data = await api<PlacementStartResponse>(
+          `/api/content/placement/start${qs ? `?${qs}` : ""}`
+        );
+        setQuestion(data.question);
+        setAnswered(data.answered);
+        setResumed(Boolean(data.resumed));
+        setVerdict(null);
+        setSubmitting(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Savollar yuklanmadi");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [subject]
+  );
 
   useEffect(() => {
+    if (bootRef.current) return;
+    bootRef.current = true;
     let cancelled = false;
-    load().catch(() => {
+
+    load(false).catch(() => {
       if (!cancelled) setError("Savollar yuklanmadi");
     });
     return () => {
@@ -75,6 +93,18 @@ export default function Placement({
     setResult(null);
     setEarnedMedals([]);
     load(true).catch(() => {
+      /* load() already sets the error */
+    });
+  }
+
+  function switchSubject(next: string | null) {
+    setResult(null);
+    setEarnedMedals([]);
+    setSubject(next);
+    const params = new URLSearchParams();
+    if (next) params.set("subject", next);
+    setSearchParams(params, { replace: true });
+    load(true, next).catch(() => {
       /* load() already sets the error */
     });
   }
@@ -241,6 +271,22 @@ export default function Placement({
           >
             Darsni boshlash
           </button>
+          <div className="space-y-2">
+            <p className="text-center text-xs text-muted-foreground">
+              Boshqa fandan qayta o‘lchash
+            </p>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {SUBJECT_CHIPS.map((chip) => (
+                <button
+                  key={chip.value ?? "all-result"}
+                  onClick={() => switchSubject(chip.value)}
+                  className="rounded-full border bg-background px-2.5 py-1 text-xs hover:bg-secondary"
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -271,7 +317,7 @@ export default function Placement({
                   Davom ettirish
                 </span>
               ) : null}
-              Adaptiv daraja o‘lchovi
+              {subjectLabel(subject)}
             </span>
           </div>
           <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
@@ -279,6 +325,25 @@ export default function Placement({
               className="h-full bg-primary transition-all"
               style={{ width: `${progressPct}%` }}
             />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {SUBJECT_CHIPS.map((chip) => {
+              const active = chip.value === subject;
+              return (
+                <button
+                  key={chip.value ?? "all"}
+                  onClick={() => switchSubject(chip.value)}
+                  disabled={submitting || chip.value === subject}
+                  className={`rounded-full border px-2.5 py-1 text-xs transition-colors disabled:opacity-70 ${
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "bg-background hover:bg-secondary"
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
           </div>
           {resumed ? (
             <button
