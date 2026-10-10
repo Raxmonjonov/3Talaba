@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
-import type { CourseDetail } from "../lib/types";
+import type { CourseDetail, EnrollResponse } from "../lib/types";
+import { subjectLabel } from "@/lib/subjects";
 
 export default function CourseDetailPage() {
   const { slug = "" } = useParams();
@@ -9,6 +10,7 @@ export default function CourseDetailPage() {
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [enrolling, setEnrolling] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -31,6 +33,30 @@ export default function CourseDetailPage() {
       cancelled = true;
     };
   }, [load]);
+
+  async function enroll() {
+    setEnrolling(true);
+    setError("");
+    try {
+      await api<EnrollResponse>(`/api/content/courses/${slug}/enroll`, {
+        method: "POST",
+      });
+      setCourse((prev) => (prev ? { ...prev, enrolled: true } : prev));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Yozilmadi");
+    } finally {
+      setEnrolling(false);
+    }
+  }
+
+  function openNext() {
+    if (course?.nextLessonSlug) {
+      navigate(`/lessons/${course.nextLessonSlug}`);
+      return;
+    }
+    const first = course?.modules.flatMap((m) => m.lessons)[0];
+    if (first) navigate(`/lessons/${first.slug}`);
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -66,7 +92,37 @@ export default function CourseDetailPage() {
           <div className="h-24 animate-pulse rounded-xl bg-secondary" aria-hidden="true" />
         ) : course ? (
           <>
-            <p className="text-sm text-muted-foreground">{course.description}</p>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">{course.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {subjectLabel(course.subject)}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {course.enrolled ? (
+                  <>
+                    <button onClick={openNext} className="btn-primary">
+                      {course.nextLessonTitle
+                        ? `Davom: ${course.nextLessonTitle}`
+                        : "Birinchi darsni ochish"}
+                    </button>
+                    <span
+                      role="status"
+                      className="inline-flex items-center rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
+                    >
+                      Kursga yozilgansiz
+                    </span>
+                  </>
+                ) : (
+                  <button
+                    onClick={enroll}
+                    disabled={enrolling}
+                    className="btn-primary"
+                  >
+                    {enrolling ? "Yozilmoqda…" : "Kursga yozilish"}
+                  </button>
+                )}
+              </div>
+            </div>
             {typeof course.progressPct === "number" ? (
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">

@@ -24,12 +24,17 @@ export default function LessonPage() {
     xpAwarded: number;
     xpTotal: number;
   } | null>(null);
+  const [nextSlug, setNextSlug] = useState<string | null>(null);
+  const [nextTitle, setNextTitle] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      setLesson(await api<LessonDetail>(`/api/content/lessons/${slug}`));
+      const data = await api<LessonDetail>(`/api/content/lessons/${slug}`);
+      setLesson(data);
+      setNextSlug(data.nextLessonSlug ?? null);
+      setNextTitle(data.nextLessonTitle ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Dars topilmadi");
     } finally {
@@ -77,6 +82,15 @@ export default function LessonPage() {
       setLesson((prev) =>
         prev ? { ...prev, completed: true, completedAt: new Date().toISOString() } : prev
       );
+      try {
+        const refreshed = await api<LessonDetail>(
+          `/api/content/lessons/${lesson.slug}`
+        );
+        setNextSlug(refreshed.nextLessonSlug ?? null);
+        setNextTitle(refreshed.nextLessonTitle ?? null);
+      } catch {
+        /* next-lesson CTA is optional after completion */
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Darsni yakunlab bo'lmadi");
     } finally {
@@ -158,6 +172,16 @@ export default function LessonPage() {
                     ? "Bu dars oldin yakunlangan edi."
                     : `+${completeInfo.xpAwarded} XP · jami ${completeInfo.xpTotal} XP`}
                 </p>
+              ) : null}
+              {lesson.completed && nextSlug && nextTitle ? (
+                <div className="pt-1">
+                  <button
+                    onClick={() => navigate(`/lessons/${nextSlug}`)}
+                    className="btn-secondary"
+                  >
+                    Keyingi dars: {nextTitle}
+                  </button>
+                </div>
               ) : null}
             </section>
 

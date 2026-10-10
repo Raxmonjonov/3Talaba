@@ -11,7 +11,7 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [enrolling, setEnrolling] = useState<string | null>(null);
-  const [enrolled, setEnrolled] = useState<Record<string, boolean>>({});
+  const [enrolledOverride, setEnrolledOverride] = useState<Record<string, boolean>>({});
 
   const load = useCallback(async (nextSubject: string | null) => {
     setLoading(true);
@@ -43,7 +43,7 @@ export default function Courses() {
       await api<EnrollResponse>(`/api/content/courses/${slug}/enroll`, {
         method: "POST",
       });
-      setEnrolled((m) => ({ ...m, [slug]: true }));
+      setEnrolledOverride((m) => ({ ...m, [slug]: true }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Yozilmadi");
     } finally {
@@ -134,10 +134,14 @@ export default function Courses() {
                   </div>
                   <button
                     onClick={() => enroll(course.slug)}
-                    disabled={enrolling === course.slug || enrolled[course.slug]}
-                    className={enrolled[course.slug] ? "btn-secondary text-sm" : "btn-primary text-sm"}
+                    disabled={enrolling === course.slug || course.enrolled || enrolledOverride[course.slug]}
+                    className={
+                      course.enrolled || enrolledOverride[course.slug]
+                        ? "btn-secondary text-sm"
+                        : "btn-primary text-sm"
+                    }
                   >
-                    {enrolled[course.slug]
+                    {course.enrolled || enrolledOverride[course.slug]
                       ? "Yozildingiz"
                       : enrolling === course.slug
                         ? "Yozilmoqda…"

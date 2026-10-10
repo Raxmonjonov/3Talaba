@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import type { ProgressResponse, ReviewsResponse, Session, SettingsResponse, User } from "../lib/types";
+import type { EnrolledCourse, ProgressResponse, ReviewsResponse, Session, SettingsResponse, User } from "../lib/types";
 import { set3DEnabled } from "../lib/featureFlags";
 import { useAchievements } from "../lib/useAchievements";
 import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
@@ -70,6 +70,7 @@ export default function Dashboard({
   const [statsError, setStatsError] = useState("");
   const [openSession, setOpenSession] = useState<Session | null>(null);
   const [reviews, setReviews] = useState<ReviewsResponse | null>(null);
+  const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [error, setError] = useState("");
   const threeDEnabled = use3DEnabled();
   const {
@@ -109,6 +110,13 @@ export default function Dashboard({
       })
       .catch(() => {
         /* review counts are optional */
+      });
+    api<EnrolledCourse[]>("/api/content/enrollments")
+      .then((list) => {
+        if (!cancelled) setEnrollments(list);
+      })
+      .catch(() => {
+        /* course continue card is optional */
       });
     return () => {
       cancelled = true;
@@ -237,6 +245,55 @@ export default function Dashboard({
             </button>
           </div>
         </section>
+
+        {enrollments.length > 0 ? (
+          <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-lg font-semibold">Kurslaringiz</h3>
+              <span className="text-xs text-muted-foreground">
+                {enrollments.length} ta kurs
+              </span>
+            </div>
+            <ul className="space-y-3">
+              {enrollments.map((item) => (
+                <li
+                  key={item.courseSlug}
+                  className="rounded-xl border bg-background/50 p-4 shadow-sm"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <button
+                        onClick={() => navigate(`/courses/${item.courseSlug}`)}
+                        className="text-left font-medium underline underline-offset-4 hover:text-primary"
+                      >
+                        {item.title}
+                      </button>
+                      <p className="text-xs text-muted-foreground">
+                        {item.completedCount}/{item.lessonCount} dars ·{" "}
+                        {item.progressPct}%
+                      </p>
+                      {item.nextLessonTitle ? (
+                        <p className="text-xs text-muted-foreground">
+                          Keyingi: {item.nextLessonTitle}
+                        </p>
+                      ) : null}
+                    </div>
+                    {item.nextLessonSlug ? (
+                      <button
+                        onClick={() => navigate(`/lessons/${item.nextLessonSlug}`)}
+                        className="btn-secondary text-sm"
+                      >
+                        Davom ettirish
+                      </button>
+                    ) : (
+                      <span className="text-sm text-primary">Yakunlangan</span>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-baseline justify-between gap-2">

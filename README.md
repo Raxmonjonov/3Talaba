@@ -139,6 +139,7 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | GET | `/api/content/courses` | Kurslar ro‘yxati (`?subject=` bilan filtr) |
 | GET | `/api/content/courses/:slug` | Kurs: modul va darslar daraxti |
 | POST | `/api/content/courses/:slug/enroll` | Kursga yozilish |
+| GET | `/api/content/enrollments` | Foydalanuvchi kurslari + keyingi dars |
 | GET | `/api/content/lessons/:slug` | Dars matni + o‘quv bloklari |
 | POST | `/api/content/lessons/:slug/complete` | Darsni yakunlash, XP berish |
 | GET | `/api/content/skills` | Mavzular daraxti + ustunlik |

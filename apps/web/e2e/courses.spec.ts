@@ -74,5 +74,37 @@ test.describe("courses", () => {
     await page.getByRole("button", { name: "Kursga qaytish" }).click();
     await expect(page).toHaveURL(/\/courses\/[^/]+$/);
     await expect(page.getByRole("progressbar")).toBeVisible({ timeout: 15_000 });
+
+    // Enrolled course detail offers a continue path to the next lesson.
+    await expect(
+      page.getByRole("button", { name: /Davom:|Birinchi darsni ochish/ })
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Kursga yozilgansiz")).toBeVisible();
+
+    // Dashboard surfaces the enrolled course with a continue CTA.
+    await page.goto("/dashboard");
+    await expect(page.getByRole("heading", { name: "Kurslaringiz" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.getByRole("button", { name: "Davom ettirish" }).first().click();
+    await expect(page).toHaveURL(/\/lessons\/[^/]+$/, { timeout: 15_000 });
+  });
+
+  test("course detail enroll works without visiting the catalog button", async ({
+    page,
+  }) => {
+    await registerFreshUser(page);
+
+    await page.goto("/courses");
+    await page.locator("button.text-lg.underline").first().click();
+    await expect(page).toHaveURL(/\/courses\/[^/]+$/);
+
+    await page.getByRole("button", { name: "Kursga yozilish" }).click();
+    await expect(page.getByText("Kursga yozilgansiz")).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByRole("button", { name: /Davom:|Birinchi darsni ochish/ })
+    ).toBeVisible();
   });
 });

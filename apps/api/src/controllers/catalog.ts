@@ -7,6 +7,7 @@ import {
   skillMap,
   enroll,
   completeLesson,
+  listEnrollments,
 } from "../services/catalog.js";
 import { reviewSummary, listDueReviews, recordAnswer, nextDueReviewId } from "../services/reviews.js";
 import { buildItemPool, nextPracticeQuestion, serveQuestion, gradeAnswer, getQuestionRow } from "../services/questions.js";
@@ -56,7 +57,15 @@ async function savePlacementState(uid: string, state: PlacementState): Promise<v
 
 export async function getCourses(req: Request, res: Response) {
   const subject = (req.query.subject as string) || null;
-  res.json(await listCourses(subject, localeOf(req)));
+  res.json(
+    await listCourses(subject, localeOf(req), (req as any).user?.userId)
+  );
+}
+
+export async function getMyEnrollments(req: Request, res: Response) {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+  res.json(await listEnrollments(uid, localeOf(req)));
 }
 
 export async function getCourseDetail(req: Request, res: Response) {

@@ -7,6 +7,7 @@ import {
   completeLessonAction,
   getSkills,
   enrollCourse,
+  getMyEnrollments,
   startPlacement,
   answerPlacement,
   getPracticeQuestion,
@@ -22,6 +23,7 @@ const router = Router();
 router.get("/courses", requireAuth, getCourses);
 router.get("/courses/:slug", requireAuth, getCourseDetail);
 router.post("/courses/:slug/enroll", requireAuth, enrollCourse);
+router.get("/enrollments", requireAuth, getMyEnrollments);
 router.get("/lessons/:slug", requireAuth, getLessonDetail);
 router.post("/lessons/:slug/complete", requireAuth, completeLessonAction);
 router.get("/skills", requireAuth, getSkills);

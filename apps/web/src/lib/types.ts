@@ -118,6 +118,7 @@ export interface CourseListItem {
   description: string;
   moduleCount: number;
   lessonCount: number;
+  enrolled?: boolean;
 }
 
 export interface LessonRef {
@@ -150,6 +151,9 @@ export interface CourseModule {
 export interface CourseDetail extends CourseListItem {
   completedCount?: number;
   progressPct?: number;
+  enrolled?: boolean;
+  nextLessonSlug?: string | null;
+  nextLessonTitle?: string | null;
   modules: CourseModule[];
 }
 
@@ -164,7 +168,19 @@ export interface LessonBlock {
 export interface LessonDetail extends LessonRef {
   completed?: boolean;
   completedAt?: string | null;
+  nextLessonSlug?: string | null;
+  nextLessonTitle?: string | null;
   blocks: LessonBlock[];
+}
+
+export interface EnrolledCourse {
+  courseSlug: string;
+  title: string;
+  progressPct: number;
+  completedCount: number;
+  lessonCount: number;
+  nextLessonSlug: string | null;
+  nextLessonTitle: string | null;
 }
 
 export interface CompleteLessonResponse {

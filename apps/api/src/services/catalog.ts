@@ -31,7 +31,11 @@ function pick(locale: "uz" | "en", uz: string, en: string): string {
 }
 
 /** Course catalog with module/lesson counts, filtered by subject. */
-export async function listCourses(subject: string | null, locale: "uz" | "en") {
+export async function listCourses(
+  subject: string | null,
+  locale: "uz" | "en",
+  userId?: string
+) {
   const courses = await prisma.course.findMany({
     where: subject ? { subject } : undefined,
     orderBy: { titleUz: "asc" },
@@ -44,6 +48,17 @@ export async function listCourses(subject: string | null, locale: "uz" | "en") {
     },
   });
 
+  const enrolled = userId
+    ? new Set(
+        (
+          await prisma.enrollment.findMany({
+            where: { userId },
+            select: { courseId: true },
+          })
+        ).map((e) => e.courseId)
+      )
+    : new Set<string>();
+
   return courses.map((c) => ({
     slug: c.slug,
     subject: c.subject,
@@ -51,6 +66,7 @@ export async function listCourses(subject: string | null, locale: "uz" | "en") {
     description: pick(locale, c.descriptionUz, c.descriptionEn),
     moduleCount: c.modules.length,
     lessonCount: c.modules.reduce((sum, m) => sum + m._count.lessons, 0),
+    enrolled: enrolled.has(c.id),
   }));
 }
 
@@ -96,6 +112,31 @@ export async function getCourse(
     0
   );
 
+  const modules = course.modules.map((m) => ({
+    slug: m.slug,
+    title: pick(locale, m.titleUz, m.titleEn),
+    description: pick(locale, m.descriptionUz, m.descriptionEn),
+    levelRange: m.levelRange,
+    lessons: m.lessons.map((l) => ({
+      ...toLessonRef(l, course.slug, m.slug, locale),
+      completed: completed.has(l.slug),
+    })),
+  }));
+
+  const nextLesson =
+    modules.flatMap((m) => m.lessons).find((l) => !l.completed) ?? null;
+
+  const isEnrolled = userId
+    ? Boolean(
+        await prisma.enrollment.findUnique({
+          where: {
+            userId_courseId: { userId, courseId: course.id },
+          },
+          select: { id: true },
+        })
+      )
+    : false;
+
   return {
     slug: course.slug,
     subject: course.subject,
@@ -106,16 +147,10 @@ export async function getCourse(
     completedCount: completed.size,
     progressPct:
       totalLessons > 0 ? Math.round((completed.size / totalLessons) * 100) : 0,
-    modules: course.modules.map((m) => ({
-      slug: m.slug,
-      title: pick(locale, m.titleUz, m.titleEn),
-      description: pick(locale, m.descriptionUz, m.descriptionEn),
-      levelRange: m.levelRange,
-      lessons: m.lessons.map((l) => ({
-        ...toLessonRef(l, course.slug, m.slug, locale),
-        completed: completed.has(l.slug),
-      })),
-    })),
+    enrolled: isEnrolled,
+    nextLessonSlug: nextLesson?.slug ?? null,
+    nextLessonTitle: nextLesson?.title ?? null,
+    modules,
   };
 }
 
@@ -181,6 +216,25 @@ export async function getLesson(
   const completion =
     userId && Array.isArray(lesson.completions) ? lesson.completions[0] : null;
 
+  const course = lesson.module.course;
+  const siblings = await prisma.lesson.findMany({
+    where: { module: { courseId: course.id } },
+    orderBy: [{ module: { order: "asc" } }, { order: "asc" }],
+    select: {
+      slug: true,
+      titleUz: true,
+      titleEn: true,
+      completions: userId
+        ? { where: { userId }, select: { lessonId: true } }
+        : false,
+    },
+  });
+
+  const firstIncomplete = siblings.find(
+    (s) =>
+      !userId || !Array.isArray(s.completions) || s.completions.length === 0
+  );
+
   return {
     ...toLessonRef(
       {
@@ -197,12 +251,16 @@ export async function getLesson(
         storyTitleUz: lesson.storyTitleUz,
         _count: { blocks: lesson.blocks.length },
       },
-      lesson.module.course.slug,
+      course.slug,
       lesson.module.slug,
       locale
     ),
     completed: Boolean(completion),
     completedAt: completion?.completedAt?.toISOString() ?? null,
+    nextLessonSlug: firstIncomplete?.slug ?? null,
+    nextLessonTitle: firstIncomplete
+      ? pick(locale, firstIncomplete.titleUz, firstIncomplete.titleEn)
+      : null,
     blocks: lesson.blocks.map((b) => ({
       kind: b.kind,
       title: pick(locale, b.titleUz, b.titleEn),
@@ -211,6 +269,57 @@ export async function getLesson(
       skills: parseJsonArray(b.skills),
     })),
   };
+}
+
+/** Enrolled courses with progress and the next incomplete lesson. */
+export async function listEnrollments(userId: string, locale: "uz" | "en") {
+  const rows = await prisma.enrollment.findMany({
+    where: { userId },
+    orderBy: { enrolledAt: "desc" },
+    include: {
+      course: {
+        include: {
+          modules: {
+            orderBy: { order: "asc" },
+            include: {
+              lessons: {
+                orderBy: { order: "asc" },
+                select: {
+                  id: true,
+                  slug: true,
+                  titleUz: true,
+                  titleEn: true,
+                  completions: { where: { userId }, select: { lessonId: true } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return rows.map((row) => {
+    const lessons = row.course.modules.flatMap((m) => m.lessons);
+    const done = lessons.filter(
+      (l) => Array.isArray(l.completions) && l.completions.length > 0
+    ).length;
+    const next = lessons.find(
+      (l) => !Array.isArray(l.completions) || l.completions.length === 0
+    );
+    return {
+      courseSlug: row.course.slug,
+      title: pick(locale, row.course.titleUz, row.course.titleEn),
+      progressPct:
+        lessons.length > 0 ? Math.round((done / lessons.length) * 100) : 0,
+      completedCount: done,
+      lessonCount: lessons.length,
+      nextLessonSlug: next?.slug ?? null,
+      nextLessonTitle: next
+        ? pick(locale, next.titleUz, next.titleEn)
+        : null,
+    };
+  });
 }
 
 /**
