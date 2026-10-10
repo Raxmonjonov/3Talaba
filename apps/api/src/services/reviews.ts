@@ -121,6 +121,24 @@ export async function listDueReviews(userId: string, limit = 20) {
   }));
 }
 
+/** Oldest due card id that has not already been answered this drill. */
+export async function nextDueReviewId(
+  userId: string,
+  exclude: string[] = []
+): Promise<string | null> {
+  const cards = await prisma.reviewCard.findMany({
+    where: {
+      userId,
+      due: { lte: new Date() },
+      ...(exclude.length ? { questionId: { notIn: exclude } } : {}),
+    },
+    orderBy: { due: "asc" },
+    take: 1,
+    select: { questionId: true },
+  });
+  return cards[0]?.questionId ?? null;
+}
+
 export interface ReviewSummary {
   dueNow: number;
   totalCards: number;

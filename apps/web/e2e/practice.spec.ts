@@ -40,4 +40,14 @@ test.describe("practice", () => {
     await page.getByRole("button", { name: "Chiqish" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
   });
+
+  test("review mode ends cleanly when the queue is empty", async ({ page }) => {
+    await registerFreshUser(page);
+
+    await page.goto("/practice?review=1");
+    await expect(
+      page.getByRole("heading", { name: "Takrorlash tugadi" })
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Dashboard" })).toBeVisible();
+  });
 });

@@ -256,11 +256,25 @@ export default function Dashboard({
               : ""}
           </p>
           <div className="flex flex-wrap gap-3 pt-1">
-            <button onClick={() => navigate("/practice")} className="btn-secondary">
+            <button
+              onClick={() =>
+                navigate(
+                  reviews && reviews.summary.dueNow > 0
+                    ? "/practice?review=1"
+                    : "/practice"
+                )
+              }
+              className="btn-secondary"
+            >
               {reviews && reviews.summary.dueNow > 0
-                ? "Navbatdagi savollarni mashq qilish"
+                ? `Takrorlash (${reviews.summary.dueNow})`
                 : "Mashqni boshlash"}
             </button>
+            {reviews && reviews.summary.dueNow > 0 ? (
+              <button onClick={() => navigate("/practice")} className="btn-secondary">
+                Yangi mashq
+              </button>
+            ) : null}
           </div>
           {reviews && reviews.summary.weakSkills.length > 0 ? (
             <p className="text-xs text-muted-foreground">

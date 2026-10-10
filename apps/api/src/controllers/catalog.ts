@@ -8,7 +8,7 @@ import {
   enroll,
   completeLesson,
 } from "../services/catalog.js";
-import { reviewSummary, listDueReviews, recordAnswer } from "../services/reviews.js";
+import { reviewSummary, listDueReviews, recordAnswer, nextDueReviewId } from "../services/reviews.js";
 import { buildItemPool, nextPracticeQuestion, serveQuestion, gradeAnswer, getQuestionRow } from "../services/questions.js";
 import { listMockExams, getMockExam, gradeMockAnswer } from "../services/mockExams.js";
 import { awardSlug, evaluateLater } from "../services/achievements.js";
@@ -232,10 +232,21 @@ export async function getPracticeQuestion(req: Request, res: Response) {
 
   const subject = (req.query.subject as string) || null;
   const skill = (req.query.skill as string) || null;
+  const review = req.query.review === "1";
   const exclude = String(req.query.exclude ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+
+  // Review mode: serve the oldest due FSRS card instead of a new drill item.
+  if (review) {
+    const dueId = await nextDueReviewId(uid, exclude);
+    if (!dueId) return res.status(404).json({ message: "Navbatdagi savol yo'q" });
+    const row = await getQuestionRow(dueId);
+    if (!row) return res.status(404).json({ message: "Savol topilmadi" });
+    res.json({ question: serveQuestion(row, localeOf(req)), mode: "review" });
+    return;
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: uid },
@@ -245,7 +256,7 @@ export async function getPracticeQuestion(req: Request, res: Response) {
   const row = await nextPracticeQuestion(user?.currentLevel ?? 0, subject, exclude, skill);
   if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
-  res.json({ question: serveQuestion(row, localeOf(req)) });
+  res.json({ question: serveQuestion(row, localeOf(req)), mode: "drill" });
 }
 
 /** Grades a practice answer and schedules its spaced review. */

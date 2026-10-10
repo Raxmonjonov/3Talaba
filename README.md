@@ -144,7 +144,7 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | GET | `/api/content/skills` | Mavzular daraxti + ustunlik |
 | GET | `/api/content/placement/start` | Adaptiv daraja o‘lchovi (birinchi savol) |
 | POST | `/api/content/placement/answer` | Javob yuborish, keyingi savol yoki natija |
-| GET | `/api/content/practice/next?exclude=` | Mashq savoli (FSRS navbati) |
+| GET | `/api/content/practice/next?exclude=&review=1` | Mashq savoli (drill yoki FSRS navbati) |
 | POST | `/api/content/practice/answer` | Mashq javobini baholash |
 | GET | `/api/content/reviews` | Navbatdagi takrorlashlar + zaif mavzular |
 | GET | `/api/content/mock-exams` | Namunaviy imtihonlar ro‘yxati |

@@ -15,6 +15,7 @@ export default function Practice() {
   const [searchParams] = useSearchParams();
   const subject = searchParams.get("subject");
   const skill = searchParams.get("skill");
+  const reviewMode = searchParams.get("review") === "1";
   const [question, setQuestion] = useState<ServedQuestion | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -37,6 +38,7 @@ export default function Practice() {
       if (exclude.length) params.set("exclude", exclude.join(","));
       if (subject) params.set("subject", subject);
       if (skill) params.set("skill", skill);
+      if (reviewMode) params.set("review", "1");
       const query = params.toString() ? `?${params.toString()}` : "";
       const data = await api<{ question: ServedQuestion }>(
         `/api/content/practice/next${query}`
@@ -44,7 +46,7 @@ export default function Practice() {
       setQuestion(data.question);
       setFreeText("");
     },
-    [subject, skill]
+    [subject, skill, reviewMode]
   );
 
   useEffect(() => {
@@ -52,9 +54,14 @@ export default function Practice() {
     startedRef.current = Date.now();
     loadNext([])
       .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Savol topilmadi");
+        if (cancelled) return;
+        // Empty review queue is a normal end, not an error.
+        if (reviewMode) {
+          setQuestion(null);
+          setError("");
+          return;
         }
+        setError(err instanceof Error ? err.message : "Savol topilmadi");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -62,7 +69,7 @@ export default function Practice() {
     return () => {
       cancelled = true;
     };
-  }, [loadNext]);
+  }, [loadNext, reviewMode]);
 
   async function choose(given: string) {
     if (!question || submitting || answered >= MAX_DRILL) return;
@@ -115,6 +122,12 @@ export default function Practice() {
       await loadNext(seenRef.current);
       startedRef.current = Date.now();
     } catch (err) {
+      // Empty review queue is a normal end, not an error.
+      if (reviewMode) {
+        setQuestion(null);
+        setError("");
+        return;
+      }
       setError(err instanceof Error ? err.message : "Keyingi savol yo‘q");
     } finally {
       setLoading(false);
@@ -146,9 +159,14 @@ export default function Practice() {
     return (
       <div className="min-h-screen flex items-center justify-center px-5">
         <div className="w-full max-w-md space-y-4 text-center">
-          <h1 className="text-2xl font-semibold">Mashq tugadi</h1>
+          <h1 className="text-2xl font-semibold">
+            {reviewMode ? "Takrorlash tugadi" : "Mashq tugadi"}
+          </h1>
           <p className="text-muted-foreground">
-            {correctCount} / {answered} to‘g‘ri. Xatolar keyin qayta keladi.
+            {correctCount} / {answered} to‘g‘ri.{" "}
+            {reviewMode
+              ? "Navbat tozalandi — xatolar keyin qayta keladi."
+              : "Xatolar keyin qayta keladi."}
           </p>
           <button onClick={() => navigate("/dashboard")} className="btn-primary">
             Dashboard
@@ -163,7 +181,9 @@ export default function Practice() {
       <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
           <div>
-            <h1 className="text-lg font-semibold">Mashq</h1>
+            <h1 className="text-lg font-semibold">
+              {reviewMode ? "Takrorlash" : "Mashq"}
+            </h1>
             <p className="text-xs text-muted-foreground">
               {answered} / {MAX_DRILL} · {correctCount} to‘g‘ri
             </p>
