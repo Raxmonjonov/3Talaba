@@ -56,8 +56,13 @@ test.describe("achievements", () => {
 
     // In-app navigation (same path a student takes); a full reload can race
     // the server's post-placement medal writes on SQLite and stick the boot
-    // spinner.
+    // spinner. Placement drops the student straight into a fresh study session.
     await page.getByRole("button", { name: "Darsni boshlash" }).click();
+    await expect(page).toHaveURL(/\/study\//);
+    await expect(page.getByRole("heading", { name: "Dars" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.getByRole("button", { name: "Chiqish" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
     // Wait for the dashboard shell first — the lazy chunk may still be
     // mounting under the RouteFallback after leaving placement.

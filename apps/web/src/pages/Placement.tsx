@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import type { Achievement, PlacementQuestion, PlacementResult } from "../lib/types";
+import type { Achievement, PlacementQuestion, PlacementResult, Session } from "../lib/types";
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
@@ -215,12 +215,19 @@ export default function Placement({
           </div>
 
           <button
-            onClick={() => {
+            onClick={async () => {
               onFinish(level);
               // Client-side jump: a full reload would re-run /auth/me while the
               // server is still writing the placement medals, and SQLite can
               // make that boot spinner stick.
-              navigate("/dashboard");
+              try {
+                const session = await api<Session>("/api/chat/start", {
+                  method: "POST",
+                });
+                navigate(`/study/${session.id}`);
+              } catch {
+                navigate("/dashboard");
+              }
             }}
             className="btn-primary w-full"
           >

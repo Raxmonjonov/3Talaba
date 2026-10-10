@@ -68,6 +68,7 @@ export default function Dashboard({
   const [starting, setStarting] = useState(false);
   const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [statsError, setStatsError] = useState("");
+  const [openSession, setOpenSession] = useState<Session | null>(null);
   const [error, setError] = useState("");
   const threeDEnabled = use3DEnabled();
   const {
@@ -91,6 +92,15 @@ export default function Dashboard({
               : "Statistika yuklanmadi. Keyinroq urinib ko‘ring."
           );
         }
+      });
+    api<Session[]>("/api/chat/sessions")
+      .then((list) => {
+        if (cancelled) return;
+        const open = list.find((s) => !s.endedAt) ?? null;
+        setOpenSession(open);
+      })
+      .catch(() => {
+        /* resume is optional — a fresh session still works */
       });
     return () => {
       cancelled = true;
@@ -187,8 +197,21 @@ export default function Dashboard({
           </p>
 
           <div className="flex flex-wrap gap-3 pt-1">
-            <button onClick={startStudy} disabled={starting} className="btn-primary">
-              {starting ? "Tayyorlanmoqda…" : "Darsni boshlash"}
+            {openSession ? (
+              <button
+                onClick={() => navigate(`/study/${openSession.id}`)}
+                disabled={starting}
+                className="btn-primary"
+              >
+                O‘tagan darsni davom ettirish
+              </button>
+            ) : null}
+            <button
+              onClick={startStudy}
+              disabled={starting}
+              className={openSession ? "btn-secondary" : "btn-primary"}
+            >
+              {starting ? "Tayyorlanmoqda…" : "Yangi dars"}
             </button>
             <button onClick={() => navigate("/placement")} className="btn-secondary">
               Darajani tekshirish
