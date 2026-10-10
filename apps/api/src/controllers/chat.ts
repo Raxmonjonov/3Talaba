@@ -100,7 +100,7 @@ export async function chat(req: Request, res: Response) {
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (apiKey) {
-      const enriched = await callModel(messages, address);
+      const enriched = await callModel(messages);
       if (enriched) {
         reply = enriched;
         usedAI = true;
@@ -130,10 +130,7 @@ export async function chat(req: Request, res: Response) {
   }
 }
 
-async function callModel(
-  messages: TutorMessage[],
-  address: string
-): Promise<string | null> {
+async function callModel(messages: TutorMessage[]): Promise<string | null> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
 

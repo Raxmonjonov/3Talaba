@@ -270,7 +270,7 @@ export function dueCards<T extends { dueAt: Date; state: CardState }>(cards: rea
 
 /** Navbatdagi karta sonini bashorat qiladi (reja generatori uchun). */
 export function projectedLoad(cards: readonly FsrsCard[], days = 7): number[] {
-  const result = new Array<number>(days).fill(0);
+  const result = Array.from({ length: days }, () => 0);
   const now = Date.now();
   for (const card of cards) {
     const diff = Math.floor((card.dueAt.getTime() - now) / 86_400_000);

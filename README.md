@@ -97,13 +97,16 @@ npm run dev
 
 ## PostgreSQL ga o‘tish
 
-```bash
-copy apps\api\prisma\schema.prisma apps\api\prisma\schema.sqlite.prisma
-copy apps\api\prisma\schema.postgresql.prisma apps\api\prisma\schema.prisma
-```
+`apps/api/prisma/schema.prisma` va `schema.postgresql.prisma` bir xil modelarga
+ega — farq faqat `datasource` providerida. PostgreSQL’da ishlatish uchun:
 
-Keyin `.env` da `DATABASE_URL="postgresql://...:5432/3talab"` qiling va
-`npm run prisma:push` ishga tushiring.
+1. `schema.prisma` ichida `provider = "sqlite"` ni `"postgresql"` qilib
+   o‘zgartiring (yoki `schema.postgresql.prisma` ni nusxalang).
+2. `.env` da `DATABASE_URL="postgresql://...:5432/3talab"` qiling.
+3. `npm run prisma:push --workspace=@3talab/api` ishga tushiring.
+
+> **Diqqat:** eski (2025-yil boshi) backup fayllarni nusxalamang — ular yangi
+> modelarni (Skill, Course, Achievement, FSRS va h.k.) yo‘qotadi.
 
 ## AI model
 
@@ -131,14 +134,15 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | POST | `/api/learning/placement` | Natijani baholash, darajani saqlash |
 | GET | `/api/learning/progress` | O‘rganish statistikasi |
 | POST | `/api/learning/progress` | Bugungi vaqtni yozish |
+| GET | `/api/user/achievements` | Medallar katalogi va ochilganlari |
 
 ## Joylashtirish
 
 Sayt Netlify’da `netlify.toml` orqali quriladi:
 
-- **Base directory**: bo‘sh qoldirilishi kerak (konfiguratsiya repo ildizida)
-- **Build**: `apps/web` ichida `npm run build`
-- **Publish**: `apps/web/dist`
+- **Base directory**: `apps/web`
+- **Build command**: `npm run build`
+- **Publish directory**: `dist`
 - `/* → /index.html` (200) SPA yo‘naltiruvi bilan
 - `NODE_VERSION = 22`
 

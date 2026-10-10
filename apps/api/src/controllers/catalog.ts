@@ -19,7 +19,6 @@ import {
   thetaToLevel,
   thetaToScaled,
   planModeForLevel,
-  DEFAULT_CONFIG,
   type PlacementState,
 } from "../services/placement.js";
 
@@ -55,8 +54,6 @@ export async function getSkills(req: Request, res: Response) {
   const uid = userId(req);
   res.json(await skillMap(uid ?? "", localeOf(req)));
 }
-
-const enrollSchema = z.object({ courseSlug: z.string().min(1) });
 
 export async function enrollCourse(req: Request, res: Response) {
   const uid = userId(req);
@@ -111,7 +108,7 @@ export async function answerPlacement(req: Request, res: Response) {
   if (!state) return res.status(400).json({ message: "Placement boshlanmagan" });
 
   try {
-    const { questionId, given, ms } = answerSchema.parse(req.body);
+    const { questionId, given } = answerSchema.parse(req.body);
     const row = await getQuestionRow(questionId);
     if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 

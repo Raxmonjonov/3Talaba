@@ -67,6 +67,7 @@ export default function Dashboard({
   const [saved, setSaved] = useState(false);
   const [starting, setStarting] = useState(false);
   const [progress, setProgress] = useState<ProgressResponse | null>(null);
+  const [statsError, setStatsError] = useState("");
   const [error, setError] = useState("");
   const threeDEnabled = use3DEnabled();
   const {
@@ -82,8 +83,14 @@ export default function Dashboard({
       .then((data) => {
         if (!cancelled) setProgress(data);
       })
-      .catch(() => {
-        /* stats are optional */
+      .catch((err) => {
+        if (!cancelled) {
+          setStatsError(
+            err instanceof Error
+              ? err.message
+              : "Statistika yuklanmadi. Keyinroq urinib ko‘ring."
+          );
+        }
       });
     return () => {
       cancelled = true;
@@ -240,25 +247,39 @@ export default function Dashboard({
           </p>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-3">
-          <div className="subject-scene">
-            <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
-              <p className="text-xs text-muted-foreground">Jami vaqt</p>
-              <p className="text-xl font-semibold">
-                {formatMinutes(progress?.totals.minutes ?? 0)}
-              </p>
+        <section className="space-y-3">
+          {statsError ? (
+            <p
+              role="status"
+              className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            >
+              {statsError}
+            </p>
+          ) : null}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="subject-scene">
+              <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+                <p className="text-xs text-muted-foreground">Jami vaqt</p>
+                <p className="text-xl font-semibold">
+                  {progress ? formatMinutes(progress.totals.minutes) : statsError ? "—" : formatMinutes(0)}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="subject-scene">
-            <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
-              <p className="text-xs text-muted-foreground">Faol kunlar</p>
-              <p className="text-xl font-semibold">{progress?.totals.activeDays ?? 0}</p>
+            <div className="subject-scene">
+              <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+                <p className="text-xs text-muted-foreground">Faol kunlar</p>
+                <p className="text-xl font-semibold">
+                  {progress ? progress.totals.activeDays : statsError ? "—" : 0}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="subject-scene">
-            <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
-              <p className="text-xs text-muted-foreground">Tuzilgan savollar</p>
-              <p className="text-xl font-semibold">{progress?.totals.completed ?? 0}</p>
+            <div className="subject-scene">
+              <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+                <p className="text-xs text-muted-foreground">Tuzilgan savollar</p>
+                <p className="text-xl font-semibold">
+                  {progress ? progress.totals.completed : statsError ? "—" : 0}
+                </p>
+              </div>
             </div>
           </div>
         </section>
