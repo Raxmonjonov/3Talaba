@@ -11,6 +11,13 @@ export interface TutorContext {
   target?: string | null;
   focusMode: boolean;
   softConfirm: boolean;
+  /** Catalog lesson bound to this session, when any. */
+  lesson?: {
+    title: string;
+    summary: string;
+    objectives: string[];
+    blocks: { title: string; content: string }[];
+  } | null;
 }
 
 function addressFor(ctx: TutorContext): string {
@@ -32,11 +39,33 @@ export function systemPrompt(ctx: TutorContext): string {
   const level = ctx.currentLevel;
   const exam = EXAM_NOTES[ctx.target || "GENERAL"] || EXAM_NOTES.GENERAL;
 
+  const lessonSection = ctx.lesson
+    ? [
+        ``,
+        `## Joriy katalog darsi`,
+        `- Mavzu: ${ctx.lesson.title}`,
+        ctx.lesson.summary ? `- Kirish: ${ctx.lesson.summary}` : null,
+        ctx.lesson.objectives.length > 0
+          ? `- Maqsadlar: ${ctx.lesson.objectives.join("; ")}`
+          : null,
+        `- Dars matni (asosiy mazmun, uzun javoblarda ishlating):`,
+        ...ctx.lesson.blocks
+          .slice(0, 6)
+          .map((b, i) => `${i + 1}. ${b.title}: ${b.content.slice(0, 400)}`),
+        `- O'quvchi shu dars bo'yicha yozayotganini his qiling. Javoblarni dars mazmunga bog'lang.`,
+        ctx.lesson.blocks[0]
+          ? `- Boshlash uchun: darsning birinchi bloki (${ctx.lesson.blocks[0].title}) bo'yicha qisqa tushuntirish bering va bitta aniq savol qo'ying.`
+          : null,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : "";
+
   return [
     `Siz "3Talab" raqamli o'quv tutorisiz. Sizning vazifangiz — o'quvchini bosqichma-bosqich, hurmat bilan o'qitish.`,
     ``,
     `## Murojaat uslubi`,
-    `- Foydalanuvchini tabiiy ravishda "${name}" deb murojaat qiling. Uni har bir xabarda takrorlamang — 2-3 xaborda bir marta yetarli.`,
+    `- Foydalanuvchini tabiiy ravishda "${name}" deb murojaat qiling. Uni har bir xabarda takrorlamang — 2-3 xabarda bir marta yetarli.`,
     `- Muqaddima bilan murojaat qilmang. To'g'ri savol bilan boshlang.`,
     `- Doimiy, tinch va xolis ohangda gaplashing.`,
     ``,
@@ -64,6 +93,8 @@ export function systemPrompt(ctx: TutorContext): string {
     `- ${exam}`,
     `- Imtihon savollariga xos iboralar va tuzilmalardan foydalaning.`,
     ``,
+    lessonSection,
+    ``,
     `## Qo'shimcha savollar`,
     `- Foydalanuvchi qo'shimcha ma'lumot so'rasa, unga 2-3 ta chuqurroq savol bering (shaxsiy ta'sir qiluvchi).`,
     `- Savollar sizning o'quvchingizga qaratilgan bo'lsin: "Sizga qaysi usul qo'lproq?", "Bu qaysi holatda kerak bo'ladi?".`,
@@ -83,7 +114,32 @@ export function systemPrompt(ctx: TutorContext): string {
     `- Qo'rquv, tahdid, majburlash, vaqt bosimi ishlatmang.`,
     `- O'quvchini ishga majbur qilishga uring, lekin faqat taklif qiling.`,
     `- Har doim o'zbek tilida javob bering.`,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/**
+ * Local, always-available opener when a catalog lesson is attached but the
+ * keyword engine has not picked a built-in curriculum lesson yet.
+ */
+export function catalogLessonReply(
+  lesson: NonNullable<TutorContext["lesson"]>,
+  address: string
+): string {
+  const first = lesson.blocks[0];
+  return [
+    `${address}, "${lesson.title}" darsini ochdik.`,
+    lesson.summary,
+    first
+      ? `${first.title}: ${first.content.slice(0, 600)}`
+      : "Dars mazmunini birga o'tamiz.",
+    lesson.objectives[0]
+      ? `Birinchi maqsad: ${lesson.objectives[0]}. Qaysi qismdan boshlaymiz?`
+      : "Savolingizni yozing — birga o'tamiz.",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 export function buildTutorMessages(

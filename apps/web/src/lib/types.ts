@@ -24,6 +24,8 @@ export interface Session {
   startedAt: string;
   endedAt?: string | null;
   totalMinutes?: number;
+  lessonSlug?: string | null;
+  messageCount?: number;
 }
 
 export interface Message {

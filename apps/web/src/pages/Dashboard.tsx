@@ -25,6 +25,19 @@ function formatMinutes(minutes: number): string {
   return m === 0 ? `${h} soat` : `${h} soat ${m} daqiqa`;
 }
 
+function formatSessionDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("uz-UZ", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso.slice(0, 16).replace("T", " ");
+  }
+}
+
 function Sparkline({ points }: { points: number[] }) {
   if (points.length === 0) return null;
   const max = Math.max(...points, 1);
@@ -71,6 +84,7 @@ export default function Dashboard({
   const [openSession, setOpenSession] = useState<Session | null>(null);
   const [reviews, setReviews] = useState<ReviewsResponse | null>(null);
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [error, setError] = useState("");
   const threeDEnabled = use3DEnabled();
   const {
@@ -98,6 +112,7 @@ export default function Dashboard({
     api<Session[]>("/api/chat/sessions")
       .then((list) => {
         if (cancelled) return;
+        setSessions(list);
         const open = list.find((s) => !s.endedAt) ?? null;
         setOpenSession(open);
       })
@@ -289,6 +304,53 @@ export default function Dashboard({
                       <span className="text-sm text-primary">Yakunlangan</span>
                     )}
                   </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {sessions.length > 0 ? (
+          <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-lg font-semibold">O‘rganish tarixi</h3>
+              <span className="text-xs text-muted-foreground">
+                oxirgi {sessions.length} sessiya
+              </span>
+            </div>
+            <ul className="space-y-2">
+              {sessions.slice(0, 8).map((s) => (
+                <li key={s.id}>
+                  <button
+                    onClick={() => navigate(`/study/${s.id}`)}
+                    className="w-full rounded-xl border bg-background/50 p-4 text-left shadow-sm hover:bg-secondary/60"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">
+                          {s.title || "Erkin dars"}
+                          {s.endedAt === null || s.endedAt === undefined ? (
+                            <span className="ml-2 text-xs text-primary">
+                              davom etmoqda
+                            </span>
+                          ) : null}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatSessionDate(s.startedAt)}
+                          {typeof s.totalMinutes === "number" &&
+                          s.totalMinutes > 0
+                            ? ` · ${s.totalMinutes} daqiqa`
+                            : ""}
+                          {typeof s.messageCount === "number"
+                            ? ` · ${s.messageCount} xabar`
+                            : ""}
+                        </p>
+                      </div>
+                      <span aria-hidden="true" className="text-muted-foreground">
+                        →
+                      </span>
+                    </div>
+                  </button>
                 </li>
               ))}
             </ul>

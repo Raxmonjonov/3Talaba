@@ -1,7 +1,11 @@
 ﻿import { Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/prisma.js";
-import { buildTutorMessages, TutorMessage } from "../services/tutor.js";
+import {
+  buildTutorMessages,
+  catalogLessonReply,
+  TutorMessage,
+} from "../services/tutor.js";
 import {
   EngineState,
   initialState,
@@ -74,6 +78,49 @@ export async function startSession(req: Request, res: Response) {
   res.status(201).json(session);
 }
 
+function parseJsonArray(value: string | null): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((o) =>
+        Array.isArray(o) ? String(o[0] ?? "") : String(o ?? "")
+      )
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/** Loads catalog lesson content so the tutor can stay on-topic. */
+async function loadLessonTutorContext(lessonId: string) {
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    select: {
+      titleUz: true,
+      titleEn: true,
+      summaryUz: true,
+      summaryEn: true,
+      objectives: true,
+      blocks: {
+        orderBy: { order: "asc" },
+        select: { titleUz: true, titleEn: true, contentUz: true, contentEn: true },
+      },
+    },
+  });
+  if (!lesson) return null;
+  return {
+    title: lesson.titleUz || lesson.titleEn,
+    summary: lesson.summaryUz || lesson.summaryEn,
+    objectives: parseJsonArray(lesson.objectives),
+    blocks: lesson.blocks.map((b) => ({
+      title: b.titleUz || b.titleEn,
+      content: b.contentUz || b.contentEn,
+    })),
+  };
+}
+
 export async function chat(req: Request, res: Response) {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -83,7 +130,7 @@ export async function chat(req: Request, res: Response) {
 
     const session = await prisma.session.findFirst({
       where: { id: sessionId, userId },
-      select: { id: true, engineState: true },
+      select: { id: true, engineState: true, lessonId: true },
     });
     if (!session) {
       return res.status(404).json({ message: "Sessiya topilmadi" });
@@ -104,6 +151,9 @@ export async function chat(req: Request, res: Response) {
 
     const address = user.preferredTitle || user.firstName;
     const state = parseState(session.engineState);
+    const lessonContext = session.lessonId
+      ? await loadLessonTutorContext(session.lessonId)
+      : null;
 
     const context = {
       firstName: user.firstName,
@@ -113,6 +163,7 @@ export async function chat(req: Request, res: Response) {
       target: user.target,
       focusMode: user.focusMode,
       softConfirm: user.softConfirm,
+      lesson: lessonContext,
     };
 
     const messages = buildTutorMessages(
@@ -124,7 +175,19 @@ export async function chat(req: Request, res: Response) {
 
     // The local engine is the primary, always-available path. The AI model
     // is used to enrich it when a key is configured and the request succeeds.
-    const local = nextTurn(state, message, user.currentLevel, address);
+    let local = nextTurn(state, message, user.currentLevel, address);
+    // Catalog lesson attached but the keyword engine has no active lesson:
+    // open with the real lesson content instead of a generic topic menu.
+    if (
+      lessonContext &&
+      !local.state.lessonId &&
+      history.filter((m) => m.role === "assistant").length === 0
+    ) {
+      local = {
+        reply: catalogLessonReply(lessonContext, address),
+        state: { ...local.state, awaitingNextTopic: true },
+      };
+    }
     let reply = local.reply;
     let usedAI = false;
 
@@ -203,10 +266,28 @@ export async function listSessions(req: Request, res: Response) {
     where: { userId },
     orderBy: { startedAt: "desc" },
     take: 20,
-    select: { id: true, title: true, startedAt: true, endedAt: true },
+    select: {
+      id: true,
+      title: true,
+      startedAt: true,
+      endedAt: true,
+      totalMinutes: true,
+      lesson: { select: { slug: true } },
+      _count: { select: { messages: true } },
+    },
   });
 
-  res.json(sessions);
+  res.json(
+    sessions.map((s) => ({
+      id: s.id,
+      title: s.title,
+      startedAt: s.startedAt,
+      endedAt: s.endedAt,
+      totalMinutes: s.totalMinutes,
+      lessonSlug: s.lesson?.slug ?? null,
+      messageCount: s._count.messages,
+    }))
+  );
 }
 
 export async function getSession(req: Request, res: Response) {

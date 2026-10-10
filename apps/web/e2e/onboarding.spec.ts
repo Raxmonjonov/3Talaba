@@ -116,5 +116,48 @@ test.describe("onboarding flow", () => {
     await expect(page.getByText("Sonlar va arifmetika")).toBeVisible({
       timeout: 15_000,
     });
+
+    // Leaving the session surfaces it on the dashboard history shelf.
+    await page.getByRole("button", { name: "Chiqish" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByRole("heading", { name: "O‘rganish tarixi" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.getByRole("button", { name: /Erkin dars|davom etmoqda/ }).first().click();
+    await expect(page).toHaveURL(/\/study\//, { timeout: 15_000 });
+    await expect(page.getByText("Sonlar va arifmetika")).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+
+  test("a lesson-bound session answers with the catalog lesson content", async ({
+    page,
+  }) => {
+    await registerFreshUser(page);
+
+    await page.goto("/courses");
+    await page.locator("button.text-lg.underline").first().click();
+    await page.locator("ul li button").first().click();
+    await expect(page).toHaveURL(/\/lessons\/[^/]+$/);
+    const heading = page.locator("header h1").first();
+    await expect(heading).not.toHaveText("Yuklanmoqda…", { timeout: 15_000 });
+    const lessonName = ((await heading.textContent()) ?? "").trim();
+    expect(lessonName.length).toBeGreaterThan(0);
+
+    await page.getByRole("button", { name: "Tutordan boshlash" }).click();
+    await expect(page).toHaveURL(/\/study\//, { timeout: 15_000 });
+    await page.locator("input, textarea").first().fill("bu dars nima haqida?");
+    await page.getByRole("button", { name: "Yuborish" }).click();
+
+    // The opener names the real catalog lesson instead of a generic menu.
+    await expect(page.getByText("darsini ochdik")).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByText(`"${lessonName}" darsini ochdik`)
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(
+      page.getByRole("button", { name: "Katalogdagi dars" })
+    ).toBeVisible();
   });
 });

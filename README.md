@@ -128,7 +128,7 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | PATCH | `/api/user/settings` | Murojaat nomi, fokus rejimi |
 | POST | `/api/chat/start` | Yangi dars sessiyasi |
 | POST | `/api/chat/message` | Xabar yuborish |
-| GET | `/api/chat/sessions` | Sessiyalar ro‘yxati |
+| GET | `/api/chat/sessions` | Sessiyalar tarixi (xabar soni, dars) |
 | GET | `/api/chat/sessions/:id` | Sessiya tarixi |
 | POST | `/api/chat/sessions/:id/end` | Sessiyani tugatish |
 | GET | `/api/learning/placement` | Daraja o‘lchovi savollari |
