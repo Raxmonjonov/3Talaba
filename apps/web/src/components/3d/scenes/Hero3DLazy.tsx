@@ -1,5 +1,6 @@
 ﻿import { lazy, Suspense, useEffect, useState } from "react";
 import { use3DReady } from "../hooks/usePerfFlags";
+import { SceneLoader } from "../elements/SceneLoader";
 
 const Hero3D = lazy(() => import("./Hero3D"));
 
@@ -38,7 +39,7 @@ export default function Hero3DLazy() {
   if (!ready || !idle) return null;
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<SceneLoader />}>
       <Hero3D />
     </Suspense>
   );
