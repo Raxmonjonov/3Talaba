@@ -1,25 +1,38 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import type { Achievement, PlacementQuestion, PlacementResult, Session } from "../lib/types";
+import type {
+  Achievement,
+  PlacementAnswerResponse,
+  PlacementStartResponse,
+  Session,
+  ServedQuestion,
+} from "../lib/types";
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
 
 /** How long the verdict stays on the card before it flips to the next one. */
-const VERDICT_HOLD_MS = 240;
+const VERDICT_HOLD_MS = 400;
+/** Hard ceiling on the adaptive test (server stops earlier when SE is low). */
+const MAX_ITEMS = 25;
+
+type AdaptiveResult = {
+  currentLevel: number;
+  answered: number;
+  correctCount: number;
+};
 
 export default function Placement({
   onFinish,
 }: {
   onFinish: (level: number) => void;
 }) {
-  const [questions, setQuestions] = useState<PlacementQuestion[]>([]);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [index, setIndex] = useState(0);
+  const [question, setQuestion] = useState<ServedQuestion | null>(null);
+  const [answered, setAnswered] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<PlacementResult | null>(null);
+  const [result, setResult] = useState<AdaptiveResult | null>(null);
   const [error, setError] = useState("");
   const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
   const [earnedMedals, setEarnedMedals] = useState<Achievement[]>([]);
@@ -32,8 +45,12 @@ export default function Placement({
 
     async function load() {
       try {
-        const data = await api<PlacementQuestion[]>("/api/learning/placement");
-        if (!cancelled) setQuestions(data);
+        const data = await api<PlacementStartResponse>(
+          "/api/content/placement/start"
+        );
+        if (cancelled) return;
+        setQuestion(data.question);
+        setAnswered(data.answered);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Savollar yuklanmadi");
@@ -49,63 +66,61 @@ export default function Placement({
     };
   }, []);
 
-  async function grade(payload: Record<string, number>) {
-    setSubmitting(true);
-    try {
-      const data = await api<PlacementResult>("/api/learning/placement", {
-        method: "POST",
-        body: JSON.stringify({ answers: payload }),
+  const finishWith = useCallback((data: PlacementAnswerResponse) => {
+    const finished: AdaptiveResult = {
+      currentLevel: data.currentLevel ?? 0,
+      answered: data.answered,
+      correctCount: data.correctCount ?? 0,
+    };
+    setResult(finished);
+    api<Achievement[]>("/api/user/achievements?locale=uz")
+      .then((all) => setEarnedMedals(all.filter((a) => a.earnedAt !== null)))
+      .catch(() => {
+        /* the result itself is enough without the shelf */
       });
-      setResult(data);
-      // Medals are awarded server-side just above; show whichever stuck.
-      api<Achievement[]>("/api/user/achievements?locale=uz")
-        .then((all) => setEarnedMedals(all.filter((a) => a.earnedAt !== null)))
-        .catch(() => {
-          /* the result itself is enough without the shelf */
-        });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Natija saqlanmadi");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  }, []);
 
-  function choose(optionIndex: number) {
-    const question = questions[index];
+  async function choose(optionIndex: number) {
     if (!question || submitting) return;
 
-    const next = { ...answers, [question.id]: optionIndex };
-    setAnswers(next);
+    setSubmitting(true);
     setVerdict(null);
 
-    if (index + 1 >= questions.length) {
-      grade(next);
-      return;
-    }
+    try {
+      const data = await api<PlacementAnswerResponse>(
+        "/api/content/placement/answer",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            questionId: question.id,
+            given: String(optionIndex),
+          }),
+        }
+      );
 
-    const advance = () => {
-      setVerdict(null);
+      if (data.finished || !data.question) {
+        finishWith(data);
+        return;
+      }
+
+      if (reducedMotion) {
+        setQuestion(data.question);
+        setAnswered(data.answered);
+        setSubmitting(false);
+        return;
+      }
+
+      setVerdict(data.correct ? "correct" : "wrong");
+      holdRef.current = setTimeout(() => {
+        setVerdict(null);
+        setQuestion(data.question ?? null);
+        setAnswered(data.answered);
+        setSubmitting(false);
+      }, VERDICT_HOLD_MS);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Javob yuborilmadi");
       setSubmitting(false);
-      setIndex(index + 1);
-    };
-
-    // Reduced motion skips the score probe entirely: no animation to feed.
-    if (reducedMotion) {
-      advance();
-      return;
     }
-
-    setSubmitting(true);
-    api<Pick<PlacementResult, "detail">>("/api/learning/placement", {
-      method: "POST",
-      body: JSON.stringify({ answers: next, check: true }),
-    })
-      .then((checked) => {
-        const row = checked.detail.find((d) => d.id === question.id);
-        setVerdict(row?.correct ? "correct" : "wrong");
-        holdRef.current = setTimeout(advance, VERDICT_HOLD_MS);
-      })
-      .catch(() => advance());
   }
 
   useEffect(
@@ -155,7 +170,7 @@ export default function Placement({
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-semibold">Darajangiz aniqlandi</h1>
             <p className="text-muted-foreground text-sm">
-              {result.earned} / {result.possible} to‘g‘ri javob
+              {result.correctCount} / {result.answered} to‘g‘ri javob
             </p>
           </div>
 
@@ -194,26 +209,6 @@ export default function Placement({
             </section>
           ) : null}
 
-          <div className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
-            <h2 className="text-sm font-medium">Har bir javob tahlili</h2>
-            <ul className="space-y-2">
-              {result.detail.map((d) => (
-                <li
-                  key={d.id}
-                  className={`flex gap-2 text-sm ${
-                    d.correct ? "verdict-correct" : "verdict-wrong"
-                  }`}
-                >
-                  <span className={d.correct ? "text-foreground" : "text-red-700"}>
-                    {d.correct ? "\u2713" : "\u2717"}
-                  </span>
-                  <span className="text-muted-foreground">{d.explain}</span>
-                </li>
-              ))}
-
-            </ul>
-          </div>
-
           <button
             onClick={async () => {
               onFinish(level);
@@ -238,40 +233,41 @@ export default function Placement({
     );
   }
 
-  const question = questions[index];
-
   if (!question) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Tayyorlanmoqda…</p>
+        <p className="text-sm text-muted-foreground">
+          Savol bazasi hozircha bo‘sh. Keyinroq urinib ko‘ring.
+        </p>
       </div>
     );
   }
+
+  // Adaptive length: show progress against the ceiling, not a fixed total.
+  const progressPct = Math.min(100, ((answered + 1) / MAX_ITEMS) * 100);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-5 py-10">
       <div className="w-full max-w-xl space-y-6">
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              Savol {index + 1} / {questions.length}
-            </span>
-            <span>Daraja o‘lchovi</span>
+            <span>Savol {answered + 1}</span>
+            <span>Adaptiv daraja o‘lchovi</span>
           </div>
           <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
             <div
               className="h-full bg-primary transition-all"
-              style={{ width: `${((index + 1) / questions.length) * 100}%` }}
+              style={{ width: `${progressPct}%` }}
             />
           </div>
         </div>
 
         <QuestionCard3D
-          step={index}
+          step={answered}
           verdict={verdict}
           className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm"
         >
-          <h1 className="text-xl font-medium">{question.question}</h1>
+          <h1 className="text-xl font-medium">{question.prompt}</h1>
           <div className="grid gap-2">
             {question.options.map((option, i) => (
               <button
@@ -281,14 +277,14 @@ export default function Placement({
                 className="rounded-xl border bg-background px-4 py-3 text-left transition-colors hover:bg-secondary disabled:opacity-50"
               >
                 <span className="mr-2 text-muted-foreground">{i + 1}.</span>
-                {option}
+                {option.label}
               </button>
             ))}
           </div>
         </QuestionCard3D>
 
         <p className="text-center text-xs text-muted-foreground">
-          Noto‘g‘ri javobdan qo‘rqmaydi — bu sizga moslash uchun.
+          Noto‘g‘ri javobdan qo‘rqmaydi — savollar sizga moslashadi.
         </p>
       </div>
     </div>

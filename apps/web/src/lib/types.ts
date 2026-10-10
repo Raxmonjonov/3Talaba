@@ -52,11 +52,36 @@ export interface SettingsResponse {
   currentLevel: number;
 }
 
-export interface PlacementQuestion {
+export interface PlacementOption {
+  label: string;
+  accepts?: string[];
+}
+
+export interface ServedQuestion {
   id: string;
-  level: number;
-  question: string;
-  options: string[];
+  skill: string;
+  type: string;
+  prompt: string;
+  passage?: string;
+  options: PlacementOption[];
+  difficulty: number;
+  seconds?: number;
+}
+
+export interface PlacementStartResponse {
+  question: ServedQuestion | null;
+  answered: number;
+  finished: boolean;
+}
+
+export interface PlacementAnswerResponse {
+  finished: boolean;
+  correct: boolean;
+  explanation?: string;
+  answered: number;
+  question?: ServedQuestion | null;
+  currentLevel?: number;
+  correctCount?: number;
 }
 
 export interface PlacementResult {

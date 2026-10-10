@@ -281,3 +281,11 @@ model UserAchievement {
 
   @@unique([userId, slug])
 }
+
+/// Adaptive placement session (Rasch state as JSON — SQLite has no Json type).
+/// One open diagnostic per user; deleted when the test finishes.
+model PlacementSession {
+  userId    String   @id
+  state     String
+  updatedAt DateTime @updatedAt
+}

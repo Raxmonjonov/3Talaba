@@ -54,7 +54,7 @@
       },
       {
         title: "Daraja testini topshirasiz",
-        body: "11 ta qisqa savol. Bir necha daqiqada darajangizni aniq belgilaydi.",
+        body: "Adaptiv test savollarni javoblaringizga qarab tanlaydi — odatda 15–20 savol yetarli.",
       },
       {
         title: "Kunlik reja tuziladi",
@@ -76,7 +76,7 @@
     placementTitle: "SAT matematika",
     placementQuestion:
       "3x − 7 = 14. Agar 2x + 5 = 17 bo'lsa, x ning qiymatini toping.",
-    placementProgress: "7-savol / 11",
+    placementProgress: "7-savol / 20",
     placementOptions: ["x = 4", "x = 6", "x = 9", "x = 11"],
     placementHint: "Birinchi tenglamada 7 ni ikki tomonga qo'shing va 3 ga bo'ling.",
     planLabel: "Kunlik reja",
@@ -200,7 +200,7 @@
       },
       {
         q: "Daraja testi qanday ishlaydi?",
-        a: "11 ta qisqa savol — matematika, mantiq va ingliz tili aralash. Bir necha daqiqada tugaydi va sizga keyingi oy uchun aniq yo'l ko'rsatadi.",
+        a: "Adaptiv: har bir javobdan keyin keyingi savol qiyinroq yoki yengilroq bo‘ladi. Odatda 15–20 savol yetarli — natija taxmin emas.",
       },
       {
         q: "Qanday qurilmalarda ishlaydi?",

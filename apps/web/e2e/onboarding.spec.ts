@@ -39,18 +39,24 @@ test.describe("onboarding flow", () => {
     await registerFreshUser(page);
 
     await page.goto("/placement");
-    const options = page.locator(".auth-card button");
-    for (let index = 0; index < 11; index++) {
-      await expect(options).toHaveCount(4);
-      await options.nth(1).click();
-      if (index < 10) {
-        await expect(page.getByText(`Savol ${index + 2} / 11`)).toBeVisible();
-      }
+    await expect(page.getByText("Adaptiv daraja o‘lchovi")).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Adaptive length is 15–25 items; click through until the result screen.
+    // Some bank items are single-option; always pick the last available choice.
+    const resultHeading = page.getByRole("heading", { name: "Darajangiz aniqlandi" });
+    for (let i = 0; i < 30; i++) {
+      if (await resultHeading.isVisible().catch(() => false)) break;
+      const options = page.locator(".auth-card button");
+      await expect(options.first()).toBeVisible({ timeout: 10_000 });
+      const count = await options.count();
+      await options.nth(count - 1).click();
+      // VERDICT_HOLD_MS on the server-backed flip is 400ms.
+      await page.waitForTimeout(450);
     }
 
-    await expect(
-      page.getByRole("heading", { name: "Darajangiz aniqlandi" })
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(resultHeading).toBeVisible({ timeout: 15_000 });
     await expect(page.locator(".auth-card .text-5xl")).toHaveText(/^\d{1,2}$/);
     await expect(page.getByText(/to‘g‘ri javob/)).toBeVisible();
 

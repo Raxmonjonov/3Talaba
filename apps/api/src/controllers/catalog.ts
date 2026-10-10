@@ -30,8 +30,28 @@ function localeOf(req: Request): "uz" | "en" {
   return ((req as any).user?.locale ?? req.query.locale) === "en" ? "en" : "uz";
 }
 
-/** In-memory placement sessions keyed by user; small enough for one process. */
-const placementSessions = new Map<string, PlacementState>();
+async function loadPlacementState(uid: string): Promise<PlacementState | null> {
+  const row = await prisma.placementSession.findUnique({ where: { userId: uid } });
+  if (!row) return null;
+  try {
+    const parsed = JSON.parse(row.state) as PlacementState;
+    if (typeof parsed?.theta !== "number" || !Array.isArray(parsed.answered)) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+async function savePlacementState(uid: string, state: PlacementState): Promise<void> {
+  const data = { state: JSON.stringify(state), updatedAt: new Date() };
+  await prisma.placementSession.upsert({
+    where: { userId: uid },
+    create: { userId: uid, ...data },
+    update: data,
+  });
+}
 
 export async function getCourses(req: Request, res: Response) {
   const subject = (req.query.subject as string) || null;
@@ -80,7 +100,7 @@ export async function startPlacement(req: Request, res: Response) {
   if (pool.length === 0) return res.status(503).json({ message: "Savol bazasi bo'sh" });
 
   const state = initialState();
-  placementSessions.set(uid, state);
+  await savePlacementState(uid, state);
 
   const item = selectNextItem(state, pool);
   if (!item) return res.status(503).json({ message: "Savol tanlab bo'lmadi" });
@@ -104,45 +124,52 @@ export async function answerPlacement(req: Request, res: Response) {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
-  const state = placementSessions.get(uid);
-  if (!state) return res.status(400).json({ message: "Placement boshlanmagan" });
+  const state = await loadPlacementState(uid);
+  if (!state || state.finished) {
+    return res.status(400).json({ message: "Placement boshlanmagan" });
+  }
 
   try {
     const { questionId, given } = answerSchema.parse(req.body);
     const row = await getQuestionRow(questionId);
     if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
-    const { correct } = gradeAnswer(row, given, localeOf(req));
+    const { correct, explanation } = gradeAnswer(row, given, localeOf(req));
     const pool = await buildItemPool((req.query.subject as string) || null);
     const item = pool.find((p) => p.id === questionId);
     if (!item) return res.status(404).json({ message: "Savol topilmadi" });
 
     const next = applyAnswer(state, item, correct);
-    placementSessions.set(uid, next);
 
     if (next.finished) {
       const rawLevel = thetaToLevel(next.theta);
       const level = rawLevel * 2; // map the 0-5 Rasch level onto the 0-10 scale
       await prisma.user.update({ where: { id: uid }, data: { currentLevel: level } });
-      placementSessions.delete(uid);
+      await prisma.placementSession.delete({ where: { userId: uid } }).catch(() => {});
       await awardSlug(uid, "placement_done");
       evaluateLater(uid);
       return res.json({
         finished: true,
+        correct,
+        explanation,
         theta: next.theta,
         scaled: thetaToScaled(next.theta),
         rawLevel,
         currentLevel: level,
         planMode: planModeForLevel(rawLevel),
         answered: next.answered.length,
+        correctCount: next.history.filter((h) => h.correct).length,
       });
     }
 
+    await savePlacementState(uid, next);
     const nextItem = selectNextItem(next, pool);
     const nextRow = nextItem ? await getQuestionRow(nextItem.id) : null;
 
     res.json({
       finished: false,
+      correct,
+      explanation,
       answered: next.answered.length,
       question: nextRow ? serveQuestion(nextRow, localeOf(req)) : null,
     });

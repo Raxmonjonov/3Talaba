@@ -34,15 +34,23 @@ test.describe("achievements", () => {
     await registerFreshUser(page);
 
     await page.goto("/placement");
-    const options = page.locator(".auth-card button");
-    for (let index = 0; index < 11; index++) {
-      await expect(options).toHaveCount(4);
-      await options.nth(1).click();
+    await expect(page.getByText("Adaptiv daraja o‘lchovi")).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Adaptive length is 15–25 items; click through until the result screen.
+    // Some bank items are single-option; always pick the last available choice.
+    const resultHeading = page.getByRole("heading", { name: "Darajangiz aniqlandi" });
+    for (let i = 0; i < 30; i++) {
+      if (await resultHeading.isVisible().catch(() => false)) break;
+      const options = page.locator(".auth-card button");
+      await expect(options.first()).toBeVisible({ timeout: 10_000 });
+      const count = await options.count();
+      await options.nth(count - 1).click();
+      await page.waitForTimeout(450);
     }
 
-    await expect(
-      page.getByRole("heading", { name: "Darajangiz aniqlandi" })
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(resultHeading).toBeVisible({ timeout: 15_000 });
 
     // The result screen lists the medals this placement just unlocked.
     await expect(page.getByRole("heading", { name: "Yangi yutuqlar" })).toBeVisible({
