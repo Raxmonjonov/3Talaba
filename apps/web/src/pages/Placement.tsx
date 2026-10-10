@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import type {
   Achievement,
   PlacementAnswerResponse,
+  PlacementSkillBreakdown,
   PlacementStartResponse,
   Session,
   ServedQuestion,
@@ -25,6 +26,9 @@ type AdaptiveResult = {
   currentLevel: number;
   answered: number;
   correctCount: number;
+  scaled?: number;
+  planMode?: string;
+  skills?: PlacementSkillBreakdown[];
 };
 
 export default function Placement({
@@ -117,6 +121,9 @@ export default function Placement({
       currentLevel: data.currentLevel ?? 0,
       answered: data.answered,
       correctCount: data.correctCount ?? 0,
+      scaled: data.scaled,
+      planMode: data.planMode,
+      skills: data.skills,
     };
     setResult(finished);
     api<Achievement[]>("/api/user/achievements?locale=uz")
@@ -224,8 +231,75 @@ export default function Placement({
 
           <div className="auth-card space-y-2 rounded-2xl border bg-card p-8 text-center shadow-sm">
             <div className="text-5xl font-semibold">{level}</div>
+            {typeof result.scaled === "number" ? (
+              <p className="text-lg font-semibold text-primary">
+                {result.scaled} ball
+              </p>
+            ) : null}
             <p className="text-sm text-muted-foreground">{summary}</p>
+            {result.planMode ? (
+              <p className="text-xs text-muted-foreground">
+                Reja:{" "}
+                {result.planMode === "foundation"
+                  ? "poydevor mustahkamlash"
+                  : result.planMode === "core"
+                    ? "asosiy mashqlar"
+                    : "yuqori qiyinlik"}
+              </p>
+            ) : null}
           </div>
+
+          {result.skills && result.skills.length > 0 ? (
+            <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">
+              <h2 className="text-sm font-medium">Mavzular kesimida</h2>
+              <ul className="space-y-2">
+                {result.skills.map((skill) => {
+                  const pct = Math.round(skill.accuracy * 100);
+                  return (
+                    <li key={skill.slug} className="space-y-1">
+                      <div className="flex items-center justify-between gap-2 text-sm">
+                        <button
+                          onClick={() =>
+                            navigate(
+                              `/practice?skill=${encodeURIComponent(skill.slug)}`
+                            )
+                          }
+                          className="min-w-0 truncate text-left underline underline-offset-4 hover:text-primary"
+                        >
+                          {skill.name}
+                        </button>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {skill.correct}/{skill.total} · {pct}%
+                        </span>
+                      </div>
+                      <div
+                        className="h-1.5 overflow-hidden rounded-full bg-secondary"
+                        role="progressbar"
+                        aria-valuenow={pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${skill.name} natija`}
+                      >
+                        <div
+                          className={`h-full rounded-full ${
+                            pct < 50
+                              ? "bg-amber-500"
+                              : pct < 80
+                                ? "bg-primary/70"
+                                : "bg-primary"
+                          }`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                Mavzuni bosing — o‘sha mavzu bo‘yicha mashq ochiladi.
+              </p>
+            </section>
+          ) : null}
 
           {earnedMedals.length > 0 ? (
             <section

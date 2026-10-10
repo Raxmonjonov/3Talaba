@@ -21,6 +21,7 @@ import {
   thetaToLevel,
   thetaToScaled,
   planModeForLevel,
+  skillThetas,
   type PlacementState,
 } from "../services/placement.js";
 
@@ -200,6 +201,30 @@ export async function answerPlacement(req: Request, res: Response) {
       await prisma.placementSession.delete({ where: { userId: uid } }).catch(() => {});
       await awardSlug(uid, "placement_done");
       evaluateLater(uid);
+
+      // Per-skill snapshot from the same history the overall theta used.
+      const perSkill = skillThetas(next.history);
+      const skillSlugs = Object.keys(perSkill);
+      const skillsMeta = skillSlugs.length
+        ? await prisma.skill.findMany({
+            where: { slug: { in: skillSlugs } },
+            select: { slug: true, nameUz: true, nameEn: true },
+          })
+        : [];
+      const nameOf = new Map(
+        skillsMeta.map((s) => [
+          s.slug,
+          localeOf(req) === "en" ? s.nameEn || s.nameUz : s.nameUz || s.nameEn,
+        ])
+      );
+      const correctBySkill = new Map<string, { correct: number; total: number }>();
+      for (const h of next.history) {
+        const entry = correctBySkill.get(h.skillId) ?? { correct: 0, total: 0 };
+        entry.total += 1;
+        if (h.correct) entry.correct += 1;
+        correctBySkill.set(h.skillId, entry);
+      }
+
       return res.json({
         finished: true,
         correct,
@@ -211,6 +236,18 @@ export async function answerPlacement(req: Request, res: Response) {
         planMode: planModeForLevel(rawLevel),
         answered: next.answered.length,
         correctCount: next.history.filter((h) => h.correct).length,
+        skills: skillSlugs
+          .map((slug) => {
+            const tally = correctBySkill.get(slug) ?? { correct: 0, total: 0 };
+            return {
+              slug,
+              name: nameOf.get(slug) ?? slug,
+              correct: tally.correct,
+              total: tally.total,
+              accuracy: tally.total > 0 ? tally.correct / tally.total : 0,
+            };
+          })
+          .sort((a, b) => a.accuracy - b.accuracy),
       });
     }
 

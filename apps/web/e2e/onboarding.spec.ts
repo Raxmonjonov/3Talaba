@@ -56,6 +56,11 @@ test.describe("onboarding flow", () => {
     await expect(resultHeading).toBeVisible({ timeout: 15_000 });
     await expect(page.locator(".auth-card .text-5xl")).toHaveText(/^\d{1,2}$/);
     await expect(page.getByText(/to‘g‘ri javob/)).toBeVisible();
+    // Scaled 400–1600 score sits under the level number.
+    await expect(page.getByText(/ball/)).toBeVisible();
+    // Per-skill breakdown with clickable practice chips.
+    await expect(page.getByText("Mavzular kesimida")).toBeVisible();
+    await expect(page.getByRole("progressbar").first()).toBeVisible();
 
     await page.goto("/dashboard");
     await expect(page.getByText("Xush kelibsiz, E2E")).toBeVisible();

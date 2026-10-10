@@ -84,6 +84,14 @@ export interface PlacementStartResponse {
   subject?: string | null;
 }
 
+export interface PlacementSkillBreakdown {
+  slug: string;
+  name: string;
+  correct: number;
+  total: number;
+  accuracy: number;
+}
+
 export interface PlacementAnswerResponse {
   finished: boolean;
   correct: boolean;
@@ -92,6 +100,9 @@ export interface PlacementAnswerResponse {
   question?: ServedQuestion | null;
   currentLevel?: number;
   correctCount?: number;
+  scaled?: number;
+  planMode?: string;
+  skills?: PlacementSkillBreakdown[];
 }
 
 export interface PracticeAnswerResponse {
