@@ -226,7 +226,7 @@
     title: "O'quvchilar natijalari",
     subtitle: "Bu yerda haqiqiy natijalar joylashadi.",
     placeholder: "Hali natija yig'ilmagan",
-    note: "Platforma yangi ishga tushgani uchun ko'rsatkichlar hali yo'q. Ishonchli raqamlar paydo bo'lishi bilan shu yerga qo'yamiz — hozir hech qanday reyting yoki natija ko'rsatilmayapti.",
+    note: "Ommaviy reyting yo'q — faqat sizning natijangiz. Daraja, medallar va o'quv statistikasi shaxsiy kabinetingizda to'planadi.",
   },
 
   finalCta: {

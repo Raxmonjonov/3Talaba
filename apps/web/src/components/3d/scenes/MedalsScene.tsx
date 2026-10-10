@@ -21,7 +21,7 @@ const TIER_COLOR: Record<AchievementTier, string> = {
   gold: "#ffd166",
 };
 
-const LOCKED_COLOR = "#26304f";
+const LOCKED_COLOR = "#3a4568";
 
 const COLS = 6;
 const GAP = 0.95;
@@ -40,8 +40,8 @@ function Medal({
 }) {
   const group = useRef<Group>(null);
   const color = item.earned ? TIER_COLOR[item.tier] : LOCKED_COLOR;
-  const emissive = item.earned ? color : "#0b1020";
-  const intensity = item.earned ? 0.45 : 0.05;
+  const emissive = item.earned ? color : "#1a2238";
+  const intensity = item.earned ? 0.45 : 0.12;
 
   useFrame((state) => {
     if (!group.current || !active) return;

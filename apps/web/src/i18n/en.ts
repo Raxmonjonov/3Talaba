@@ -222,7 +222,7 @@ export const en: Dictionary = {
     title: "Student results",
     subtitle: "Real results will appear here.",
     placeholder: "No results collected yet",
-    note: "The platform has only just launched, so there are no numbers to show. We will put credible figures here as soon as they exist — right now no score or ranking is displayed anywhere.",
+    note: "There is no public leaderboard — only your own progress. Levels, medals and study stats collect in your personal dashboard.",
   },
 
   finalCta: {

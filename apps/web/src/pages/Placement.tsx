@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
-import type { PlacementQuestion, PlacementResult } from "../lib/types";
+import type { Achievement, PlacementQuestion, PlacementResult } from "../lib/types";
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
@@ -21,6 +21,7 @@ export default function Placement({
   const [result, setResult] = useState<PlacementResult | null>(null);
   const [error, setError] = useState("");
   const [verdict, setVerdict] = useState<"correct" | "wrong" | null>(null);
+  const [earnedMedals, setEarnedMedals] = useState<Achievement[]>([]);
   const reducedMotion = useReducedMotion();
   const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,12 +50,17 @@ export default function Placement({
   async function grade(payload: Record<string, number>) {
     setSubmitting(true);
     try {
-      setResult(
-        await api<PlacementResult>("/api/learning/placement", {
-          method: "POST",
-          body: JSON.stringify({ answers: payload }),
-        })
-      );
+      const data = await api<PlacementResult>("/api/learning/placement", {
+        method: "POST",
+        body: JSON.stringify({ answers: payload }),
+      });
+      setResult(data);
+      // Medals are awarded server-side just above; show whichever stuck.
+      api<Achievement[]>("/api/user/achievements?locale=uz")
+        .then((all) => setEarnedMedals(all.filter((a) => a.earnedAt !== null)))
+        .catch(() => {
+          /* the result itself is enough without the shelf */
+        });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Natija saqlanmadi");
     } finally {
@@ -155,6 +161,36 @@ export default function Placement({
             <div className="text-5xl font-semibold">{level}</div>
             <p className="text-sm text-muted-foreground">{summary}</p>
           </div>
+
+          {earnedMedals.length > 0 ? (
+            <section
+              aria-label="Yangi yutuqlar"
+              className="space-y-3 rounded-2xl border border-[#ffd166]/40 bg-[#ffd166]/10 p-5"
+            >
+              <h2 className="text-sm font-medium">Yangi yutuqlar</h2>
+              <ul className="flex flex-wrap gap-3">
+                {earnedMedals.map((medal) => (
+                  <li
+                    key={medal.slug}
+                    className="flex items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-xs"
+                    title={medal.description}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`h-3 w-3 rounded-full ${
+                        medal.tier === "gold"
+                          ? "bg-[#ffd166]"
+                          : medal.tier === "silver"
+                            ? "bg-slate-400"
+                            : "bg-amber-700"
+                      }`}
+                    />
+                    {medal.title}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <div className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
             <h2 className="text-sm font-medium">Har bir javob tahlili</h2>

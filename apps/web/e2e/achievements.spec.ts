@@ -43,6 +43,12 @@ test.describe("achievements", () => {
       page.getByRole("heading", { name: "Darajangiz aniqlandi" })
     ).toBeVisible({ timeout: 15_000 });
 
+    // The result screen lists the medals this placement just unlocked.
+    await expect(page.getByRole("heading", { name: "Yangi yutuqlar" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("Daraja aniqlandi")).toBeVisible();
+
     // Confetti canvas mounts once the result screen is up (skipped only for
     // reduced-motion, which Playwright does not enable by default).
     await expect(page.locator("canvas[aria-hidden='true']").first()).toBeVisible();
