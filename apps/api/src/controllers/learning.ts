@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/prisma.js";
 import { PLACEMENT, scorePlacement } from "../services/curriculum.js";
-import { awardLater, evaluateLater } from "../services/achievements.js";
+import {
+  awardSlug,
+  evaluateLater,
+} from "../services/achievements.js";
 
 /** Returns the diagnostic questions. Answers are not included. */
 export async function getPlacementQuestions(_req: Request, res: Response) {
@@ -43,7 +46,9 @@ export async function submitPlacement(req: Request, res: Response) {
       select: { id: true, currentLevel: true },
     });
 
-    awardLater(userId, "placement_done");
+    // Await this one medal so the result screen can list it immediately;
+    // the stat-based catalog still evaluates in the background.
+    await awardSlug(userId, "placement_done");
     evaluateLater(userId);
 
     res.json({ ...result, currentLevel: user.currentLevel });

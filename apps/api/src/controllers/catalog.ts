@@ -10,7 +10,7 @@ import {
 import { reviewSummary, listDueReviews } from "../services/reviews.js";
 import { buildItemPool, nextPracticeQuestion, serveQuestion, gradeAnswer, getQuestionRow } from "../services/questions.js";
 import { recordAnswer } from "../services/reviews.js";
-import { awardLater, evaluateLater } from "../services/achievements.js";
+import { awardSlug, evaluateLater } from "../services/achievements.js";
 import { prisma } from "../config/prisma.js";
 import {
   initialState,
@@ -128,7 +128,7 @@ export async function answerPlacement(req: Request, res: Response) {
       const level = rawLevel * 2; // map the 0-5 Rasch level onto the 0-10 scale
       await prisma.user.update({ where: { id: uid }, data: { currentLevel: level } });
       placementSessions.delete(uid);
-      awardLater(uid, "placement_done");
+      await awardSlug(uid, "placement_done");
       evaluateLater(uid);
       return res.json({
         finished: true,
