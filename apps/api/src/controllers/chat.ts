@@ -30,13 +30,43 @@ function parseState(raw: string | null): EngineState {
   }
 }
 
+const startSchema = z.object({
+  /** Catalog lesson slug to open with this session. */
+  lessonSlug: z.string().min(1).optional(),
+});
+
 export async function startSession(req: Request, res: Response) {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
+  let lessonSlug: string | undefined;
+  try {
+    lessonSlug = startSchema.parse(req.body ?? {}).lessonSlug;
+  } catch {
+    // Empty body from the dashboard is fine.
+  }
+
+  let lessonId: string | undefined;
+  let title: string | undefined;
+  if (lessonSlug) {
+    const lesson = await prisma.lesson.findUnique({
+      where: { slug: lessonSlug },
+      select: { id: true, titleUz: true, titleEn: true, module: { select: { course: { select: { subject: true } } } } },
+    });
+    if (lesson) {
+      lessonId = lesson.id;
+      title = lesson.titleUz || lesson.titleEn;
+    }
+  }
+
   const session = await prisma.session.create({
-    data: { userId, engineState: JSON.stringify(initialState()) },
-    select: { id: true, startedAt: true },
+    data: {
+      userId,
+      lessonId: lessonId ?? null,
+      title: title ?? null,
+      engineState: JSON.stringify(initialState()),
+    },
+    select: { id: true, startedAt: true, title: true, lessonId: true },
   });
 
   evaluateLater(userId);
@@ -189,6 +219,8 @@ export async function getSession(req: Request, res: Response) {
       id: true,
       title: true,
       startedAt: true,
+      lessonId: true,
+      lesson: { select: { slug: true, titleUz: true, titleEn: true } },
       messages: {
         orderBy: { createdAt: "asc" },
         select: { id: true, role: true, content: true, createdAt: true },

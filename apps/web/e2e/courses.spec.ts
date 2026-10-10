@@ -15,7 +15,9 @@ async function registerFreshUser(page: Page): Promise<void> {
 }
 
 test.describe("courses", () => {
-  test("catalog, course detail, lesson blocks, and enroll", async ({ page }) => {
+  test("catalog, course detail, lesson blocks, tutor link, and enroll", async ({
+    page,
+  }) => {
     await registerFreshUser(page);
 
     await page.getByRole("button", { name: "Kurslar" }).click();
@@ -47,9 +49,22 @@ test.describe("courses", () => {
     await expect(page.getByRole("button", { name: "Tutordan boshlash" })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByRole("button", { name: "Darsni yakunladim" })).toBeVisible({
+    // Opening the tutor attaches the catalog lesson to the study session.
+    await page.getByRole("button", { name: "Tutordan boshlash" }).click();
+    await expect(page).toHaveURL(/\/study\//, { timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Katalogdagi dars" })).toBeVisible({
       timeout: 15_000,
     });
+    await page.getByRole("button", { name: "Chiqish" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    // Back on the same lesson: completion + course progress.
+    await page.goto("/courses");
+    await page.locator("button.text-lg.underline").first().click();
+    const nextLesson = page.locator("ul li button").first();
+    await nextLesson.click();
+    await expect(page).toHaveURL(/\/lessons\/[^/]+$/);
+
     await page.getByRole("button", { name: "Darsni yakunladim" }).click();
     await expect(page.getByText(/XP · jami/)).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/Yakunlandi/)).toBeVisible({
@@ -58,7 +73,6 @@ test.describe("courses", () => {
 
     await page.getByRole("button", { name: "Kursga qaytish" }).click();
     await expect(page).toHaveURL(/\/courses\/[^/]+$/);
-    // Completing one lesson should surface on the course progress bar.
     await expect(page.getByRole("progressbar")).toBeVisible({ timeout: 15_000 });
   });
 });

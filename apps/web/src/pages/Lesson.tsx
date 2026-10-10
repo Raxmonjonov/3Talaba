@@ -52,6 +52,7 @@ export default function LessonPage() {
     try {
       const session = await api<{ id: string }>("/api/chat/start", {
         method: "POST",
+        body: JSON.stringify({ lessonSlug: lesson?.slug }),
       });
       navigate(`/study/${session.id}`);
     } catch (err) {

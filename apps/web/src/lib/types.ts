@@ -35,6 +35,12 @@ export interface Message {
 
 export interface SessionWithMessages extends Session {
   messages: Message[];
+  lessonId?: string | null;
+  lesson?: {
+    slug: string;
+    titleUz: string;
+    titleEn: string;
+  } | null;
 }
 
 export interface ChatResponse {

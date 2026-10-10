@@ -17,34 +17,6 @@ const settingsSchema = z.object({
   currentLevel: z.number().int().min(0).max(10).optional(),
 });
 
-router.get("/me", requireAuth, async (req, res) => {
-  const userId = (req as any).user?.userId;
-  if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      gender: true,
-      age: true,
-      target: true,
-      preferredTitle: true,
-      currentLevel: true,
-      focusMode: true,
-      softConfirm: true,
-      locale: true,
-      role: true,
-      createdAt: true,
-    },
-  });
-
-  if (!user) return res.status(404).json({ message: "Foydalanuvchi topilmadi" });
-  res.json({ user });
-});
-
 const localeSchema = z.enum(["uz", "en", "ru"]);
 
 /** Full medal catalog with this student's earned timestamps. */

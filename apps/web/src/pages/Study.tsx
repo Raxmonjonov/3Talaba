@@ -24,6 +24,8 @@ export default function Study({ user }: { user: User }) {
   const [sessionId, setSessionId] = useState(id ?? "");
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
+  const [lessonTitle, setLessonTitle] = useState<string | null>(null);
+  const [lessonSlug, setLessonSlug] = useState<string | null>(null);
 
   const [elapsed, setElapsed] = useState(0);
   const [breakDue, setBreakDue] = useState(false);
@@ -59,6 +61,12 @@ export default function Study({ user }: { user: User }) {
           if (cancelled) return;
           setSessionId(session.id);
           setMessages(session.messages);
+          if (session.lesson) {
+            setLessonSlug(session.lesson.slug);
+            setLessonTitle(
+              session.lesson.titleUz || session.lesson.titleEn || null
+            );
+          }
         } else {
           const session = await api<Session>("/api/chat/start", { method: "POST" });
           if (cancelled) return;
@@ -216,10 +224,23 @@ export default function Study({ user }: { user: User }) {
           <div className="flex min-w-0 items-center gap-3">
             <TutorOrb thinking={sending} />
             <div className="min-w-0">
-              <h1 className="text-lg font-semibold">Dars</h1>
+              <h1 className="truncate text-lg font-semibold">
+                {lessonTitle ?? "Dars"}
+              </h1>
               <p className="truncate text-xs text-muted-foreground">
                 {address} bilan birga
                 {user.focusMode ? " · fokus rejimi" : ""}
+                {lessonSlug ? (
+                  <>
+                    {" · "}
+                    <button
+                      onClick={() => navigate(`/lessons/${lessonSlug}`)}
+                      className="underline underline-offset-4 hover:text-foreground"
+                    >
+                      Katalogdagi dars
+                    </button>
+                  </>
+                ) : null}
               </p>
             </div>
           </div>
@@ -246,7 +267,9 @@ export default function Study({ user }: { user: User }) {
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-5 py-8">
         {messages.length === 0 && ready && !sending ? (
           <p className="pt-16 text-center text-sm text-muted-foreground">
-            Savolimiz tayyor, {address}. Nimadan boshlaymiz?
+            {lessonTitle
+              ? `${lessonTitle} bo‘yicha savolingizni yozing, ${address}.`
+              : `Savolimiz tayyor, ${address}. Nimadan boshlaymiz?`}
           </p>
         ) : null}
 
