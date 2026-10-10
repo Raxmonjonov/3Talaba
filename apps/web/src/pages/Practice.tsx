@@ -6,6 +6,7 @@ import type {
   ServedQuestion,
 } from "../lib/types";
 import { QuestionBody } from "@/components/QuestionBody";
+import { subjectLabel } from "@/lib/subjects";
 
 /** Soft cap so a session cannot loop forever on a huge bank. */
 const MAX_DRILL = 12;
@@ -31,6 +32,18 @@ export default function Practice() {
   } | null>(null);
   const seenRef = useRef<string[]>([]);
   const startedRef = useRef(0);
+
+  const scopeLabel = skill
+    ? skill
+    : subject
+      ? subjectLabel(subject)
+      : reviewMode
+        ? "Takrorlash navbati"
+        : "Umumiy savol zaxirasi";
+
+  function clearFilter() {
+    navigate(skill ? "/skills" : reviewMode ? "/practice?review=1" : "/practice");
+  }
 
   const loadNext = useCallback(
     async (exclude: string[]) => {
@@ -180,20 +193,33 @@ export default function Practice() {
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
-          <div>
+          <div className="min-w-0 space-y-1">
             <h1 className="text-lg font-semibold">
               {reviewMode ? "Takrorlash" : "Mashq"}
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="truncate text-xs text-muted-foreground">
               {answered} / {MAX_DRILL} · {correctCount} to‘g‘ri
             </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {scopeLabel}
+            </p>
           </div>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Chiqish
-          </button>
+          <div className="flex items-center gap-3">
+            {skill || subject ? (
+              <button
+                onClick={clearFilter}
+                className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                Filtrni tozalash
+              </button>
+            ) : null}
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Chiqish
+            </button>
+          </div>
         </div>
       </header>
 

@@ -396,12 +396,30 @@ export default function Dashboard({
             ) : null}
           </div>
           {reviews && reviews.summary.weakSkills.length > 0 ? (
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">E’tibor:</p>
+              <div className="flex flex-wrap gap-2">
+                {reviews.summary.weakSkills.slice(0, 5).map((s) => (
+                  <button
+                    key={s.skill}
+                    onClick={() =>
+                      navigate(`/practice?skill=${encodeURIComponent(s.skill)}`)
+                    }
+                    className="rounded-full border bg-background px-3 py-1 text-xs hover:bg-secondary"
+                    title={`Aniqlik ${Math.round(s.accuracy * 100)}% · ${s.attempts} javob`}
+                  >
+                    {s.skill} · {Math.round(s.accuracy * 100)}%
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {reviews && reviews.summary.next7Days.some((n) => n > 0) ? (
             <p className="text-xs text-muted-foreground">
-              E’tibor:{" "}
-              {reviews.summary.weakSkills
-                .slice(0, 3)
-                .map((s) => s.skill)
-                .join(", ")}
+              Keyingi 7 kun:{" "}
+              {reviews.summary.next7Days
+                .map((n, i) => (i === 0 ? `bugun ${n}` : `${i} kunda ${n}`))
+                .join(" · ")}
             </p>
           ) : null}
         </section>

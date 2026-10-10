@@ -36,12 +36,27 @@ test.describe("skills map", () => {
       page.getByText(/zaif mavzu yo‘q|zaif mavzu yo'q|Mavzu topilmadi/i),
     ).toBeVisible({ timeout: 15_000 });
 
-    // Subject drill from the map.
+    // Subject drill from the map keeps the filter visible in practice.
     await page.getByRole("button", { name: "Barchasi" }).click();
     await page.getByRole("button", { name: /mashqi$/ }).first().click();
     await expect(page).toHaveURL(/\/practice\?subject=/);
     await expect(page.getByRole("heading", { name: "Mashq" })).toBeVisible({
       timeout: 15_000,
     });
+    await expect(
+      page.getByRole("button", { name: "Filtrni tozalash" })
+    ).toBeVisible({ timeout: 15_000 });
+
+    // Skill drill deep-link from a single row (exact name so "Umumiy mashq" is skipped).
+    await page.goto("/skills");
+    const skillMashq = page.getByRole("button", { name: "Mashq", exact: true }).first();
+    await skillMashq.waitFor({ timeout: 15_000 });
+    await skillMashq.click();
+    await expect(page).toHaveURL(/\/practice\?skill=/);
+    await expect(
+      page.getByRole("button", { name: "Filtrni tozalash" })
+    ).toBeVisible({ timeout: 15_000 });
+    // Skill filter shows the skill slug, not the generic bank label.
+    await expect(page.getByText("Umumiy savol zaxirasi")).toHaveCount(0);
   });
 });
