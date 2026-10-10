@@ -29,6 +29,7 @@ const publicUser = {
   target: true,
   preferredTitle: true,
   currentLevel: true,
+  xp: true,
   focusMode: true,
   softConfirm: true,
 } as const;

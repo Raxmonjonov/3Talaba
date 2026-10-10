@@ -328,7 +328,15 @@ export default function Dashboard({
               {statsError}
             </p>
           ) : null}
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="subject-scene">
+              <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
+                <p className="text-xs text-muted-foreground">Yig‘ilgan XP</p>
+                <p className="text-xl font-semibold">
+                  {user.xp ?? 0}
+                </p>
+              </div>
+            </div>
             <div className="subject-scene">
               <div className="subject-plate h-full space-y-1 rounded-2xl border bg-card p-5 shadow-sm">
                 <p className="text-xs text-muted-foreground">Jami vaqt</p>

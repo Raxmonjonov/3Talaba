@@ -20,6 +20,7 @@ model User {
   target         String?
   preferredTitle String?
   currentLevel   Int      @default(0)
+  xp             Int      @default(0)
   focusMode      Boolean  @default(false)
   softConfirm    Boolean  @default(true)
   locale         String   @default("uz")
@@ -34,6 +35,7 @@ model User {
   enrollments Enrollment[]
   reviewCards ReviewCard[]
   achievements UserAchievement[]
+  lessonCompletions LessonCompletion[]
 
   @@index([email])
 }
@@ -150,6 +152,7 @@ model Lesson {
 
   blocks  LessonBlock[]
   sessions Session[]
+  completions LessonCompletion[]
 
   @@index([moduleId, order])
   @@index([levelRange])
@@ -288,4 +291,18 @@ model PlacementSession {
   userId    String   @id
   state     String
   updatedAt DateTime @updatedAt
+}
+
+/// One row per finished catalog lesson. Idempotent: unique per user+lesson.
+model LessonCompletion {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  xpAwarded   Int      @default(0)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId, completedAt])
 }

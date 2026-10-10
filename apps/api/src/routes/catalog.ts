@@ -4,6 +4,7 @@ import {
   getCourses,
   getCourseDetail,
   getLessonDetail,
+  completeLessonAction,
   getSkills,
   enrollCourse,
   startPlacement,
@@ -19,6 +20,7 @@ router.get("/courses", requireAuth, getCourses);
 router.get("/courses/:slug", requireAuth, getCourseDetail);
 router.post("/courses/:slug/enroll", requireAuth, enrollCourse);
 router.get("/lessons/:slug", requireAuth, getLessonDetail);
+router.post("/lessons/:slug/complete", requireAuth, completeLessonAction);
 router.get("/skills", requireAuth, getSkills);
 
 router.get("/placement/start", requireAuth, startPlacement);

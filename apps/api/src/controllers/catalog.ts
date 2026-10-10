@@ -6,10 +6,10 @@ import {
   getLesson,
   skillMap,
   enroll,
+  completeLesson,
 } from "../services/catalog.js";
-import { reviewSummary, listDueReviews } from "../services/reviews.js";
+import { reviewSummary, listDueReviews, recordAnswer } from "../services/reviews.js";
 import { buildItemPool, nextPracticeQuestion, serveQuestion, gradeAnswer, getQuestionRow } from "../services/questions.js";
-import { recordAnswer } from "../services/reviews.js";
 import { awardSlug, evaluateLater } from "../services/achievements.js";
 import { prisma } from "../config/prisma.js";
 import {
@@ -59,15 +59,33 @@ export async function getCourses(req: Request, res: Response) {
 }
 
 export async function getCourseDetail(req: Request, res: Response) {
-  const course = await getCourse(req.params.slug, localeOf(req));
+  const course = await getCourse(
+    req.params.slug,
+    localeOf(req),
+    (req as any).user?.userId
+  );
   if (!course) return res.status(404).json({ message: "Kurs topilmadi" });
   res.json(course);
 }
 
 export async function getLessonDetail(req: Request, res: Response) {
-  const lesson = await getLesson(req.params.slug, localeOf(req));
+  const lesson = await getLesson(
+    req.params.slug,
+    localeOf(req),
+    (req as any).user?.userId
+  );
   if (!lesson) return res.status(404).json({ message: "Dars topilmadi" });
   res.json(lesson);
+}
+
+/** Marks the lesson done and awards its XP (idempotent). */
+export async function completeLessonAction(req: Request, res: Response) {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  const result = await completeLesson(uid, req.params.slug);
+  if (!result) return res.status(404).json({ message: "Dars topilmadi" });
+  res.json(result);
 }
 
 export async function getSkills(req: Request, res: Response) {

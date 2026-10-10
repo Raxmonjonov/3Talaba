@@ -67,6 +67,27 @@ export default function CourseDetailPage() {
         ) : course ? (
           <>
             <p className="text-sm text-muted-foreground">{course.description}</p>
+            {typeof course.progressPct === "number" ? (
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  {course.completedCount ?? 0}/{course.lessonCount} dars ·{" "}
+                  {course.progressPct}%
+                </p>
+                <div
+                  className="h-1.5 overflow-hidden rounded-full bg-secondary"
+                  role="progressbar"
+                  aria-valuenow={course.progressPct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Kurs progressi"
+                >
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${course.progressPct}%` }}
+                  />
+                </div>
+              </div>
+            ) : null}
 
             {course.modules.map((mod) => (
               <section key={mod.slug} className="space-y-3">
@@ -86,13 +107,21 @@ export default function CourseDetailPage() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 space-y-1">
-                            <p className="font-medium">{lesson.title}</p>
+                            <p className="font-medium">
+                              {lesson.completed ? (
+                                <span aria-hidden="true" className="mr-1 text-primary">
+                                  ✓
+                                </span>
+                              ) : null}
+                              {lesson.title}
+                            </p>
                             <p className="text-sm text-muted-foreground">
                               {lesson.summary}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               ~{lesson.estMinutes} daqiqa · {lesson.blockCount} blok ·{" "}
                               {lesson.xpReward} XP
+                              {lesson.completed ? " · yakunlangan" : ""}
                             </p>
                           </div>
                           <span

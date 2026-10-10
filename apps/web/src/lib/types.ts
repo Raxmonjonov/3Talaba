@@ -13,6 +13,7 @@ export interface User {
   target: string | null;
   preferredTitle: string | null;
   currentLevel: number;
+  xp?: number;
   focusMode: boolean;
   softConfirm: boolean;
 }
@@ -127,15 +128,21 @@ export interface LessonRef {
   blockCount: number;
 }
 
+export interface CourseLesson extends LessonRef {
+  completed?: boolean;
+}
+
 export interface CourseModule {
   slug: string;
   title: string;
   description: string;
   levelRange: string;
-  lessons: LessonRef[];
+  lessons: CourseLesson[];
 }
 
 export interface CourseDetail extends CourseListItem {
+  completedCount?: number;
+  progressPct?: number;
   modules: CourseModule[];
 }
 
@@ -148,7 +155,17 @@ export interface LessonBlock {
 }
 
 export interface LessonDetail extends LessonRef {
+  completed?: boolean;
+  completedAt?: string | null;
   blocks: LessonBlock[];
+}
+
+export interface CompleteLessonResponse {
+  lessonSlug: string;
+  alreadyDone: boolean;
+  xpAwarded: number;
+  xpTotal: number;
+  enrollmentPct?: number;
 }
 
 export interface EnrollResponse {

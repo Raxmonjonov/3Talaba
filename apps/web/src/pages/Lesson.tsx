@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
-import type { LessonDetail } from "../lib/types";
+import type { CompleteLessonResponse, LessonDetail } from "../lib/types";
 
 const KIND_LABELS: Record<string, string> = {
   theory: "Nazariya",
@@ -18,6 +18,12 @@ export default function LessonPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [started, setStarted] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [completeInfo, setCompleteInfo] = useState<{
+    alreadyDone: boolean;
+    xpAwarded: number;
+    xpTotal: number;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -51,6 +57,29 @@ export default function LessonPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Darsni ochib bo'lmadi");
       setStarted(false);
+    }
+  }
+
+  async function markComplete() {
+    if (!lesson || completing) return;
+    setCompleting(true);
+    try {
+      const data = await api<CompleteLessonResponse>(
+        `/api/content/lessons/${lesson.slug}/complete`,
+        { method: "POST" }
+      );
+      setCompleteInfo({
+        alreadyDone: data.alreadyDone,
+        xpAwarded: data.xpAwarded,
+        xpTotal: data.xpTotal,
+      });
+      setLesson((prev) =>
+        prev ? { ...prev, completed: true, completedAt: new Date().toISOString() } : prev
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Darsni yakunlab bo'lmadi");
+    } finally {
+      setCompleting(false);
     }
   }
 
@@ -97,13 +126,38 @@ export default function LessonPage() {
                   ))}
                 </ul>
               ) : null}
-              <button
-                onClick={openInTutor}
-                disabled={started}
-                className="btn-primary"
-              >
-                {started ? "Tayyorlanmoqda…" : "Tutordan boshlash"}
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={openInTutor}
+                  disabled={started}
+                  className="btn-secondary"
+                >
+                  {started ? "Tayyorlanmoqda…" : "Tutordan boshlash"}
+                </button>
+                {lesson.completed ? (
+                  <span
+                    role="status"
+                    className="inline-flex items-center rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
+                  >
+                    Yakunlandi · +{lesson.xpReward} XP
+                  </span>
+                ) : (
+                  <button
+                    onClick={markComplete}
+                    disabled={completing}
+                    className="btn-primary"
+                  >
+                    {completing ? "Saqlanmoqda…" : "Darsni yakunladim"}
+                  </button>
+                )}
+              </div>
+              {completeInfo ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  {completeInfo.alreadyDone
+                    ? "Bu dars oldin yakunlangan edi."
+                    : `+${completeInfo.xpAwarded} XP · jami ${completeInfo.xpTotal} XP`}
+                </p>
+              ) : null}
             </section>
 
             <section className="space-y-4">

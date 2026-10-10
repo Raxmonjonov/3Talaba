@@ -47,9 +47,18 @@ test.describe("courses", () => {
     await expect(page.getByRole("button", { name: "Tutordan boshlash" })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByRole("button", { name: "Kursga qaytish" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Darsni yakunladim" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await page.getByRole("button", { name: "Darsni yakunladim" }).click();
+    await expect(page.getByText(/XP · jami/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/Yakunlandi/)).toBeVisible({
+      timeout: 15_000,
+    });
 
     await page.getByRole("button", { name: "Kursga qaytish" }).click();
     await expect(page).toHaveURL(/\/courses\/[^/]+$/);
+    // Completing one lesson should surface on the course progress bar.
+    await expect(page.getByRole("progressbar")).toBeVisible({ timeout: 15_000 });
   });
 });

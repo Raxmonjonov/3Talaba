@@ -140,6 +140,7 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | GET | `/api/content/courses/:slug` | Kurs: modul va darslar daraxti |
 | POST | `/api/content/courses/:slug/enroll` | Kursga yozilish |
 | GET | `/api/content/lessons/:slug` | Dars matni + o‘quv bloklari |
+| POST | `/api/content/lessons/:slug/complete` | Darsni yakunlash, XP berish |
 | GET | `/api/content/skills` | Mavzular daraxti + ustunlik |
 | GET | `/api/content/placement/start` | Adaptiv daraja o‘lchovi (birinchi savol) |
 | POST | `/api/content/placement/answer` | Javob yuborish, keyingi savol yoki natija |
