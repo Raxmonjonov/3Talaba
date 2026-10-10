@@ -129,7 +129,12 @@ export default function Courses() {
                     <p className="text-xs text-muted-foreground">
                       {SUBJECT_LABELS[course.subject] ?? course.subject}
                     </p>
-                    <h2 className="text-lg font-semibold">{course.title}</h2>
+                    <button
+                      onClick={() => navigate(`/courses/${course.slug}`)}
+                      className="text-left text-lg font-semibold underline underline-offset-4 hover:text-primary"
+                    >
+                      {course.title}
+                    </button>
                     <p className="text-sm text-muted-foreground">{course.description}</p>
                     <p className="text-xs text-muted-foreground">
                       {course.moduleCount} modul · {course.lessonCount} dars

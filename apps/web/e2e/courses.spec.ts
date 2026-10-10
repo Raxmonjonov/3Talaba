@@ -15,9 +15,7 @@ async function registerFreshUser(page: Page): Promise<void> {
 }
 
 test.describe("courses", () => {
-  test("dashboard opens the catalog and a course can be enrolled", async ({
-    page,
-  }) => {
+  test("catalog, course detail, lesson blocks, and enroll", async ({ page }) => {
     await registerFreshUser(page);
 
     await page.getByRole("button", { name: "Kurslar" }).click();
@@ -26,7 +24,6 @@ test.describe("courses", () => {
       timeout: 15_000,
     });
 
-    // Seeded catalog has at least one course; enroll on the first card.
     const enroll = page.getByRole("button", { name: "Yozilish" }).first();
     await expect(enroll).toBeVisible({ timeout: 15_000 });
     await enroll.click();
@@ -34,7 +31,25 @@ test.describe("courses", () => {
       timeout: 15_000,
     });
 
-    await page.getByRole("button", { name: "Dashboard" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    // Course titles are large underlined buttons linking to /courses/:slug.
+    await page.locator("button.text-lg.underline").first().click();
+    await expect(page).toHaveURL(/\/courses\/[^/]+$/);
+    await expect(page.getByRole("button", { name: /Kursga qaytish|Kurslar/ })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Seeded course pages list lessons with "N daqiqa" meta.
+    const lesson = page.locator("ul li button").first();
+    await expect(lesson).toBeVisible({ timeout: 15_000 });
+    await lesson.click();
+
+    await expect(page).toHaveURL(/\/lessons\/[^/]+$/);
+    await expect(page.getByRole("button", { name: "Tutordan boshlash" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole("button", { name: "Kursga qaytish" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Kursga qaytish" }).click();
+    await expect(page).toHaveURL(/\/courses\/[^/]+$/);
   });
 });

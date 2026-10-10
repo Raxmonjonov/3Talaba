@@ -30,7 +30,8 @@ tayyorgarlik uchun.
 │           ├── i18n/              uz.ts (manba), en.ts, ru.ts, config.ts
 │           ├── lib/               API client, SEO, mavzu (theme)
 │           └── pages/             Landing, Login, Register, Placement,
-│                                  Dashboard, Study, Practice, Courses
+│                                  Dashboard, Study, Practice, Courses,
+│                                  CourseDetail, Lesson
 ```
 
 ## Landing sahifasi
@@ -138,6 +139,7 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | GET | `/api/content/courses` | Kurslar ro‘yxati (`?subject=` bilan filtr) |
 | GET | `/api/content/courses/:slug` | Kurs: modul va darslar daraxti |
 | POST | `/api/content/courses/:slug/enroll` | Kursga yozilish |
+| GET | `/api/content/lessons/:slug` | Dars matni + o‘quv bloklari |
 | GET | `/api/content/placement/start` | Adaptiv daraja o‘lchovi (birinchi savol) |
 | POST | `/api/content/placement/answer` | Javob yuborish, keyingi savol yoki natija |
 | GET | `/api/content/practice/next?exclude=` | Mashq savoli (FSRS navbati) |

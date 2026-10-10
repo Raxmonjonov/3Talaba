@@ -112,6 +112,45 @@ export interface CourseListItem {
   lessonCount: number;
 }
 
+export interface LessonRef {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  objectives: string[];
+  levelRange: string;
+  estMinutes: number;
+  xpReward: number;
+  storyTitle?: string;
+  courseSlug: string;
+  moduleSlug: string;
+  blockCount: number;
+}
+
+export interface CourseModule {
+  slug: string;
+  title: string;
+  description: string;
+  levelRange: string;
+  lessons: LessonRef[];
+}
+
+export interface CourseDetail extends CourseListItem {
+  modules: CourseModule[];
+}
+
+export interface LessonBlock {
+  kind: string;
+  title: string;
+  minMinutes: number;
+  content: string;
+  skills: string[];
+}
+
+export interface LessonDetail extends LessonRef {
+  blocks: LessonBlock[];
+}
+
 export interface EnrollResponse {
   courseSlug: string;
   enrolled: boolean;
