@@ -11,7 +11,6 @@ export const en: Dictionary = {
   nav: {
     brand: "3Talab",
     skipToContent: "Skip to main content",
-    features: "Benefits",
     howItWorks: "How it works",
     preview: "Inside",
     dialogue: "Tutor",
@@ -21,6 +20,7 @@ export const en: Dictionary = {
     login: "Log in",
     register: "Sign up",
     dashboard: "Dashboard",
+    logout: "Log out",
     openMenu: "Open menu",
     closeMenu: "Close menu",
     toggleTheme: "Switch theme",
@@ -236,8 +236,6 @@ export const en: Dictionary = {
   footer: {
     tagline: "SAT, IELTS and university admission preparation for students in Uzbekistan.",
     contact: "Contact",
-    telegram: "Contact us on Telegram",
-    telegramPlaceholder: "add link",
     privacy: "Privacy policy",
     terms: "Terms of use",
     rights: "All rights reserved.",

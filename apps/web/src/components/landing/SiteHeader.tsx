@@ -69,7 +69,7 @@ export function SiteHeader({ user, onLogout }: SiteHeaderProps) {
                 {t.nav.dashboard}
               </Link>
               <button type="button" onClick={onLogout} className="btn-primary text-sm">
-                {t.nav.login}
+                {t.nav.logout}
               </button>
             </>
           ) : (
@@ -127,7 +127,7 @@ export function SiteHeader({ user, onLogout }: SiteHeaderProps) {
                       setOpen(false);
                     }}
                   >
-                    {t.nav.login}
+                    {t.nav.logout}
                   </button>
                 </>
               ) : (

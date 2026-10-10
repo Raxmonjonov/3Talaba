@@ -27,11 +27,24 @@ export default function Study({ user }: { user: User }) {
 
   const [elapsed, setElapsed] = useState(0);
   const [breakDue, setBreakDue] = useState(false);
-  const [answerCount, setAnswerCount] = useState(0);
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  const startedAtRef = useRef<number>(0);
-  const loggedRef = useRef<number>(0);
+  /** Focused milliseconds banked across breaks. */
+  const focusedRef = useRef(0);
+  /** Start of the current focus segment (reset on break). */
+  const segmentStartRef = useRef(0);
+  /** Start of the current pomodoro cycle (reset on break). */
+  const cycleStartRef = useRef(0);
+  /** Minutes / answers already POSTed to /learning/progress. */
+  const loggedMinutesRef = useRef(0);
+  const loggedAnswersRef = useRef(0);
+  const answersRef = useRef(0);
+  const sessionIdRef = useRef("");
+  const endedRef = useRef(false);
+
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +64,13 @@ export default function Study({ user }: { user: User }) {
           if (cancelled) return;
           setSessionId(session.id);
         }
-        startedAtRef.current = Date.now();
+        focusedRef.current = 0;
+        segmentStartRef.current = Date.now();
+        cycleStartRef.current = Date.now();
+        loggedMinutesRef.current = 0;
+        loggedAnswersRef.current = 0;
+        answersRef.current = 0;
+        endedRef.current = false;
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Sessiya ochilmadi");
@@ -72,13 +91,17 @@ export default function Study({ user }: { user: User }) {
     if (!ready) return;
 
     const timer = setInterval(() => {
-      const minutes = Math.floor((Date.now() - startedAtRef.current) / 60000);
+      const now = Date.now();
+      const minutes = Math.floor(
+        (focusedRef.current + (now - segmentStartRef.current)) / 60000
+      );
       setElapsed(minutes);
 
-      if (minutes > 0 && minutes % CYCLE_MINUTES === 0 && minutes % BREAK_AFTER_MINUTES !== 0) {
+      const cycleMinutes = Math.floor((now - cycleStartRef.current) / 60000);
+      if (cycleMinutes > 0 && cycleMinutes % CYCLE_MINUTES === 0 && cycleMinutes % BREAK_AFTER_MINUTES !== 0) {
         setBreakDue(true);
       }
-      if (minutes > 0 && minutes % BREAK_AFTER_MINUTES === 0) {
+      if (cycleMinutes > 0 && cycleMinutes % BREAK_AFTER_MINUTES === 0) {
         setBreakDue(true);
       }
     }, 1000);
@@ -90,53 +113,64 @@ export default function Study({ user }: { user: User }) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, sending]);
 
-  const persistProgress = useCallback(
-    (minutes: number, completed: number) => {
-      if (minutes <= 0) return;
-      api("/api/learning/progress", {
-        method: "POST",
-        body: JSON.stringify({ minutes, completed }),
-      }).catch(() => {
-        /* progress logging is best-effort */
-      });
-    },
-    []
-  );
+  /**
+   * Posts the un-logged minute and answer deltas. Safe to call repeatedly —
+   * a second call with nothing new is a no-op. `keepalive` lets the browser
+   * finish the request even if the tab is being closed.
+   */
+  const flushProgress = useCallback(() => {
+    const totalMinutes = Math.floor(
+      (focusedRef.current + (Date.now() - segmentStartRef.current)) / 60000
+    );
+    const deltaMinutes = totalMinutes - loggedMinutesRef.current;
+    const deltaAnswers = answersRef.current - loggedAnswersRef.current;
+    if (deltaMinutes <= 0 && deltaAnswers <= 0) return;
+    loggedMinutesRef.current = totalMinutes;
+    loggedAnswersRef.current = answersRef.current;
+    api("/api/learning/progress", {
+      method: "POST",
+      body: JSON.stringify({
+        minutes: Math.max(0, deltaMinutes),
+        completed: Math.max(0, deltaAnswers),
+      }),
+      keepalive: true,
+    }).catch(() => {
+      /* progress logging is best-effort */
+    });
+  }, []);
 
-  // Flush study time and close the session when leaving the page.
+  /** Marks the session ended server-side. Idempotent. */
+  const closeSession = useCallback(() => {
+    if (endedRef.current || !sessionIdRef.current) return;
+    endedRef.current = true;
+    const totalMinutes = Math.floor(
+      (focusedRef.current + (Date.now() - segmentStartRef.current)) / 60000
+    );
+    api(`/api/chat/sessions/${sessionIdRef.current}/end`, {
+      method: "POST",
+      body: JSON.stringify({ minutes: totalMinutes }),
+      keepalive: true,
+    }).catch(() => {
+      /* closing the session is best-effort — never block the exit */
+    });
+  }, []);
+
+  // Flush study time and close the session when leaving the page or closing
+  // the tab. The Chiqish button also navigates, so this covers refresh and
+  // browser-back as well.
   useEffect(() => {
-    const flush = () => {
-      const minutes = Math.floor((Date.now() - startedAtRef.current) / 60000);
-      const delta = minutes - loggedRef.current;
-      if (delta > 0) {
-        persistProgress(delta, answerCount);
-        loggedRef.current = minutes;
-      }
-    };
-
-    window.addEventListener("beforeunload", flush);
+    window.addEventListener("beforeunload", flushProgress);
     return () => {
-      window.removeEventListener("beforeunload", flush);
-      flush();
+      window.removeEventListener("beforeunload", flushProgress);
+      flushProgress();
+      closeSession();
     };
-  }, [persistProgress, answerCount]);
+  }, [flushProgress, closeSession]);
 
   /** Leaving for real: log time, close the session server-side, go home. */
-  async function leave() {
-    const minutes = Math.floor((Date.now() - startedAtRef.current) / 60000);
-    const delta = minutes - loggedRef.current;
-    if (delta > 0) {
-      persistProgress(delta, answerCount);
-      loggedRef.current = minutes;
-    }
-    if (sessionId) {
-      api(`/api/chat/sessions/${sessionId}/end`, {
-        method: "POST",
-        body: JSON.stringify({ minutes }),
-      }).catch(() => {
-        /* closing the session is best-effort — never block the exit */
-      });
-    }
+  function leave() {
+    flushProgress();
+    closeSession();
     navigate("/dashboard");
   }
 
@@ -156,7 +190,7 @@ export default function Study({ user }: { user: User }) {
       createdAt: new Date().toISOString(),
     };
     setMessages((m) => [...m, optimistic]);
-    setAnswerCount((c) => c + 1);
+    answersRef.current += 1;
 
     try {
       const res = await api<ChatResponse>("/api/chat/message", {
@@ -267,7 +301,9 @@ export default function Study({ user }: { user: User }) {
               <button
                 onClick={() => {
                   setBreakDue(false);
-                  startedAtRef.current = Date.now();
+                  focusedRef.current += Date.now() - segmentStartRef.current;
+                  segmentStartRef.current = Date.now();
+                  cycleStartRef.current = Date.now();
                 }}
                 className="rounded-lg border bg-background px-3 py-1.5 text-sm hover:bg-card"
               >

@@ -9,7 +9,6 @@
   nav: {
     brand: "3Talab",
     skipToContent: "Asosiy kontentga o'tish",
-    features: "Afzalliklar",
     howItWorks: "Qanday ishlaydi",
     preview: "Ko'rinish",
     dialogue: "Ustoz",
@@ -19,6 +18,7 @@
     login: "Kirish",
     register: "Ro'yxatdan o'tish",
     dashboard: "Dashboard",
+    logout: "Chiqish",
     openMenu: "Menyuni ochish",
     closeMenu: "Menyuni yopish",
     toggleTheme: "Rangni almashtirish",
@@ -240,8 +240,6 @@
   footer: {
     tagline: "O'zbek talabalari uchun SAT, IELTS va oliygoh kirishiga tayyorgarlik.",
     contact: "Aloqa",
-    telegram: "Telegram orqali bog'lanish",
-    telegramPlaceholder: "havolani qo'shish",
     privacy: "Maxfiylik siyosati",
     terms: "Foydalanish shartlari",
     rights: "Barcha huquqlar himoyalangan.",

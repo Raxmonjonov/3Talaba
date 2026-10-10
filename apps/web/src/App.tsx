@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { api } from "./lib/api";
+import { api, ApiError } from "./lib/api";
 import type { User } from "./lib/types";
 import { DEFAULT_LOCALE, landingPath, LOCALES } from "./i18n/config";
 import { AuthLocaleProvider } from "./i18n/AuthLocaleProvider";
@@ -35,16 +35,20 @@ export default function App() {
         return;
       }
       // A wedged API must not leave the boot spinner up forever — treat a
-      // slow /auth/me as signed out so the login page can still render.
+      // slow /auth/me as "keep the stored token" so a flaky network never
+      // signs the student out.
       const timeout = new Promise<null>((resolve) =>
         setTimeout(() => resolve(null), 8_000),
       );
       try {
         const me = await Promise.race([api<User>("/api/auth/me"), timeout]);
         if (me) setUser(me);
-        else localStorage.removeItem("3talab_token");
-      } catch {
-        localStorage.removeItem("3talab_token");
+      } catch (err) {
+        // Only an explicit 401 means the token is dead; transport failures
+        // and timeouts keep it so the student can retry.
+        if (err instanceof ApiError && err.status === 401) {
+          localStorage.removeItem("3talab_token");
+        }
       } finally {
         setLoading(false);
       }

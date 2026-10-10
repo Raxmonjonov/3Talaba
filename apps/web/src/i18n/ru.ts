@@ -11,7 +11,6 @@ export const ru: Dictionary = {
   nav: {
     brand: "3Talab",
     skipToContent: "Перейти к основному содержимому",
-    features: "Преимущества",
     howItWorks: "Как это работает",
     preview: "Внутри",
     dialogue: "Репетитор",
@@ -21,6 +20,7 @@ export const ru: Dictionary = {
     login: "Войти",
     register: "Регистрация",
     dashboard: "Кабинет",
+    logout: "Выйти",
     openMenu: "Открыть меню",
     closeMenu: "Закрыть меню",
     toggleTheme: "Сменить тему",
@@ -240,8 +240,6 @@ export const ru: Dictionary = {
   footer: {
     tagline: "Подготовка к SAT, IELTS и поступлению для студентов Узбекистана.",
     contact: "Контакты",
-    telegram: "Написать нам в Telegram",
-    telegramPlaceholder: "добавить ссылку",
     privacy: "Политика конфиденциальности",
     terms: "Условия использования",
     rights: "Все права защищены.",

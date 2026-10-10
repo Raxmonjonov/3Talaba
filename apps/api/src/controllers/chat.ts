@@ -213,8 +213,14 @@ export async function endSession(req: Request, res: Response) {
     ? Math.max(0, Math.min(600, Math.round(minutes)))
     : 0;
 
+  const owned = await prisma.session.findFirst({
+    where: { id: req.params.id, userId },
+    select: { id: true },
+  });
+  if (!owned) return res.status(404).json({ message: "Sessiya topilmadi" });
+
   const session = await prisma.session.update({
-    where: { id: req.params.id },
+    where: { id: owned.id },
     data: { endedAt: new Date(), totalMinutes: safeMinutes },
     select: { id: true, endedAt: true, totalMinutes: true },
   });
