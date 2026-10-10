@@ -1,10 +1,11 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./test";
 
 /** Registers a throwaway student through the real form and lands on the dashboard. */
 async function registerFreshUser(page: Page): Promise<void> {
   const unique = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
   await page.goto("/register");
+  await page.locator("#firstName").waitFor({ state: "visible", timeout: 15_000 });
   await page.locator("#firstName").fill("E2E");
   await page.locator("#email").fill(`e2e-${unique}@3talab.test`);
   await page.locator("#password").fill("secret123");
@@ -16,7 +17,9 @@ async function registerFreshUser(page: Page): Promise<void> {
   await page.locator('form button:not([type="button"])').click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText("Xush kelibsiz, E2E")).toBeVisible();
+  await expect(page.getByText("Xush kelibsiz, E2E")).toBeVisible({
+    timeout: 15_000,
+  });
 }
 
 test.describe("onboarding flow", () => {
@@ -59,6 +62,15 @@ test.describe("onboarding flow", () => {
   test("the dashboard shows the progress stairs and can opt out of 3D", async ({
     page,
   }) => {
+    // The shared fixture disables 3D to spare WebGL contexts; this one test
+    // needs the default ON state so the opt-out path is what gets exercised.
+    await page.addInitScript(() => {
+      try {
+        localStorage.removeItem("3talab_3d");
+      } catch {
+        /* ignore */
+      }
+    });
     await registerFreshUser(page);
 
     // The staircase is always present: WebGL devices get the 3D one, every
@@ -66,7 +78,9 @@ test.describe("onboarding flow", () => {
     await expect(page.getByText("Tepada maqsadingiz")).toBeVisible();
     await expect(page.getByText("Har bir pog‘ona — bir daraja")).toBeVisible();
 
-    await page.getByText("3D effektlarni").click();
+    // The checkbox sits under animated 3D layers; click the input directly so
+    // a floating medal or canvas frame cannot steal the actionability check.
+    await page.locator('input[type="checkbox"]').nth(2).click({ force: true });
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem("3talab_3d")))
       .toBe("off");

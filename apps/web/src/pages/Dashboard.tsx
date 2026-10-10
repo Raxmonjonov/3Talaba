@@ -55,11 +55,9 @@ function Sparkline({ points }: { points: number[] }) {
 export default function Dashboard({
   user,
   onLogout,
-  onStartPlacement,
 }: {
   user: User;
   onLogout: () => void;
-  onStartPlacement: () => void;
 }) {
   const navigate = useNavigate();
   const [focusMode, setFocusMode] = useState(user.focusMode);
@@ -71,7 +69,12 @@ export default function Dashboard({
   const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [error, setError] = useState("");
   const threeDEnabled = use3DEnabled();
-  const { items: achievements, fresh, celebration } = useAchievements();
+  const {
+    items: achievements,
+    fresh,
+    celebration,
+    loading: achievementsLoading,
+  } = useAchievements();
 
   useEffect(() => {
     let cancelled = false;
@@ -180,7 +183,7 @@ export default function Dashboard({
             <button onClick={startStudy} disabled={starting} className="btn-primary">
               {starting ? "Tayyorlanmoqda…" : "Darsni boshlash"}
             </button>
-            <button onClick={onStartPlacement} className="btn-secondary">
+            <button onClick={() => navigate("/placement")} className="btn-secondary">
               Darajani tekshirish
             </button>
           </div>
@@ -202,31 +205,40 @@ export default function Dashboard({
           </p>
         </section>
 
-        {achievements.length > 0 ? (
-          <section className="relative space-y-3 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm">
-            <ConfettiBurst trigger={celebration} />
-            {fresh.length > 0 ? (
-              <p
-                role="status"
-                className="rounded-lg border border-[#ffd166]/40 bg-[#ffd166]/10 px-3 py-2 text-sm text-foreground"
-              >
-                Yangi yutuq: {fresh.map((item) => item.title).join(", ")}
-              </p>
-            ) : null}
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="text-lg font-semibold">Yutuqlar</h3>
-              <span className="text-xs text-muted-foreground">
-                {achievements.filter((a) => a.earnedAt !== null).length} /{" "}
-                {achievements.length} ochilgan
-              </span>
-            </div>
-            <MedalsShelf items={achievements} />
-            <p className="text-xs text-muted-foreground">
-              Medallar daraja, vaqt va faollikka qarab ochiladi. Har biri
-              sizning mehnatingizning belgisi.
+        <section
+          className="relative space-y-3 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm"
+          aria-busy={achievementsLoading}
+        >
+          <ConfettiBurst trigger={celebration} />
+          {fresh.length > 0 ? (
+            <p
+              role="status"
+              className="rounded-lg border border-[#ffd166]/40 bg-[#ffd166]/10 px-3 py-2 text-sm text-foreground"
+            >
+              Yangi yutuq: {fresh.map((item) => item.title).join(", ")}
             </p>
-          </section>
-        ) : null}
+          ) : null}
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-semibold">Yutuqlar</h3>
+            <span className="text-xs text-muted-foreground">
+              {achievementsLoading
+                ? "Yuklanmoqda…"
+                : `${achievements.filter((a) => a.earnedAt !== null).length} / ${achievements.length} ochilgan`}
+            </span>
+          </div>
+          {achievementsLoading ? (
+            <div
+              className="h-28 animate-pulse rounded-xl bg-secondary"
+              aria-hidden="true"
+            />
+          ) : (
+            <MedalsShelf items={achievements} />
+          )}
+          <p className="text-xs text-muted-foreground">
+            Medallar daraja, vaqt va faollikka qarab ochiladi. Har biri
+            sizning mehnatingizning belgisi.
+          </p>
+        </section>
 
         <section className="grid gap-4 sm:grid-cols-3">
           <div className="subject-scene">

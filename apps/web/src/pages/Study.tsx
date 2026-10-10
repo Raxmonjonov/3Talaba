@@ -103,7 +103,7 @@ export default function Study({ user }: { user: User }) {
     []
   );
 
-  // Flush study time when leaving the page.
+  // Flush study time and close the session when leaving the page.
   useEffect(() => {
     const flush = () => {
       const minutes = Math.floor((Date.now() - startedAtRef.current) / 60000);
@@ -120,6 +120,25 @@ export default function Study({ user }: { user: User }) {
       flush();
     };
   }, [persistProgress, answerCount]);
+
+  /** Leaving for real: log time, close the session server-side, go home. */
+  async function leave() {
+    const minutes = Math.floor((Date.now() - startedAtRef.current) / 60000);
+    const delta = minutes - loggedRef.current;
+    if (delta > 0) {
+      persistProgress(delta, answerCount);
+      loggedRef.current = minutes;
+    }
+    if (sessionId) {
+      api(`/api/chat/sessions/${sessionId}/end`, {
+        method: "POST",
+        body: JSON.stringify({ minutes }),
+      }).catch(() => {
+        /* closing the session is best-effort — never block the exit */
+      });
+    }
+    navigate("/dashboard");
+  }
 
   async function send(e?: React.FormEvent) {
     e?.preventDefault();
@@ -175,7 +194,7 @@ export default function Study({ user }: { user: User }) {
               {formatElapsed(elapsed * 60)}
             </span>
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={leave}
               className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Chiqish

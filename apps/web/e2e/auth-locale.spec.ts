@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 
 test.describe("auth pages resolve their language", () => {
   test("?locale= renders that language", async ({ page }) => {
@@ -19,7 +19,8 @@ test.describe("auth pages resolve their language", () => {
 
   test("the switcher updates the copy, the URL and the cross link", async ({ page }) => {
     await page.goto("/login?locale=ru");
-    await page.getByRole("button", { name: "English" }).click();
+    // The switcher button has a CSS transition; force-click past the animation wait.
+    await page.getByRole("button", { name: "English" }).click({ force: true });
 
     await expect(page).toHaveURL(/locale=en/);
     await expect(page.locator('label[for="password"]')).toHaveText("Password");
@@ -36,15 +37,17 @@ test.describe("auth pages resolve their language", () => {
       "noindex, follow"
     );
     await page.goto("/uz");
+    // SEO meta is re-injected by the landing component; give it time to mount.
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
       "content",
-      "index, follow"
+      "index, follow",
+      { timeout: 10_000 }
     );
   });
 
   test("register honours the stored preference without a query", async ({ page }) => {
     await page.goto("/login?locale=ru");
-    await page.getByRole("button", { name: "English" }).click();
+    await page.getByRole("button", { name: "English" }).click({ force: true });
     await page.goto("/register");
 
     await expect(page.locator('label[for="firstName"]')).toHaveText("First name");

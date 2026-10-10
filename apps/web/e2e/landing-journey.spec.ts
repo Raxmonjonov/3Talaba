@@ -1,9 +1,17 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 
 test.describe("landing journey", () => {
   test("the scroll journey mounts its backdrop without touching the content", async ({
     page,
   }) => {
+    // The journey scene is WebGL; the shared fixture keeps 3D off, so opt back in.
+    await page.addInitScript(() => {
+      try {
+        localStorage.removeItem("3talab_3d");
+      } catch {
+        /* ignore */
+      }
+    });
     const errors: Error[] = [];
     page.on("pageerror", (error) => errors.push(error));
 

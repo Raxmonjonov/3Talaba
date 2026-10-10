@@ -14,6 +14,7 @@ const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Study = lazy(() => import("./pages/Study"));
 const Placement = lazy(() => import("./pages/Placement"));
+const LegalPage = lazy(() => import("./pages/LegalPage"));
 
 function RouteFallback() {
   return (
@@ -33,8 +34,15 @@ export default function App() {
         setLoading(false);
         return;
       }
+      // A wedged API must not leave the boot spinner up forever — treat a
+      // slow /auth/me as signed out so the login page can still render.
+      const timeout = new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 8_000),
+      );
       try {
-        setUser(await api<User>("/api/auth/me"));
+        const me = await Promise.race([api<User>("/api/auth/me"), timeout]);
+        if (me) setUser(me);
+        else localStorage.removeItem("3talab_token");
       } catch {
         localStorage.removeItem("3talab_token");
       } finally {
@@ -124,13 +132,7 @@ export default function App() {
           element={
             user ? (
               <Suspense fallback={<RouteFallback />}>
-                <Dashboard
-                  user={user}
-                  onLogout={logout}
-                  onStartPlacement={() => {
-                    window.location.href = "/placement";
-                  }}
-                />
+                <Dashboard user={user} onLogout={logout} />
               </Suspense>
             ) : (
               <Navigate to="/login" replace />
@@ -147,6 +149,22 @@ export default function App() {
             ) : (
               <Navigate to="/login" replace />
             )
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <LegalPage kind="privacy" />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/terms"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <LegalPage kind="terms" />
+            </Suspense>
           }
         />
         <Route

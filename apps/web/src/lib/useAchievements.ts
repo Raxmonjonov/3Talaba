@@ -37,6 +37,7 @@ export function useAchievements() {
 
   const load = useCallback(() => {
     let cancelled = false;
+    setLoading(true);
     api<Achievement[]>("/api/user/achievements?locale=uz")
       .then((data) => {
         if (cancelled) return;

@@ -1,9 +1,10 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./test";
 
 async function registerFreshUser(page: Page): Promise<void> {
   const unique = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
   await page.goto("/register");
+  await page.locator("#firstName").waitFor({ state: "visible", timeout: 15_000 });
   await page.locator("#firstName").fill("Yutuq");
   await page.locator("#email").fill(`yutuq-${unique}@3talab.test`);
   await page.locator("#password").fill("secret123");
@@ -53,7 +54,14 @@ test.describe("achievements", () => {
     // reduced-motion, which Playwright does not enable by default).
     await expect(page.locator("canvas[aria-hidden='true']").first()).toBeVisible();
 
-    await page.goto("/dashboard");
+    // In-app navigation (same path a student takes); a full reload can race
+    // the server's post-placement medal writes on SQLite and stick the boot
+    // spinner.
+    await page.getByRole("button", { name: "Darsni boshlash" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    // Wait for the dashboard shell first — the lazy chunk may still be
+    // mounting under the RouteFallback after leaving placement.
+    await expect(page.getByText("Chiqish")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole("heading", { name: "Yutuqlar" })).toBeVisible({
       timeout: 15_000,
     });

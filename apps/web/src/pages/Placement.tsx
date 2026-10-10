@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import type { Achievement, PlacementQuestion, PlacementResult } from "../lib/types";
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
@@ -24,6 +25,7 @@ export default function Placement({
   const [earnedMedals, setEarnedMedals] = useState<Achievement[]>([]);
   const reducedMotion = useReducedMotion();
   const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -212,7 +214,16 @@ export default function Placement({
             </ul>
           </div>
 
-          <button onClick={() => onFinish(level)} className="btn-primary w-full">
+          <button
+            onClick={() => {
+              onFinish(level);
+              // Client-side jump: a full reload would re-run /auth/me while the
+              // server is still writing the placement medals, and SQLite can
+              // make that boot spinner stick.
+              navigate("/dashboard");
+            }}
+            className="btn-primary w-full"
+          >
             Darsni boshlash
           </button>
         </div>

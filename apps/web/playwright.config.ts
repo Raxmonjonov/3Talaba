@@ -23,9 +23,12 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run preview -- --port 4174 --strictPort",
+    // A tiny Node static server is more reliable on Windows than
+    // `vite preview`, which occasionally dies mid-suite when the SPA
+    // requests several lazy chunks at once.
+    command: "node e2e/static-server.mjs",
     url: "http://localhost:4174",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 30_000,
   },
 });
