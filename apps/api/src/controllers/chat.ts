@@ -7,6 +7,7 @@ import {
   initialState,
   nextTurn,
 } from "../services/engine.js";
+import { evaluateLater } from "../services/achievements.js";
 
 const chatSchema = z.object({
   sessionId: z.string().uuid("Sessiya topilmadi"),
@@ -37,6 +38,8 @@ export async function startSession(req: Request, res: Response) {
     data: { userId, engineState: JSON.stringify(initialState()) },
     select: { id: true, startedAt: true },
   });
+
+  evaluateLater(userId);
 
   res.status(201).json(session);
 }
