@@ -16,6 +16,25 @@ export function useReducedMotion() {
   );
 }
 
+function subscribeWide(onChange: () => void) {
+  const query = window.matchMedia("(min-width: 768px)");
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+/**
+ * The hero's split composition needs a real two-column width to clear the
+ * headline; below that the globe would sit behind the copy, so those viewports
+ * get the landing journey instead of a second canvas.
+ */
+export function useWideViewport() {
+  return useSyncExternalStore(
+    subscribeWide,
+    () => window.matchMedia("(min-width: 768px)").matches,
+    () => true,
+  );
+}
+
 function detectWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");

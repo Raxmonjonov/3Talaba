@@ -1,5 +1,5 @@
 ﻿import { lazy, Suspense, useEffect, useState } from "react";
-import { use3DReady } from "../hooks/usePerfFlags";
+import { use3DReady, useWideViewport } from "../hooks/usePerfFlags";
 import { SceneLoader } from "../elements/SceneLoader";
 
 const Hero3D = lazy(() => import("./Hero3D"));
@@ -7,14 +7,16 @@ const Hero3D = lazy(() => import("./Hero3D"));
 /**
  * Mounts the three.js bundle only once the browser is idle, so the ~265 kB
  * gzip payload never competes with the headline for the first paint. A device
- * that cannot run 3D at all never reaches this point.
+ * that cannot run 3D, or a screen too narrow to keep the globe clear of the
+ * copy, never reaches this point — the landing journey carries those instead.
  */
 export default function Hero3DLazy() {
   const ready = use3DReady();
+  const wide = useWideViewport();
   const [idle, setIdle] = useState(false);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !wide) return;
 
     let cancelled = false;
     const wake = () => {
@@ -34,9 +36,9 @@ export default function Hero3DLazy() {
       cancelled = true;
       window.clearTimeout(handle);
     };
-  }, [ready]);
+  }, [ready, wide]);
 
-  if (!ready || !idle) return null;
+  if (!ready || !wide || !idle) return null;
 
   return (
     <Suspense fallback={<SceneLoader />}>

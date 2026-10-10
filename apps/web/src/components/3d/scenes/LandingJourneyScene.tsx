@@ -22,9 +22,20 @@ const LEAD = 5;
 /**
  * Stations live off to the right of the camera path, so the reader's eye — and
  * the left-hand column where every heading sits — always looks down an empty
- * corridor. Only the gate at the very end is dead ahead.
+ * corridor. Only the gate at the very end is dead ahead. The offset shrinks
+ * with the viewport, otherwise a phone's narrow frustum would push every
+ * station clean off the screen.
  */
-const SIDE = 3.6;
+const SIDE_MAX = 3.6;
+const SIDE_MIN = 1.2;
+
+const sideFor = (width: number, height: number) => {
+  const aspect = width / Math.max(1, height);
+  return Math.max(
+    SIDE_MIN,
+    Math.min(SIDE_MAX, SIDE_MAX * Math.min(1, aspect / 1.5)),
+  );
+};
 
 /** The last station, just beyond where the camera stops. */
 const GATE_DEPTH = CAMERA_END - 13;
@@ -40,8 +51,11 @@ const depthFor = (progress: number) =>
  * Universitetlar. Sections painted with `bg-surface` are opaque dividers, so
  * they are skipped — a station never hides behind a solid band.
  */
-function useJourneyDepths(enabled: boolean): Depths {
-  const [depths, setDepths] = useState<Depths>(FALLBACK_DEPTHS);
+function useJourneyLayout(enabled: boolean) {
+  const [layout, setLayout] = useState<{ depths: Depths; side: number }>({
+    depths: FALLBACK_DEPTHS,
+    side: SIDE_MAX,
+  });
 
   useEffect(() => {
     if (!enabled) return;
@@ -59,7 +73,6 @@ function useJourneyDepths(enabled: boolean): Depths {
       // The first transparent section is the hero — the journey starts there,
       // so the next three carry the stations.
       const [cards, books, results] = windows.slice(1, 4);
-      if (!cards && !books && !results) return;
 
       const depthForSection = (section?: HTMLElement, fallback = 0) => {
         if (!section) return fallback;
@@ -69,11 +82,14 @@ function useJourneyDepths(enabled: boolean): Depths {
         return depthFor(Math.min(1, Math.max(0, centre / max)));
       };
 
-      setDepths([
-        depthForSection(cards, FALLBACK_DEPTHS[0]),
-        depthForSection(books, FALLBACK_DEPTHS[1]),
-        depthForSection(results, FALLBACK_DEPTHS[2]),
-      ]);
+      setLayout({
+        depths: [
+          depthForSection(cards, FALLBACK_DEPTHS[0]),
+          depthForSection(books, FALLBACK_DEPTHS[1]),
+          depthForSection(results, FALLBACK_DEPTHS[2]),
+        ],
+        side: sideFor(window.innerWidth, window.innerHeight),
+      });
     };
 
     measure();
@@ -81,7 +97,7 @@ function useJourneyDepths(enabled: boolean): Depths {
     return () => window.removeEventListener("resize", measure);
   }, [enabled]);
 
-  return depths;
+  return layout;
 }
 
 /** The Matrix fall lining the whole corridor. */
@@ -108,18 +124,26 @@ function CorridorMotes({ count }: { count: number }) {
 }
 
 /** "Placement test": a raft of question cards waiting to be answered. */
-function CardStation({ depth, rich }: { depth: number; rich: boolean }) {
+function CardStation({
+  depth,
+  side,
+  rich,
+}: {
+  depth: number;
+  side: number;
+  rich: boolean;
+}) {
   const cards = useMemo(
     () =>
       Array.from({ length: rich ? 7 : 4 }, (_, i) => {
         const t = (i + 1) * 0.618033988749895;
         return {
-          x: SIDE - 1.4 + frac(t) * 2.8,
+          x: side - 1.4 + frac(t) * 2.8,
           y: (frac(t * 1.3) - 0.5) * 3,
           rot: (frac(t * 2.1) - 0.5) * 0.9,
         };
       }),
-    [rich],
+    [rich, side],
   );
 
   return (
@@ -147,16 +171,24 @@ function CardStation({ depth, rich }: { depth: number; rich: boolean }) {
 }
 
 /** "Darslar": books climbing one after another. */
-function BookStation({ depth, rich }: { depth: number; rich: boolean }) {
+function BookStation({
+  depth,
+  side,
+  rich,
+}: {
+  depth: number;
+  side: number;
+  rich: boolean;
+}) {
   const books = useMemo(
     () =>
       Array.from({ length: rich ? 7 : 4 }, (_, i) => ({
-        x: SIDE - 1.2 + i * 0.55,
+        x: side - 1.2 + i * 0.55,
         y: -1.4 + i * 0.46,
         spin: 0.3 + frac(i * 0.618033988749895) * 1.4,
         color: i % 2 === 0 ? "#ffd166" : "#c8a2ff",
       })),
-    [rich],
+    [rich, side],
   );
 
   return (
@@ -182,14 +214,22 @@ function BookStation({ depth, rich }: { depth: number; rich: boolean }) {
 }
 
 /** "Natijalar": a bar chart rising out of the floor. */
-function ResultStation({ depth, rich }: { depth: number; rich: boolean }) {
+function ResultStation({
+  depth,
+  side,
+  rich,
+}: {
+  depth: number;
+  side: number;
+  rich: boolean;
+}) {
   const bars = useMemo(
     () =>
       Array.from({ length: rich ? 9 : 5 }, (_, i) => ({
-        x: SIDE - 1.6 + i * 0.5,
+        x: side - 1.6 + i * 0.5,
         h: 0.4 + frac((i + 1) * 0.618033988749895) * 1.5,
       })),
-    [rich],
+    [rich, side],
   );
 
   return (
@@ -287,7 +327,7 @@ export default function LandingJourneyScene() {
   const host = useRef<HTMLDivElement>(null);
   const active = useActiveView(host, ready);
   const progress = useRef(0);
-  const depths = useJourneyDepths(ready);
+  const { depths, side } = useJourneyLayout(ready);
 
   useEffect(() => {
     if (!ready) return;
@@ -326,9 +366,9 @@ export default function LandingJourneyScene() {
         <pointLight position={[3, -1, -30]} intensity={0.6} color="#3ddc84" />
         <Suspense fallback={null}>
           <CorridorMotes count={rich ? 60 : 26} />
-          <CardStation depth={depths[0]} rich={rich} />
-          <BookStation depth={depths[1]} rich={rich} />
-          <ResultStation depth={depths[2]} rich={rich} />
+          <CardStation depth={depths[0]} side={side} rich={rich} />
+          <BookStation depth={depths[1]} side={side} rich={rich} />
+          <ResultStation depth={depths[2]} side={side} rich={rich} />
           <GateStation progress={progress} />
         </Suspense>
         {quality === "high" ? (
