@@ -1,4 +1,11 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+/**
+ * `VITE_API_URL` is baked at build time. When it is missing — a deploy that
+ * never set it, for instance — a production build must not fall back to the
+ * dev server, so the built bundle always names a real host.
+ */
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? "https://api.3talab.uz" : "http://localhost:4000");
 
 export class ApiError extends Error {
   status: number;

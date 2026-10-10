@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:e2e": "tsc -b && vite build --mode e2e",
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build:e2e && playwright test"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
