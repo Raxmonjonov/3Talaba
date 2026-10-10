@@ -232,6 +232,9 @@ export default function Dashboard({
             <button onClick={() => navigate("/skills")} className="btn-secondary">
               Mavzular
             </button>
+            <button onClick={() => navigate("/mock-exams")} className="btn-secondary">
+              Imtihonlar
+            </button>
           </div>
         </section>
 

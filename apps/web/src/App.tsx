@@ -19,6 +19,8 @@ const Courses = lazy(() => import("./pages/Courses"));
 const CourseDetail = lazy(() => import("./pages/CourseDetail"));
 const Lesson = lazy(() => import("./pages/Lesson"));
 const Skills = lazy(() => import("./pages/Skills"));
+const MockExams = lazy(() => import("./pages/MockExams"));
+const MockExam = lazy(() => import("./pages/MockExam"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
 
 function RouteFallback() {
@@ -214,6 +216,30 @@ export default function App() {
             user ? (
               <Suspense fallback={<RouteFallback />}>
                 <Skills />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/mock-exams"
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <MockExams />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/mock-exams/:slug"
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <MockExam />
               </Suspense>
             ) : (
               <Navigate to="/login" replace />

@@ -12,6 +12,9 @@ import {
   getPracticeQuestion,
   submitPractice,
   getReviews,
+  getMockExamList,
+  getMockExamDetail,
+  answerMockExam,
 } from "../controllers/catalog.js";
 
 const router = Router();
@@ -30,5 +33,9 @@ router.get("/practice/next", requireAuth, getPracticeQuestion);
 router.post("/practice/answer", requireAuth, submitPractice);
 
 router.get("/reviews", requireAuth, getReviews);
+
+router.get("/mock-exams", requireAuth, getMockExamList);
+router.get("/mock-exams/:slug", requireAuth, getMockExamDetail);
+router.post("/mock-exams/:slug/answer", requireAuth, answerMockExam);
 
 export default router;

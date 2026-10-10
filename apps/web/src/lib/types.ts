@@ -215,3 +215,44 @@ export interface Achievement {
   description: string;
   earnedAt: string | null;
 }
+
+export interface MockExamListItem {
+  id: string;
+  slug: string;
+  exam: string;
+  title: string;
+  description: string;
+  durationMin: number;
+  itemCount: number;
+  maxPoints: number;
+  sections: string[];
+}
+
+export interface MockExamQuestion extends ServedQuestion {
+  points: number;
+}
+
+export interface MockExamSection {
+  title: string;
+  points: number;
+  questions: MockExamQuestion[];
+}
+
+export interface MockExamDetail {
+  id: string;
+  slug: string;
+  exam: string;
+  title: string;
+  description: string;
+  durationMin: number;
+  itemCount: number;
+  maxPoints: number;
+  sections: MockExamSection[];
+}
+
+export interface MockExamAnswerResponse {
+  correct: boolean;
+  explanation?: string;
+  expected?: string;
+  points: number;
+}

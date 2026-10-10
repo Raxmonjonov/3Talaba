@@ -147,6 +147,9 @@ tizim buzilmaydi, faqat ichki dvigotel ishlatiladi.
 | GET | `/api/content/practice/next?exclude=` | Mashq savoli (FSRS navbati) |
 | POST | `/api/content/practice/answer` | Mashq javobini baholash |
 | GET | `/api/content/reviews` | Navbatdagi takrorlashlar + zaif mavzular |
+| GET | `/api/content/mock-exams` | Namunaviy imtihonlar ro‘yxati |
+| GET | `/api/content/mock-exams/:slug` | Imtihon: bo‘limlar va savollar (javobsiz) |
+| POST | `/api/content/mock-exams/:slug/answer` | Imtihon savolini baholash |
 
 ## Joylashtirish
 

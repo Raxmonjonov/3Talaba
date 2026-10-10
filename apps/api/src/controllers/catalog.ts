@@ -10,6 +10,7 @@ import {
 } from "../services/catalog.js";
 import { reviewSummary, listDueReviews, recordAnswer } from "../services/reviews.js";
 import { buildItemPool, nextPracticeQuestion, serveQuestion, gradeAnswer, getQuestionRow } from "../services/questions.js";
+import { listMockExams, getMockExam, gradeMockAnswer } from "../services/mockExams.js";
 import { awardSlug, evaluateLater } from "../services/achievements.js";
 import { prisma } from "../config/prisma.js";
 import {
@@ -284,4 +285,52 @@ export async function getReviews(req: Request, res: Response) {
 
   const [due, summary] = await Promise.all([listDueReviews(uid), reviewSummary(uid)]);
   res.json({ due, summary });
+}
+
+// ── Mock exams ──────────────────────────────────────────────────────────────
+
+export async function getMockExamList(req: Request, res: Response) {
+  res.json(await listMockExams(localeOf(req)));
+}
+
+export async function getMockExamDetail(req: Request, res: Response) {
+  const exam = await getMockExam(req.params.slug, localeOf(req));
+  if (!exam) return res.status(404).json({ message: "Imtihon topilmadi" });
+  res.json(exam);
+}
+
+const mockAnswerSchema = z.object({
+  questionId: z.string().min(1),
+  given: z.string().min(1),
+  ms: z.number().int().min(0).max(3_600_000).optional(),
+});
+
+export async function answerMockExam(req: Request, res: Response) {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  try {
+    const { questionId, given, ms } = mockAnswerSchema.parse(req.body);
+    const graded = await gradeMockAnswer(req.params.slug, questionId, given, localeOf(req));
+    if (!graded) return res.status(404).json({ message: "Savol topilmadi" });
+
+    // Mock answers feed the same spaced-repetition queue as practice drills.
+    await recordAnswer({ userId: uid, questionId, given, correct: graded.correct, ms });
+    if (graded.correct) {
+      await prisma.user.updateMany({
+        where: { id: uid, currentLevel: { lt: 10 } },
+        data: { currentLevel: { increment: 1 } },
+      });
+    }
+    evaluateLater(uid);
+
+    res.json({
+      correct: graded.correct,
+      explanation: graded.explanation,
+      expected: graded.expected,
+      points: graded.points,
+    });
+  } catch {
+    res.status(400).json({ message: "Javobni qayta ishlab bo'lmadi" });
+  }
 }
