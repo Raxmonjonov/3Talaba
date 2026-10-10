@@ -56,7 +56,7 @@ export const en: Dictionary = {
       },
       {
         title: "Take the placement test",
-        body: "The adaptive test adjusts difficulty to each answer and pins down your level.",
+        body: "Eleven short questions. A couple of minutes is enough to pin down your level.",
       },
       {
         title: "Get a daily plan",
@@ -77,7 +77,7 @@ export const en: Dictionary = {
     placementTitle: "SAT Mathematics",
     placementQuestion:
       "If 3x − 7 = 14 and 2x + 5 = 17, what is the value of x?",
-    placementProgress: "Question 7 of 20",
+    placementProgress: "Question 7 of 11",
     placementOptions: ["x = 4", "x = 6", "x = 9", "x = 11"],
     placementHint: "Add 7 to both sides of the first equation, then divide by 3.",
     planLabel: "Daily plan",
@@ -196,7 +196,7 @@ export const en: Dictionary = {
       },
       {
         q: "How does the placement test work?",
-        a: "It's adaptive: after each answer the next question becomes easier or harder depending on you. That's why 20 questions are enough, and why your result isn't a rough guess.",
+        a: "Eleven short questions across maths, logic and English. It takes a couple of minutes and gives you a clear path for the month ahead.",
       },
       {
         q: "Which devices does it work on?",
@@ -228,7 +228,7 @@ export const en: Dictionary = {
   finalCta: {
     title: "Not sure where to begin?",
     subtitle:
-      "The placement test takes under an hour. It gives you a clear path for the month ahead.",
+      "The placement test takes a couple of minutes. It gives you a clear path for the month ahead.",
     cta: "Test my level for free",
     note: "No card details, no payment and no contract to sign.",
   },
