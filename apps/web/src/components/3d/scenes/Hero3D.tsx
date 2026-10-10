@@ -30,9 +30,9 @@ function FloatingBooks({ rich }: { rich: boolean }) {
   const books = useMemo(
     () =>
       [
-        { position: [-1.5, 0.75, -0.4], spin: 0.5, color: "#7e14ff" },
-        { position: [1.6, -0.55, -0.6], spin: -0.4, color: "#c8a2ff" },
-        { position: [-1.1, -0.9, 0.3], spin: 0.9, color: "#47bfff" },
+        { position: [-0.7, 1.7, -0.4], spin: 0.5, color: "#7e14ff" },
+        { position: [0.6, -1.5, -0.6], spin: -0.4, color: "#c8a2ff" },
+        { position: [-0.1, -1.9, 0.3], spin: 0.9, color: "#47bfff" },
       ] as const,
     [],
   );
@@ -106,8 +106,12 @@ export default function Hero3D() {
         <directionalLight position={[2, 3, 4]} intensity={0.9} color="#c8b6ff" />
         <pointLight position={[-3, -1, 2]} intensity={0.5} color="#47bfff" />
         <Suspense fallback={null}>
-          <Globe />
-          <FloatingBooks rich={rich} />
+          {/* Held to the right of the hero so it never sits behind the
+              headline column, which owns the left two thirds. */}
+          <group position={[1.75, 0, 0]}>
+            <Globe />
+            <FloatingBooks rich={rich} />
+          </group>
           <MatrixMotes count={rich ? 16 : 7} />
         </Suspense>
         {rich && quality === "high" ? (

@@ -13,6 +13,7 @@ import { Faq } from "@/components/landing/Faq";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { LandingJourney } from "@/components/3d/elements/LandingJourney";
 import type { Locale } from "@/i18n/config";
 
 type LandingProps = {
@@ -25,7 +26,11 @@ function LandingContent({ user, onLogout }: Omit<LandingProps, "locale">) {
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    // `isolate` keeps the fixed journey backdrop (-z-10) above this wrapper's
+    // own background but below every section, so it shows through transparent
+    // sections without ever touching their text.
+    <div className="flex min-h-screen flex-col isolate bg-background">
+      <LandingJourney />
       <a href="#main" className="skip-link">
         {t.nav.skipToContent}
       </a>
