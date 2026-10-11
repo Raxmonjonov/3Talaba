@@ -61,6 +61,21 @@ export interface SettingsResponse {
   currentLevel: number;
 }
 
+export interface ProfileResponse {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  gender: "MALE" | "FEMALE" | "OTHER";
+  age: number | null;
+  target: string | null;
+  preferredTitle: string | null;
+  currentLevel: number;
+  xp: number;
+  focusMode: boolean;
+  softConfirm: boolean;
+}
+
 export interface PlacementOption {
   label: string;
 }

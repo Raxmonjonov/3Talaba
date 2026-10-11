@@ -258,6 +258,9 @@ export default function Dashboard({
             <button onClick={() => navigate("/mock-exams")} className="btn-secondary">
               Imtihonlar
             </button>
+            <button onClick={() => navigate("/settings")} className="btn-secondary">
+              Hisob
+            </button>
           </div>
         </section>
 
@@ -532,7 +535,15 @@ export default function Dashboard({
         ) : null}
 
         <section className="space-y-5 rounded-2xl border bg-card p-6 shadow-sm">
-          <h3 className="text-lg font-semibold">Sozlamalar</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-lg font-semibold">Sozlamalar</h3>
+            <button
+              onClick={() => navigate("/settings")}
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Profil va parol
+            </button>
+          </div>
 
           <div className="space-y-2">
             <label htmlFor="title" className="text-sm font-medium">
