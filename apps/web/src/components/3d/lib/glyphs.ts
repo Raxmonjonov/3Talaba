@@ -9,6 +9,43 @@ import { CanvasTexture } from "three";
  */
 const cache = new Map<string, CanvasTexture>();
 
+const RAIN_GLYPHS = "0123456789SATIEL";
+const RAIN_CELLS = RAIN_GLYPHS.length;
+const CELL = 64;
+
+/**
+ * A vertical strip of digits and letters, one glyph per cell. Columns scroll
+ * this texture; the material's colour tints it green or cyan so one canvas
+ * serves every rain in the app.
+ */
+export function rainStrip(): CanvasTexture {
+  const hit = cache.get("rain");
+  if (hit) return hit;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = CELL;
+  canvas.height = CELL * RAIN_CELLS;
+  const ctx = canvas.getContext("2d");
+
+  if (ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `700 ${Math.round(CELL * 0.62)}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
+    ctx.shadowBlur = 7;
+    for (let i = 0; i < RAIN_CELLS; i++) {
+      ctx.fillText(RAIN_GLYPHS[i], CELL / 2, i * CELL + CELL / 2 + 1);
+    }
+  }
+
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = "SRGBColorSpace";
+  cache.set("rain", texture);
+  return texture;
+}
+
 /** A soft glowing plate for a short label: "SAT", "IELTS", "π", "A+". */
 export function glyphPlate(label: string): CanvasTexture {
   const hit = cache.get(label);

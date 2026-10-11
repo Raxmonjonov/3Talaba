@@ -4,6 +4,7 @@ import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import type { Group, Mesh, MeshStandardMaterial } from "three";
 import { use3DReady, useDeviceQuality } from "../hooks/usePerfFlags";
 import { useActiveView } from "../hooks/useActiveView";
+import { MatrixRain } from "../elements/MatrixRain";
 
 /** Fractional part — a deterministic stand-in for Math.random during render. */
 const frac = (n: number) => n - Math.floor(n);
@@ -101,7 +102,7 @@ function useJourneyLayout(enabled: boolean) {
 }
 
 /** The Matrix fall lining the whole corridor. */
-function CorridorMotes({ count }: { count: number }) {
+function CorridorMotes({ count, rich }: { count: number; rich: boolean }) {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
@@ -114,12 +115,17 @@ function CorridorMotes({ count }: { count: number }) {
   }, [count]);
 
   return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial color="#47bfff" size={0.05} transparent opacity={0.22} />
-    </points>
+    <group>
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        </bufferGeometry>
+        <pointsMaterial color="#47bfff" size={0.05} transparent opacity={0.22} />
+      </points>
+      {rich ? (
+        <MatrixRain count={36} area={7} offsetX={0} depth={46} opacity={0.28} />
+      ) : null}
+    </group>
   );
 }
 
@@ -365,7 +371,7 @@ export default function LandingJourneyScene() {
         <pointLight position={[-4, 1, -12]} intensity={0.6} color="#7e14ff" />
         <pointLight position={[3, -1, -30]} intensity={0.6} color="#3ddc84" />
         <Suspense fallback={null}>
-          <CorridorMotes count={rich ? 60 : 26} />
+          <CorridorMotes count={rich ? 60 : 26} rich={rich} />
           <CardStation depth={depths[0]} side={side} rich={rich} />
           <BookStation depth={depths[1]} side={side} rich={rich} />
           <ResultStation depth={depths[2]} side={side} rich={rich} />
