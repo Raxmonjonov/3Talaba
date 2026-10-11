@@ -37,7 +37,7 @@ test.describe("practice", () => {
     await expect(page.getByRole("status")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole("button", { name: "Keyingi savol" })).toBeVisible();
 
-    await page.getByRole("button", { name: "Chiqish" }).click();
+    await page.getByRole("banner").getByRole("button", { name: "Dashboard" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
   });
 

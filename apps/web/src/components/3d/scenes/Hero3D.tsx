@@ -1,12 +1,13 @@
 ﻿import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, DepthOfField } from "@react-three/postprocessing";
 import type { Mesh } from "three";
 import { use3DReady, useDeviceQuality } from "../hooks/usePerfFlags";
 import { useActiveView } from "../hooks/useActiveView";
 import { usePointer } from "../hooks/usePointer";
 import { PointerRig } from "../elements/PointerRig";
+import { MatrixRain, SubjectPlates } from "../elements/MatrixRain";
 
 /** Fractional part — a deterministic stand-in for Math.random during render. */
 const frac = (n: number) => n - Math.floor(n);
@@ -59,7 +60,8 @@ function FloatingBooks({ rich }: { rich: boolean }) {
   );
 }
 
-/** The soft Matrix fall: a deterministic sprinkle of cyan motes. */
+/** The soft Matrix fall: a deterministic sprinkle of cyan motes.
+ *  High tier swaps these dots for the real glyph rain (see MatrixRain). */
 function MatrixMotes({ count }: { count: number }) {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
@@ -111,12 +113,25 @@ export default function Hero3D() {
           <group position={[1.75, 0, 0]}>
             <Globe />
             <FloatingBooks rich={rich} />
+            <SubjectPlates />
           </group>
-          <MatrixMotes count={rich ? 16 : 7} />
+          {rich ? (
+            <MatrixRain count={quality === "high" ? 16 : 9} area={3.2} opacity={0.42} />
+          ) : (
+            <MatrixMotes count={7} />
+          )}
         </Suspense>
         {rich && quality === "high" ? (
           <EffectComposer>
             <Bloom mipmapBlur intensity={0.16} luminanceThreshold={0.85} />
+            {/* The books and plates sit behind the globe, so a whisper of
+                bokeh separates them without touching the headline column. */}
+            <DepthOfField
+              target={[1.75, 0, 0]}
+              focalLength={0.055}
+              bokehScale={2.4}
+              height={480}
+            />
           </EffectComposer>
         ) : null}
         <PointerRig pointer={pointer} reach={0.4} />

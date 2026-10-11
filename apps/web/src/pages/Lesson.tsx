@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type { CompleteLessonResponse, LessonDetail } from "../lib/types";
+import { AppShell } from "@/components/AppShell";
 
 const KIND_LABELS: Record<string, string> = {
   theory: "Nazariya",
@@ -99,29 +100,16 @@ export default function LessonPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold">
-              {loading ? "Yuklanmoqda…" : (lesson?.title ?? "Dars")}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {lesson ? `Daraja ${lesson.levelRange} · ~${lesson.estMinutes} daq` : ""}
-            </p>
-          </div>
-          <button
-            onClick={() =>
-              navigate(lesson ? `/courses/${lesson.courseSlug}` : "/courses")
-            }
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Kursga qaytish
-          </button>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-5 py-8">
+    <AppShell
+      title={loading ? "Yuklanmoqda…" : (lesson?.title ?? "Dars")}
+      subtitle={
+        lesson
+          ? `Daraja ${lesson.levelRange} · ~${lesson.estMinutes} daq`
+          : undefined
+      }
+      backTo={lesson ? `/courses/${lesson.courseSlug}` : "/courses"}
+      backLabel="Kursga qaytish"
+    >
         {error ? (
           <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -238,7 +226,6 @@ export default function LessonPage() {
             </section>
           </>
         ) : null}
-      </main>
-    </div>
+    </AppShell>
   );
 }

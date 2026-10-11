@@ -3,6 +3,7 @@ import { authPath } from "@/i18n/config";
 import { Link } from "react-router-dom";
 import { ClockIcon, SparkIcon } from "./Icons";
 import Hero3DLazy from "@/components/3d/scenes/Hero3DLazy";
+import { useTilt3D } from "@/components/3d/hooks/useTilt3D";
 
 /** Deterministic offsets keep the motif stable across renders. */
 const COLUMNS = [
@@ -45,6 +46,9 @@ export function TimeFlowMotif() {
 
 export function Hero() {
   const { locale, t } = useTranslation();
+  // The primary action leans toward the cursor; a CSS fallback keeps the
+  // highlight when the tilt hook declines (touch, reduced motion).
+  const ctaRef = useTilt3D<HTMLAnchorElement>();
   return (
     <section className="relative isolate overflow-hidden">
       <TimeFlowMotif />
@@ -65,7 +69,11 @@ export function Hero() {
             {t.hero.subtitle}
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link to={authPath("register", locale)} className="btn-primary btn-lg text-center">
+            <Link
+              ref={ctaRef}
+              to={authPath("register", locale)}
+              className="btn-primary btn-lg btn-tilt text-center"
+            >
               <span className="inline-flex items-center gap-2">
                 <SparkIcon className="h-5 w-5" />
                 {t.hero.ctaPrimary}

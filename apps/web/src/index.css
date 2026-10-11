@@ -144,6 +144,47 @@
     @apply px-6 py-3.5 text-base rounded-full font-semibold;
   }
 
+  /* The hero CTA is a physical plate: it leans toward the cursor (GSAP writes
+     the rotations) and carries a highlight that slides with the pointer. The
+     custom property --shine-x is driven from JS; the default keeps a centred
+     highlight when the tilt is off — touch screens and reduced motion. */
+  .btn-tilt {
+    --shine-x: 50%;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    will-change: transform;
+    box-shadow:
+      0 10px 30px -12px hsl(265 90% 65% / 0.6),
+      0 1px 0 hsl(0 0% 100% / 0.25) inset;
+  }
+
+  .btn-tilt::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      120% 90% at var(--shine-x) 0%,
+      hsl(0 0% 100% / 0.35),
+      transparent 62%
+    );
+    opacity: 0;
+    transition: opacity 240ms ease;
+    pointer-events: none;
+  }
+
+  .btn-tilt:hover::after,
+  .btn-tilt:focus-visible::after {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-tilt {
+      will-change: auto;
+    }
+  }
+
   .page-shell {
     @apply w-full max-w-6xl mx-auto px-5 sm:px-6 lg:px-8;
   }

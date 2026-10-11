@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { set3DEnabled } from "../lib/featureFlags";
+import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
 import type { ProfileResponse, SettingsResponse, User } from "../lib/types";
+import { AppShell } from "@/components/AppShell";
 
 const GENDERS: Array<{ value: "MALE" | "FEMALE" | "OTHER"; label: string }> = [
   { value: "MALE", label: "Erkak" },
@@ -23,7 +25,6 @@ export default function Settings({
   user: User;
   onUserChange: (next: User) => void;
 }) {
-  const navigate = useNavigate();
   const [profile, setProfile] = useState({
     firstName: user.firstName,
     lastName: user.lastName ?? "",
@@ -33,6 +34,7 @@ export default function Settings({
     target: user.target ?? "GENERAL",
   });
   const [title, setTitle] = useState(user.preferredTitle ?? "");
+  const threeDEnabled = use3DEnabled();
   const [focusMode, setFocusMode] = useState(user.focusMode);
   const [softConfirm, setSoftConfirm] = useState(user.softConfirm);
   const [password, setPassword] = useState({
@@ -140,23 +142,11 @@ export default function Settings({
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
-          <div>
-            <h1 className="text-lg font-semibold">Hisob sozlamalari</h1>
-            <p className="text-xs text-muted-foreground">{user.email}</p>
-          </div>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Dashboard
-          </button>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-5 py-10">
+    <AppShell
+      title="Hisob sozlamalari"
+      subtitle={user.email}
+      maxWidth="max-w-2xl"
+    >
         {error ? (
           <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -324,6 +314,28 @@ export default function Settings({
           </div>
         </section>
 
+        {/* Ko'rinish: the 3D toggle lives here as well as on the dashboard, and
+            because it is a local preference it applies the moment it flips — no
+            save button, no round trip. Phones that struggle simply switch it off. */}
+        <section className="space-y-5 rounded-2xl border bg-card p-6 shadow-sm">
+          <h2 className="text-lg font-semibold">Ko‘rinish</h2>
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={!threeDEnabled}
+              onChange={(e) => set3DEnabled(!e.target.checked)}
+              className="mt-1 h-4 w-4"
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-medium">3D effektlarni o‘chirish</span>
+              <span className="block text-xs text-muted-foreground">
+                Sahifalardagi harakatlanuvchi sahnalar o‘rniga oddiy tinch ko‘rinish
+                qaytadi. Barcha ma’lumotlar o‘z joyida qoladi.
+              </span>
+            </span>
+          </label>
+        </section>
+
         <form onSubmit={savePassword} className="space-y-5 rounded-2xl border bg-card p-6 shadow-sm">
           <h2 className="text-lg font-semibold">Parolni o‘zgartirish</h2>
           <div className="space-y-2">
@@ -381,7 +393,6 @@ export default function Settings({
             ) : null}
           </div>
         </form>
-      </main>
-    </div>
+    </AppShell>
   );
 }

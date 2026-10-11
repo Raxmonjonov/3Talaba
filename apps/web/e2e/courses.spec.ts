@@ -36,7 +36,9 @@ test.describe("courses", () => {
     // Course titles are large underlined buttons linking to /courses/:slug.
     await page.locator("button.text-lg.underline").first().click();
     await expect(page).toHaveURL(/\/courses\/[^/]+$/);
-    await expect(page.getByRole("button", { name: /Kursga qaytish|Kurslar/ })).toBeVisible({
+    await expect(
+      page.getByRole("banner").getByRole("button", { name: /Kursga qaytish|Kurslar/ })
+    ).toBeVisible({
       timeout: 15_000,
     });
 

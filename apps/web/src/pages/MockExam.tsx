@@ -9,6 +9,7 @@ import type {
   MockExamSectionResult,
 } from "../lib/types";
 import { QuestionBody } from "@/components/QuestionBody";
+import { AppShell } from "@/components/AppShell";
 
 type FlatItem = MockExamQuestion & { section: string; index: number };
 
@@ -328,19 +329,15 @@ export default function MockExam() {
 
   if (!started) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-5 py-10">
-        <div className="w-full max-w-lg space-y-6">
-          <button
-            onClick={() => navigate("/mock-exams")}
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            ← Imtihonlar
-          </button>
+      <AppShell
+        title={exam.title}
+        subtitle={exam.exam}
+        backTo="/mock-exams"
+        backLabel="← Imtihonlar"
+        maxWidth="max-w-lg"
+        showNav={false}
+      >
           <div className="space-y-2">
-            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium">
-              {exam.exam}
-            </span>
-            <h1 className="text-2xl font-semibold">{exam.title}</h1>
             <p className="text-sm text-muted-foreground">{exam.description}</p>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center text-sm">
@@ -368,45 +365,43 @@ export default function MockExam() {
           <button onClick={begin} className="btn-primary w-full">
             Imtihonni boshlash
           </button>
-        </div>
-      </div>
+      </AppShell>
     );
   }
 
   if (!current) return null;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
-          <div>
-            <h1 className="text-sm font-semibold">{current.section}</h1>
-            <p className="text-xs text-muted-foreground">
-              Savol {cursor + 1} / {items.length} · {answeredCount} yechilgan
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                secondsLeft < 60
-                  ? "bg-red-50 text-red-700"
-                  : "bg-secondary text-muted-foreground"
-              }`}
-              aria-label="Qolgan vaqt"
-            >
-              {formatClock(secondsLeft)}
-            </span>
-            <button
-              onClick={finish}
-              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              Tugatish
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-5 py-10">
+    <AppShell
+      title={current.section}
+      subtitle={
+        <>
+          Savol {cursor + 1} / {items.length} · {answeredCount} yechilgan
+        </>
+      }
+      maxWidth="max-w-2xl"
+      showNav={false}
+      actions={
+        <>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              secondsLeft < 60
+                ? "bg-red-50 text-red-700"
+                : "bg-secondary text-muted-foreground"
+            }`}
+            aria-label="Qolgan vaqt"
+          >
+            {formatClock(secondsLeft)}
+          </span>
+          <button
+            onClick={finish}
+            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Tugatish
+          </button>
+        </>
+      }
+    >
         {feedback ? (
           <div
             role="status"
@@ -451,7 +446,6 @@ export default function MockExam() {
             {error}
           </p>
         ) : null}
-      </main>
-    </div>
+    </AppShell>
   );
 }

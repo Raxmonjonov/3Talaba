@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type { CourseDetail, EnrollResponse } from "../lib/types";
 import { subjectLabel } from "@/lib/subjects";
+import { AppShell } from "@/components/AppShell";
 
 export default function CourseDetailPage() {
   const { slug = "" } = useParams();
@@ -59,29 +60,14 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold">
-              {loading ? "Yuklanmoqda…" : (course?.title ?? "Kurs")}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {course
-                ? `${course.moduleCount} modul · ${course.lessonCount} dars`
-                : ""}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate("/courses")}
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Kurslar
-          </button>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-5 py-8">
+    <AppShell
+      title={loading ? "Yuklanmoqda…" : (course?.title ?? "Kurs")}
+      subtitle={
+        course ? `${course.moduleCount} modul · ${course.lessonCount} dars` : undefined
+      }
+      backTo="/courses"
+      backLabel="Kurslar"
+    >
         {error ? (
           <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -195,7 +181,6 @@ export default function CourseDetailPage() {
             ))}
           </>
         ) : null}
-      </main>
-    </div>
+    </AppShell>
   );
 }

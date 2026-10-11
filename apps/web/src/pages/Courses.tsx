@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import type { CourseListItem, EnrollResponse } from "../lib/types";
 import { subjectLabel } from "@/lib/subjects";
+import { AppShell } from "@/components/AppShell";
 
 export default function Courses() {
   const navigate = useNavigate();
@@ -54,26 +55,15 @@ export default function Courses() {
   const subjects = Array.from(new Set(courses.map((c) => c.subject)));
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
-          <div>
-            <h1 className="text-lg font-semibold">Kurslar</h1>
-            <p className="text-xs text-muted-foreground">
-              {courses.length} ta kurs · {loading ? "Yuklanmoqda…" : "tayyor"}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Dashboard
-          </button>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-5 py-8">
-        <div className="flex flex-wrap gap-2">
+    <AppShell
+      title="Kurslar"
+      subtitle={
+        <>
+          {courses.length} ta kurs · {loading ? "Yuklanmoqda…" : "tayyor"}
+        </>
+      }
+    >
+      <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSubject(null)}
             className={`rounded-full border px-3 py-1.5 text-sm ${
@@ -152,7 +142,6 @@ export default function Courses() {
             ))}
           </ul>
         )}
-      </main>
-    </div>
+    </AppShell>
   );
 }

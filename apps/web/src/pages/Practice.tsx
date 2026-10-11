@@ -7,6 +7,7 @@ import type {
 } from "../lib/types";
 import { QuestionBody } from "@/components/QuestionBody";
 import { subjectLabel } from "@/lib/subjects";
+import { AppShell } from "@/components/AppShell";
 
 /** Soft cap so a session cannot loop forever on a huge bank. */
 const MAX_DRILL = 12;
@@ -198,40 +199,31 @@ export default function Practice() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
-          <div className="min-w-0 space-y-1">
-            <h1 className="text-lg font-semibold">
-              {reviewMode ? "Takrorlash" : "Mashq"}
-            </h1>
-            <p className="truncate text-xs text-muted-foreground">
-              {answered} / {MAX_DRILL} · {correctCount} to‘g‘ri
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {scopeLabel}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {skill || skillsParam || subject ? (
-              <button
-                onClick={clearFilter}
-                className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-              >
-                Filtrni tozalash
-              </button>
-            ) : null}
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              Chiqish
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-5 py-10">
+    <AppShell
+      title={reviewMode ? "Takrorlash" : "Mashq"}
+      subtitle={
+        <>
+          <span className="block truncate">
+            {answered} / {MAX_DRILL} · {correctCount} to‘g‘ri
+          </span>
+          <span className="block truncate">{scopeLabel}</span>
+        </>
+      }
+      maxWidth="max-w-2xl"
+      backTo="/dashboard"
+      backLabel="Dashboard"
+      actions={
+        skill || skillsParam || subject ? (
+          <button
+            onClick={clearFilter}
+            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Filtrni tozalash
+          </button>
+        ) : null
+      }
+      showNav={false}
+    >
         {feedback ? (
           <div
             role="status"
@@ -283,7 +275,6 @@ export default function Practice() {
             {error}
           </p>
         ) : null}
-      </main>
-    </div>
+    </AppShell>
   );
 }
