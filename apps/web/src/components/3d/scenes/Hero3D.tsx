@@ -10,6 +10,7 @@ import { useActiveView } from "../hooks/useActiveView";
 import { usePointer, type Vec2 } from "../hooks/usePointer";
 import { PointerRig } from "../elements/PointerRig";
 import { SubjectPlates } from "../elements/SubjectPlates";
+import { MatrixRain } from "../elements/MatrixRain";
 import { radialGlow, ringGlow, logoPlate } from "../lib/glyphs";
 
 /** Fractional part — a deterministic stand-in for Math.random during render. */
@@ -303,6 +304,13 @@ export default function Hero3D() {
             <SubjectPlates />
           </group>
           <LogoMark pointer={pointer} />
+          <MatrixRain
+            count={rich ? 28 : 10}
+            area={4.5}
+            offsetX={1.4}
+            depth={5}
+            opacity={0.35}
+          />
           <Motes count={rich ? 34 : 14} />
         </Suspense>
         {rich && quality === "high" ? (

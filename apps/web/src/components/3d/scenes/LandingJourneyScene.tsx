@@ -5,7 +5,8 @@ import { AdditiveBlending } from "three";
 import type { BufferAttribute, Group, Mesh, MeshStandardMaterial, Points } from "three";
 import { use3DReady, useDeviceQuality } from "../hooks/usePerfFlags";
 import { useActiveView } from "../hooks/useActiveView";
-import { radialGlow } from "../lib/glyphs";;
+import { MatrixRain } from "../elements/MatrixRain";
+import { radialGlow } from "../lib/glyphs";
 
 /** Fractional part — a deterministic stand-in for Math.random during render. */
 const frac = (n: number) => n - Math.floor(n);
@@ -155,23 +156,28 @@ function CorridorMotes({ count, rich }: { count: number; rich: boolean }) {
   });
 
   return (
-    <points ref={points}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[field.arr, 3]} />
-        <bufferAttribute attach="attributes-color" args={[field.tints, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        map={glow}
-        vertexColors
-        size={rich ? 0.16 : 0.11}
-        sizeAttenuation
-        transparent
-        opacity={0.5}
-        depthWrite={false}
-        blending={AdditiveBlending}
-        toneMapped={false}
-      />
-    </points>
+    <group>
+      <points ref={points}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[field.arr, 3]} />
+          <bufferAttribute attach="attributes-color" args={[field.tints, 3]} />
+        </bufferGeometry>
+        <pointsMaterial
+          map={glow}
+          vertexColors
+          size={rich ? 0.16 : 0.11}
+          sizeAttenuation
+          transparent
+          opacity={0.5}
+          depthWrite={false}
+          blending={AdditiveBlending}
+          toneMapped={false}
+        />
+      </points>
+      {rich ? (
+        <MatrixRain count={36} area={7} offsetX={0} depth={46} opacity={0.28} />
+      ) : null}
+    </group>
   );
 }
 
