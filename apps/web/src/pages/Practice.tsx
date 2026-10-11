@@ -7,6 +7,7 @@ import type {
 } from "../lib/types";
 import { QuestionBody } from "@/components/QuestionBody";
 import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
+import { VerdictPanel } from "@/components/VerdictPanel";
 import { subjectLabel } from "@/lib/subjects";
 import { AppShell } from "@/components/AppShell";
 
@@ -226,31 +227,7 @@ export default function Practice() {
       showNav={false}
     >
         {feedback ? (
-          <div
-            role="status"
-            className={`verdict-panel ${
-              verdict === "correct"
-                ? "verdict-correct is-correct"
-                : "verdict-wrong is-wrong"
-            }`}
-          >
-            <p className="font-medium">
-              {verdict === "correct" ? "To‘g‘ri" : "Noto‘g‘ri"}
-            </p>
-            {feedback.expected ? (
-              <p className="mt-1 text-muted-foreground">
-                To‘g‘ri javob: {feedback.expected}
-              </p>
-            ) : null}
-            {feedback.explanation ? (
-              <p className="mt-1 text-muted-foreground">{feedback.explanation}</p>
-            ) : null}
-            {feedback.interval ? (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Keyingi takrorlash: {feedback.interval}
-              </p>
-            ) : null}
-          </div>
+          <VerdictPanel verdict={verdict} feedback={feedback} />
         ) : null}
 
         {question ? (

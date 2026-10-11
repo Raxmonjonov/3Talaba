@@ -63,4 +63,24 @@ test.describe("account settings", () => {
     await page.getByRole("button", { name: "Yorug' rejim" }).first().click();
     await expect(page.locator("html")).not.toHaveClass(/dark/);
   });
+
+  test("motion opt-out toggle flips and persists", async ({ page }) => {
+    await registerFreshUser(page);
+    await page.getByRole("button", { name: "Hisob", exact: true }).click();
+    await expect(page).toHaveURL(/\/settings$/);
+
+    const toggle = page.getByRole("checkbox", { name: /Animatsiyalarni kamaytirish/ });
+    await expect(toggle).toBeVisible({ timeout: 15_000 });
+    await expect(toggle).not.toBeChecked();
+
+    await toggle.check();
+    await expect(toggle).toBeChecked();
+    const stored = await page.evaluate(() => localStorage.getItem("3talab_motion"));
+    expect(stored).toBe("off");
+
+    await toggle.uncheck();
+    await expect(toggle).not.toBeChecked();
+    const cleared = await page.evaluate(() => localStorage.getItem("3talab_motion"));
+    expect(cleared).toBeNull();
+  });
 });

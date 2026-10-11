@@ -1,5 +1,10 @@
 ﻿import { useState, useSyncExternalStore } from "react";
-import { is3DEnabled, subscribe3D } from "@/lib/featureFlags";
+import {
+  is3DEnabled,
+  isMotionReduced,
+  subscribe3D,
+  subscribeMotionPreference,
+} from "@/lib/featureFlags";
 
 function subscribeMotion(onChange: () => void) {
   const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -7,11 +12,22 @@ function subscribeMotion(onChange: () => void) {
   return () => query.removeEventListener("change", onChange);
 }
 
-/** Tracks the OS-level reduced-motion preference without an effect. */
+function subscribeMotionAndPreference(onChange: () => void) {
+  const unsubOs = subscribeMotion(onChange);
+  const unsubPref = subscribeMotionPreference(onChange);
+  return () => {
+    unsubOs();
+    unsubPref();
+  };
+}
+
+/** OS reduced-motion OR the student's Settings toggle. */
 export function useReducedMotion() {
   return useSyncExternalStore(
-    subscribeMotion,
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    subscribeMotionAndPreference,
+    () =>
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      isMotionReduced(),
     () => false,
   );
 }

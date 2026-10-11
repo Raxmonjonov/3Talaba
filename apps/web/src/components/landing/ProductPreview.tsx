@@ -1,6 +1,9 @@
+import { useRef, useState } from "react";
+import { animate, stagger } from "animejs";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Section } from "./Section";
 import { ClockIcon, SparkIcon } from "./Icons";
+import { useAnimeScope, prefersReducedMotion } from "@/lib/anime";
 
 function WindowFrame({ children }: { children: React.ReactNode }) {
   return (
@@ -16,8 +19,62 @@ function WindowFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Placement preview with a live option picker: clicking an option draws a
+ * green check line (or a red nudge) the same way the real quiz does.
+ */
 export function ProductPreview() {
   const { t } = useTranslation();
+  const optionsRef = useRef<HTMLUListElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const [picked, setPicked] = useState<number | null>(1);
+
+  useAnimeScope(optionsRef, () => {
+    const items = optionsRef.current?.querySelectorAll<HTMLElement>("[data-option]");
+    if (!items?.length) return;
+
+    animate(items, {
+      opacity: [0, 1],
+      y: [14, 0],
+      delay: stagger(70, { start: 100 }),
+      duration: 480,
+      ease: "outCubic",
+    });
+
+    if (progressRef.current) {
+      animate(progressRef.current, {
+        width: ["0%", "35%"],
+        duration: 900,
+        delay: 200,
+        ease: "outCubic",
+      });
+    }
+  }, []);
+
+  const pick = (index: number) => {
+    setPicked(index);
+    if (prefersReducedMotion()) return;
+    const items = optionsRef.current?.querySelectorAll<HTMLElement>("[data-option]");
+    const el = items?.[index];
+    if (!el) return;
+    if (index === 1) {
+      animate(el, {
+        scale: [1, 1.03, 1],
+        duration: 380,
+        ease: "outBack",
+      });
+    } else {
+      animate(el, {
+        x: [
+          { value: -4 },
+          { value: 4 },
+          { value: 0 },
+        ],
+        duration: 280,
+        ease: "outQuad",
+      });
+    }
+  };
 
   return (
     <Section
@@ -44,7 +101,11 @@ export function ProductPreview() {
               className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted"
               role="presentation"
             >
-              <div className="shimmer h-full w-[35%] rounded-full bg-primary" />
+              <div
+                ref={progressRef}
+                className="h-full rounded-full bg-primary"
+                style={{ width: prefersReducedMotion() ? "35%" : "0%" }}
+              />
             </div>
 
             <div className="question-stack mt-5 rounded-xl border bg-surface px-4 py-3.5">
@@ -53,25 +114,28 @@ export function ProductPreview() {
               </p>
             </div>
 
-            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            <ul ref={optionsRef} className="mt-4 grid gap-2 sm:grid-cols-2">
               {t.preview.placementOptions.map((option, index) => (
-                <li
-                  key={option}
-                  className={`rounded-xl border px-4 py-3 text-sm transition-colors ${
-                    index === 1
-                      ? "border-primary bg-secondary font-semibold"
-                      : "bg-surface text-muted-foreground"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span
-                      aria-hidden="true"
-                      className={`inline-block h-4 w-4 rounded-full border-2 ${
-                        index === 1 ? "border-primary" : "border-border"
-                      }`}
-                    />
-                    {option}
-                  </span>
+                <li key={option} data-option style={{ opacity: prefersReducedMotion() ? 1 : 0 }}>
+                  <button
+                    type="button"
+                    onClick={() => pick(index)}
+                    className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
+                      index === picked
+                        ? "border-primary bg-secondary font-semibold"
+                        : "bg-surface text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className={`inline-block h-4 w-4 rounded-full border-2 ${
+                          index === picked ? "border-primary" : "border-border"
+                        }`}
+                      />
+                      {option}
+                    </span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -101,7 +165,7 @@ export function ProductPreview() {
                 <li key={item} className="flex items-start gap-3 text-sm leading-relaxed">
                   <span
                     aria-hidden="true"
-                    className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[11px] font-bold text-primary"
+                    className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/12 font-mono text-[11px] font-bold text-primary"
                   >
                     {index + 1}
                   </span>

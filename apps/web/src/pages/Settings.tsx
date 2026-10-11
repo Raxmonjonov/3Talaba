@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import { set3DEnabled } from "../lib/featureFlags";
-import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
+import { set3DEnabled, setMotionReduced } from "../lib/featureFlags";
+import { use3DEnabled, useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
 import type { ProfileResponse, SettingsResponse, User } from "../lib/types";
 import { AppShell, ThemeToggle } from "@/components/AppShell";
 
@@ -35,6 +35,7 @@ export default function Settings({
   });
   const [title, setTitle] = useState(user.preferredTitle ?? "");
   const threeDEnabled = use3DEnabled();
+  const reducedMotion = useReducedMotion();
   const [focusMode, setFocusMode] = useState(user.focusMode);
   const [softConfirm, setSoftConfirm] = useState(user.softConfirm);
   const [password, setPassword] = useState({
@@ -331,6 +332,21 @@ export default function Settings({
               <span className="block text-xs text-muted-foreground">
                 Sahifalardagi harakatlanuvchi sahnalar o‘rniga oddiy tinch ko‘rinish
                 qaytadi. Barcha ma’lumotlar o‘z joyida qoladi.
+              </span>
+            </span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={reducedMotion}
+              onChange={(e) => setMotionReduced(e.target.checked)}
+              className="mt-1 h-4 w-4"
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-medium">Animatsiyalarni kamaytirish</span>
+              <span className="block text-xs text-muted-foreground">
+                Sarlavha harflari, slayder va yutuq hisoblagichlari tinch
+                ko‘rinadi. Kontent to‘liq ochiq qoladi.
               </span>
             </span>
           </label>
