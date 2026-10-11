@@ -9,6 +9,65 @@ import { CanvasTexture } from "three";
  */
 const cache = new Map<string, CanvasTexture>();
 
+/**
+ * The "3talab" wordmark for the hero stage: bold latin letters on a soft
+ * violet plate with a thin neon rim. One canvas, cached forever.
+ */
+export function logoPlate(): CanvasTexture {
+  const hit = cache.get("logo");
+  if (hit) return hit;
+
+  const width = 512;
+  const height = 160;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  if (ctx) {
+    ctx.clearRect(0, 0, width, height);
+
+    // Soft violet plate behind the wordmark.
+    const plate = ctx.createLinearGradient(0, 0, width, height);
+    plate.addColorStop(0, "rgba(126, 20, 255, 0.35)");
+    plate.addColorStop(0.55, "rgba(71, 191, 255, 0.18)");
+    plate.addColorStop(1, "rgba(126, 20, 255, 0.08)");
+    ctx.fillStyle = plate;
+    const r = 28;
+    ctx.beginPath();
+    ctx.moveTo(r, 0);
+    ctx.lineTo(width - r, 0);
+    ctx.quadraticCurveTo(width, 0, width, r);
+    ctx.lineTo(width, height - r);
+    ctx.quadraticCurveTo(width, height, width - r, height);
+    ctx.lineTo(r, height);
+    ctx.quadraticCurveTo(0, height, 0, height - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Neon rim.
+    ctx.strokeStyle = "rgba(125, 226, 255, 0.55)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Wordmark.
+    ctx.font = "800 92px Inter, ui-sans-serif, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = "#f6f1ff";
+    ctx.fillText("3talab", width / 2, height / 2 + 4);
+  }
+
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = "SRGBColorSpace";
+  cache.set("logo", texture);
+  return texture;
+}
+
 const RAIN_GLYPHS = "0123456789SATIEL";
 const RAIN_CELLS = RAIN_GLYPHS.length;
 const CELL = 64;

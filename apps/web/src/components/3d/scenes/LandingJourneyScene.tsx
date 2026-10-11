@@ -1,10 +1,11 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import type { Group, Mesh, MeshStandardMaterial } from "three";
+import { AdditiveBlending } from "three";
+import type { BufferAttribute, Group, Mesh, MeshStandardMaterial, Points } from "three";
 import { use3DReady, useDeviceQuality } from "../hooks/usePerfFlags";
 import { useActiveView } from "../hooks/useActiveView";
-import { MatrixRain } from "../elements/MatrixRain";
+import { radialGlow } from "../lib/glyphs";;
 
 /** Fractional part — a deterministic stand-in for Math.random during render. */
 const frac = (n: number) => n - Math.floor(n);
@@ -101,31 +102,76 @@ function useJourneyLayout(enabled: boolean) {
   return layout;
 }
 
-/** The Matrix fall lining the whole corridor. */
+/**
+ * A veil of soft dust drifting down the corridor. Every mote is a radial
+ * falloff rather than a hard pixel, and the whole field eases sideways with
+ * the camera so the walls feel deep without a single line of glyphs.
+ */
 function CorridorMotes({ count, rich }: { count: number; rich: boolean }) {
-  const positions = useMemo(() => {
+  const points = useRef<Points>(null);
+  const glow = useMemo(() => radialGlow(3.2), []);
+
+  const field = useMemo(() => {
     const arr = new Float32Array(count * 3);
+    const speeds = new Float32Array(count);
+    const tints = new Float32Array(count * 3);
+    // Violet at the entrance, green where the results live, gold at the gate.
+    const stops = [
+      [0.62, 0.44, 1],
+      [0.28, 0.75, 1],
+      [0.24, 0.86, 0.52],
+      [1, 0.82, 0.4],
+    ] as const;
+
     for (let i = 0; i < count; i++) {
       const t = (i + 1) * 0.618033988749895;
+      const depthT = frac(t * 2.9);
       arr[i * 3] = (frac(t) - 0.5) * 14;
       arr[i * 3 + 1] = (frac(t * 1.7) - 0.5) * 7;
-      arr[i * 3 + 2] = 2 - frac(t * 2.9) * 46;
+      arr[i * 3 + 2] = 2 - depthT * 46;
+      speeds[i] = 0.12 + frac(t * 3.3) * 0.3;
+
+      const stop = stops[Math.min(stops.length - 1, Math.floor(depthT * stops.length))];
+      tints[i * 3] = stop[0];
+      tints[i * 3 + 1] = stop[1];
+      tints[i * 3 + 2] = stop[2];
     }
-    return arr;
+    return { arr, speeds, tints };
   }, [count]);
 
+  useFrame((_state, delta) => {
+    const attribute = points.current?.geometry.getAttribute(
+      "position",
+    ) as BufferAttribute | undefined;
+    if (!attribute) return;
+    const step = Math.min(delta, 0.05);
+    for (let i = 0; i < count; i++) {
+      let y = attribute.getY(i) - step * field.speeds[i];
+      // Wrap back to the ceiling rather than growing the buffer.
+      if (y < -3.6) y = 3.6;
+      attribute.setY(i, y);
+    }
+    attribute.needsUpdate = true;
+  });
+
   return (
-    <group>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        </bufferGeometry>
-        <pointsMaterial color="#47bfff" size={0.05} transparent opacity={0.22} />
-      </points>
-      {rich ? (
-        <MatrixRain count={36} area={7} offsetX={0} depth={46} opacity={0.28} />
-      ) : null}
-    </group>
+    <points ref={points}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[field.arr, 3]} />
+        <bufferAttribute attach="attributes-color" args={[field.tints, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        map={glow}
+        vertexColors
+        size={rich ? 0.16 : 0.11}
+        sizeAttenuation
+        transparent
+        opacity={0.5}
+        depthWrite={false}
+        blending={AdditiveBlending}
+        toneMapped={false}
+      />
+    </points>
   );
 }
 

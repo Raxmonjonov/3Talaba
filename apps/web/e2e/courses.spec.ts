@@ -20,7 +20,7 @@ test.describe("courses", () => {
   }) => {
     await registerFreshUser(page);
 
-    await page.getByRole("button", { name: "Kurslar" }).click();
+    await page.getByRole("button", { name: "Kurslar", exact: true }).click();
     await expect(page).toHaveURL(/\/courses$/);
     await expect(page.getByRole("heading", { name: "Kurslar" })).toBeVisible({
       timeout: 15_000,

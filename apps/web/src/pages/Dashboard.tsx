@@ -9,8 +9,17 @@ import { ProgressStairs3D } from "@/components/3d/elements/ProgressStairs3D";
 import { MedalsShelf } from "@/components/3d/elements/MedalsShelf";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { ThemeToggle } from "@/components/AppShell";
+import { subjectLabel } from "@/lib/subjects";
 
 const HeroScene = lazy(() => import("@/components/landing/HeroScene"));
+
+/** Quick-start subject plates on the dashboard "classroom" wall. */
+const SUBJECT_CARDS = [
+  { subject: "SAT", accent: "#ffd166", blurb: "Raqam va o‘qish mashqlari" },
+  { subject: "IELTS", accent: "#3ddc84", blurb: "Listening, reading, writing" },
+  { subject: "MATHEMATICS", accent: "#47bfff", blurb: "Algebra va geometriya" },
+  { subject: "ACADEMIC_ENGLISH", accent: "#c8a2ff", blurb: "Akademik lug‘at va grammatika" },
+] as const;
 
 const TARGET_LABELS: Record<string, string> = {
   SAT: "SAT",
@@ -292,6 +301,59 @@ export default function Dashboard({
             <button onClick={() => navigate("/settings")} className="btn-secondary">
               Hisob
             </button>
+          </div>
+        </section>
+
+        {/* Sinf xonasi devoridagi fan kartalari — hover'da ko'tariladi. */}
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-semibold">Fanlar</h3>
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Barcha kurslar
+            </button>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {SUBJECT_CARDS.map((card) => (
+              <div key={card.subject} className="subject-scene">
+                <button
+                  onClick={() =>
+                    navigate(`/practice?subject=${encodeURIComponent(card.subject)}`)
+                  }
+                  className="subject-plate h-full w-full rounded-2xl border bg-card p-5 text-left shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p
+                        className="text-xs font-medium tracking-wide"
+                        style={{ color: card.accent }}
+                      >
+                        {card.subject === "ACADEMIC_ENGLISH"
+                          ? "Ingliz tili"
+                          : card.subject}
+                      </p>
+                      <p className="text-base font-semibold">
+                        {subjectLabel(card.subject)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{card.blurb}</p>
+                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="mt-1 h-3 w-3 shrink-0 rounded-full"
+                      style={{
+                        background: card.accent,
+                        boxShadow: `0 0 12px 2px ${card.accent}66`,
+                      }}
+                    />
+                  </div>
+                  <p className="mt-4 text-xs font-medium text-primary">
+                    Fan bo‘yicha mashq →
+                  </p>
+                </button>
+              </div>
+            ))}
           </div>
         </section>
 

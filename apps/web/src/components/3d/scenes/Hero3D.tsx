@@ -3,17 +3,56 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { AdditiveBlending } from "three";
-import type { BufferAttribute, Mesh, Points } from "three";
+import type { BufferAttribute, Mesh, Points, Sprite } from "three";
+import type { RefObject } from "react";
 import { use3DReady, useDeviceQuality } from "../hooks/usePerfFlags";
 import { useActiveView } from "../hooks/useActiveView";
-import { usePointer } from "../hooks/usePointer";
+import { usePointer, type Vec2 } from "../hooks/usePointer";
 import { PointerRig } from "../elements/PointerRig";
 import { SubjectPlates } from "../elements/SubjectPlates";
-import { MatrixRain } from "../elements/MatrixRain";
-import { radialGlow, ringGlow } from "../lib/glyphs";
+import { radialGlow, ringGlow, logoPlate } from "../lib/glyphs";
 
 /** Fractional part — a deterministic stand-in for Math.random during render. */
 const frac = (n: number) => n - Math.floor(n);
+
+/**
+ * The "3talab" wordmark floating above the globe. It eases toward the pointer
+ * so the plate feels like a physical sign hanging in the room — pure parallax,
+ * no re-renders, and a slow idle bob when the pointer is still.
+ */
+function LogoMark({ pointer }: { pointer: RefObject<Vec2> }) {
+  const sprite = useRef<Sprite>(null);
+  const texture = useMemo(() => logoPlate(), []);
+  const eased = useRef({ x: 0, y: 0 });
+
+  useFrame((state, delta) => {
+    const node = sprite.current;
+    if (!node) return;
+    const k = Math.min(Math.min(delta, 0.05) * 2.4, 1);
+    eased.current.x += (pointer.current.x * 0.35 - eased.current.x) * k;
+    eased.current.y += (-pointer.current.y * 0.22 - eased.current.y) * k;
+    const bob = Math.sin(state.clock.elapsedTime * 0.9) * 0.04;
+    node.position.x = 1.75 + eased.current.x;
+    node.position.y = 1.35 + bob + eased.current.y;
+    node.position.z = 0.55;
+    // Face the camera loosely; the PointerRig already drifts the whole stage.
+    node.rotation.y = eased.current.x * 0.35;
+    node.rotation.x = -eased.current.y * 0.25;
+  });
+
+  return (
+    <sprite ref={sprite} position={[1.75, 1.35, 0.55]} scale={[1.7, 0.53, 1]}>
+      <spriteMaterial
+        map={texture}
+        transparent
+        opacity={0.92}
+        depthWrite={false}
+        blending={AdditiveBlending}
+        toneMapped={false}
+      />
+    </sprite>
+  );
+}
 
 /**
  * The hero stage, held to the right of the headline column. Everything here is
@@ -176,8 +215,8 @@ function FloatingBooks({ rich }: { rich: boolean }) {
 
 /**
  * A thin veil of motes drifting upward, each drawn as a soft radial dot so it
- * reads as dust in the light rather than a pixel. Replaces the old glyph rain:
- * quieter, cheaper, and it never crosses the headline.
+ * reads as dust in the light rather than a pixel. The old falling-glyph rain
+ * was removed: it crossed the headline and fought the copy for attention.
  */
 function Motes({ count }: { count: number }) {
   const points = useRef<Points>(null);
@@ -263,14 +302,7 @@ export default function Hero3D() {
             <FloatingBooks rich={rich} />
             <SubjectPlates />
           </group>
-          {/* Rain pushed behind the globe so the headline column stays clean. */}
-          <MatrixRain
-            count={rich ? 28 : 10}
-            area={4.5}
-            offsetX={1.4}
-            depth={5}
-            opacity={0.35}
-          />
+          <LogoMark pointer={pointer} />
           <Motes count={rich ? 34 : 14} />
         </Suspense>
         {rich && quality === "high" ? (
