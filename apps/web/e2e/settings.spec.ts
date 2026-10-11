@@ -46,4 +46,21 @@ test.describe("account settings", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByText("Xush kelibsiz, Yangi")).toBeVisible({ timeout: 15_000 });
   });
+
+  test("theme toggle switches dark mode and persists across pages", async ({ page }) => {
+    await registerFreshUser(page);
+
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
+
+    // Dashboard header toggle (sun/moon icon button).
+    await page.getByRole("button", { name: "Qorong'u rejim" }).first().click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+
+    await page.getByRole("button", { name: "Hisob", exact: true }).click();
+    await expect(page).toHaveURL(/\/settings$/);
+    await expect(page.locator("html")).toHaveClass(/dark/);
+
+    await page.getByRole("button", { name: "Yorug' rejim" }).first().click();
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
+  });
 });

@@ -23,6 +23,7 @@ type Column = {
 export function MatrixRain({
   count,
   area,
+  offsetX = 0,
   depth = 4,
   tint = "#3ddc84",
   opacity = 0.5,
@@ -30,6 +31,8 @@ export function MatrixRain({
   count: number;
   /** Half-width of the band the rain fills, in world units. */
   area: number;
+  /** Shifts the whole band sideways; the hero pushes it clear of the copy. */
+  offsetX?: number;
   /** How far back along -z the columns spread; the corridor uses ~46. */
   depth?: number;
   tint?: string;
@@ -41,7 +44,7 @@ export function MatrixRain({
       Array.from({ length: count }, (_, i) => {
         const t = (i + 1) * 0.618033988749895;
         return {
-          x: (t - Math.floor(t) - 0.5) * 2 * area,
+          x: offsetX + (t - Math.floor(t) - 0.5) * 2 * area,
           z: -0.6 - ((t * 1.7) % 1) * depth,
           speed: 0.06 + ((t * 2.3) % 1) * 0.12,
           opacity: opacity * (0.45 + ((t * 3.1) % 1) * 0.55),
@@ -49,7 +52,7 @@ export function MatrixRain({
           offset: (t * 5.7) % 1,
         };
       }),
-    [count, area, depth, opacity],
+    [count, area, offsetX, depth, opacity],
   );
 
   // Cloned textures share the source pixels; each one only carries its own UV
@@ -114,7 +117,14 @@ const PLATES = [
  * Text plates that always face the camera and slowly circle the globe, so the
  * exam subjects read as part of the world rather than a label pasted on top.
  */
-export function SubjectPlates({ speed = 0.16 }: { speed?: number }) {
+export function SubjectPlates({
+  speed = 0.16,
+  scale = 0.42,
+}: {
+  speed?: number;
+  /** Width of a plate in world units; kept small so it never crowds copy. */
+  scale?: number;
+}) {
   const group = useRef<Group>(null);
   const meshes = useRef<(Sprite | null)[]>([]);
   const textures = useMemo(() => PLATES.map((plate) => glyphPlate(plate.label)), []);
@@ -144,13 +154,13 @@ export function SubjectPlates({ speed = 0.16 }: { speed?: number }) {
             plate.y,
             Math.sin(plate.phase) * plate.radius,
           ]}
-          scale={[0.62, 0.31, 1]}
+          scale={[scale, scale * 0.5, 1]}
         >
           <spriteMaterial
             map={textures[i]}
             color={plate.color}
             transparent
-            opacity={0.92}
+            opacity={0.8}
             depthWrite={false}
             blending={AdditiveBlending}
             toneMapped={false}

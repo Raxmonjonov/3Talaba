@@ -199,7 +199,7 @@ export default function Register({ onLogin }: { onLogin: (user: AuthResponse["us
           </div>
 
           {error ? (
-            <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="alert-error">
               {error}
             </p>
           ) : null}

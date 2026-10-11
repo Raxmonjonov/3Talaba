@@ -8,6 +8,7 @@ import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
 import { ProgressStairs3D } from "@/components/3d/elements/ProgressStairs3D";
 import { MedalsShelf } from "@/components/3d/elements/MedalsShelf";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
+import { ThemeToggle } from "@/components/AppShell";
 
 const HeroScene = lazy(() => import("@/components/landing/HeroScene"));
 
@@ -216,18 +217,21 @@ export default function Dashboard({
               Xush kelibsiz, {address}
             </p>
           </div>
-          <button
-            onClick={onLogout}
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Chiqish
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button
+              onClick={onLogout}
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Chiqish
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="relative z-10 mx-auto max-w-4xl space-y-6 px-5 py-10">
         {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="alert-error">
             {error}
           </p>
         ) : null}

@@ -386,7 +386,7 @@ export default function MockExam() {
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
               secondsLeft < 60
-                ? "bg-red-50 text-red-700"
+                ? "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-200"
                 : "bg-secondary text-muted-foreground"
             }`}
             aria-label="Qolgan vaqt"
@@ -405,10 +405,10 @@ export default function MockExam() {
         {feedback ? (
           <div
             role="status"
-            className={`rounded-xl border px-4 py-3 text-sm ${
+            className={`verdict-panel ${
               verdict === "correct"
-                ? "verdict-correct border-green-200 bg-green-50"
-                : "verdict-wrong border-red-200 bg-red-50"
+                ? "verdict-correct is-correct"
+                : "verdict-wrong is-wrong"
             }`}
           >
             <p className="font-medium">
@@ -442,7 +442,7 @@ export default function MockExam() {
         ) : null}
 
         {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="alert-error">
             {error}
           </p>
         ) : null}

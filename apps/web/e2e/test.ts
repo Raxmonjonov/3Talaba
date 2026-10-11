@@ -13,6 +13,9 @@ export const test = base.extend({
     await page.addInitScript(() => {
       try {
         localStorage.setItem("3talab_3d", "off");
+        // Start from a known light theme so theme tests do not depend on the
+        // host OS preference.
+        localStorage.setItem("3talab_theme", "light");
       } catch {
         /* private mode — specs that need 3D can still force it */
       }

@@ -139,6 +139,34 @@
     @apply w-full px-3 py-2.5 border rounded-lg bg-background transition-shadow focus:outline-none focus:ring-2 focus:ring-ring;
   }
 
+  .alert-error {
+    @apply rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-200;
+  }
+
+  .verdict-panel {
+    @apply rounded-xl border px-4 py-3 text-sm font-medium;
+  }
+
+  .verdict-panel.is-correct {
+    @apply border-green-200 bg-green-50 text-green-800 dark:border-green-900/60 dark:bg-green-950/50 dark:text-green-200;
+  }
+
+  .verdict-panel.is-wrong {
+    @apply border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-200;
+  }
+
+  .verdict-row {
+    @apply rounded-xl border px-4 py-2.5 text-sm flex items-center gap-3;
+  }
+
+  .verdict-row.is-correct {
+    @apply border-green-200 bg-green-50 dark:border-green-900/60 dark:bg-green-950/50;
+  }
+
+  .verdict-row.is-wrong {
+    @apply border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/50;
+  }
+
   /* Landing page helpers */
   .btn-lg {
     @apply px-6 py-3.5 text-base rounded-full font-semibold;

@@ -227,10 +227,10 @@ export default function Practice() {
         {feedback ? (
           <div
             role="status"
-            className={`rounded-xl border px-4 py-3 text-sm ${
+            className={`verdict-panel ${
               verdict === "correct"
-                ? "verdict-correct border-green-200 bg-green-50"
-                : "verdict-wrong border-red-200 bg-red-50"
+                ? "verdict-correct is-correct"
+                : "verdict-wrong is-wrong"
             }`}
           >
             <p className="font-medium">
@@ -271,7 +271,7 @@ export default function Practice() {
         ) : null}
 
         {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="alert-error">
             {error}
           </p>
         ) : null}

@@ -1,5 +1,7 @@
 import { type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "@/lib/useTheme";
+import { MoonIcon, SunIcon } from "@/components/landing/Icons";
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", match: /^\/dashboard$/ },
@@ -9,6 +11,22 @@ const NAV_ITEMS = [
   { to: "/mock-exams", label: "Imtihonlar", match: /^\/mock-exams/ },
   { to: "/settings", label: "Hisob", match: /^\/settings$/ },
 ] as const;
+
+export function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  const isDark = theme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border bg-surface text-foreground transition-colors hover:bg-secondary"
+      aria-label={isDark ? "Yorug' rejim" : "Qorong'u rejim"}
+      title={isDark ? "Yorug' rejim" : "Qorong'u rejim"}
+    >
+      {isDark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+    </button>
+  );
+}
 
 export function AppShell({
   title,
@@ -46,6 +64,7 @@ export function AppShell({
           </div>
           <div className="flex shrink-0 items-center gap-3">
             {actions}
+            <ThemeToggle />
             {backTo ? (
               <button
                 onClick={() => navigate(backTo)}

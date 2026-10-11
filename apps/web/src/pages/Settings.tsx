@@ -3,7 +3,7 @@ import { api } from "../lib/api";
 import { set3DEnabled } from "../lib/featureFlags";
 import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
 import type { ProfileResponse, SettingsResponse, User } from "../lib/types";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, ThemeToggle } from "@/components/AppShell";
 
 const GENDERS: Array<{ value: "MALE" | "FEMALE" | "OTHER"; label: string }> = [
   { value: "MALE", label: "Erkak" },
@@ -148,7 +148,7 @@ export default function Settings({
       maxWidth="max-w-2xl"
     >
         {error ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="alert-error">
             {error}
           </p>
         ) : null}
@@ -334,6 +334,16 @@ export default function Settings({
               </span>
             </span>
           </label>
+          <div className="flex items-center justify-between gap-3 rounded-xl border bg-background px-4 py-3">
+            <div className="space-y-0.5">
+              <span className="block text-sm font-medium">Rejim (yorug‘ / qorong‘i)</span>
+              <span className="block text-xs text-muted-foreground">
+                Tanlagan rejim brauzerda eslab qolinadi va barcha sahifalarga
+                tatbiq etiladi.
+              </span>
+            </div>
+            <ThemeToggle />
+          </div>
         </section>
 
         <form onSubmit={savePassword} className="space-y-5 rounded-2xl border bg-card p-6 shadow-sm">

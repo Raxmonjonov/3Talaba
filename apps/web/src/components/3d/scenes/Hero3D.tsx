@@ -1,7 +1,7 @@
 ﻿import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
-import { EffectComposer, Bloom, DepthOfField } from "@react-three/postprocessing";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import type { Mesh } from "three";
 import { use3DReady, useDeviceQuality } from "../hooks/usePerfFlags";
 import { useActiveView } from "../hooks/useActiveView";
