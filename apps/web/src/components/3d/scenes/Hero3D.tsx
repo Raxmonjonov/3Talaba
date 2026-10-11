@@ -124,14 +124,6 @@ export default function Hero3D() {
         {rich && quality === "high" ? (
           <EffectComposer>
             <Bloom mipmapBlur intensity={0.16} luminanceThreshold={0.85} />
-            {/* The books and plates sit behind the globe, so a whisper of
-                bokeh separates them without touching the headline column. */}
-            <DepthOfField
-              target={[1.75, 0, 0]}
-              focalLength={0.055}
-              bokehScale={2.4}
-              height={480}
-            />
           </EffectComposer>
         ) : null}
         <PointerRig pointer={pointer} reach={0.4} />

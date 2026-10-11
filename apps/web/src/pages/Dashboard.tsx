@@ -65,6 +65,33 @@ function Sparkline({ points }: { points: number[] }) {
   );
 }
 
+function heatmapLevel(minutes: number): string {
+  if (minutes <= 0) return "bg-secondary";
+  if (minutes < 15) return "bg-primary/20";
+  if (minutes < 30) return "bg-primary/40";
+  if (minutes < 60) return "bg-primary/65";
+  return "bg-primary";
+}
+
+function Heatmap({ series }: { series: { date: string; minutes: number }[] }) {
+  if (series.length === 0) return null;
+  return (
+    <div
+      className="grid grid-cols-10 gap-1"
+      role="img"
+      aria-label="Oxirgi 30 kunlik faollik xaritasi"
+    >
+      {series.map((day) => (
+        <div
+          key={day.date}
+          title={`${day.date}: ${day.minutes} daq`}
+          className={`aspect-square rounded-[3px] ${heatmapLevel(day.minutes)}`}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function Dashboard({
   user,
   onLogout,
@@ -96,7 +123,7 @@ export default function Dashboard({
 
   useEffect(() => {
     let cancelled = false;
-    api<ProgressResponse>("/api/learning/progress?days=14")
+    api<ProgressResponse>("/api/learning/progress?days=30")
       .then((data) => {
         if (!cancelled) setProgress(data);
       })
@@ -523,14 +550,29 @@ export default function Dashboard({
           </div>
         </section>
 
-        {spark.length > 0 ? (
-          <section className="space-y-2 rounded-2xl border bg-card p-5 shadow-sm">
-            <p className="text-xs text-muted-foreground">
-              Oxirgi 14 kun
-            </p>
-            <div className="text-muted-foreground">
-              <Sparkline points={spark} />
+        {spark.length > 0 || progress?.streak ? (
+          <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">Oxirgi 30 kun</p>
+              {progress?.streak ? (
+                <p className="text-sm">
+                  <span className="font-semibold">
+                    {progress.streak.current} kun ketma-ket
+                  </span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · rekord {progress.streak.best}
+                    {!progress.streak.todayActive ? " · bugun hali yo‘q" : ""}
+                  </span>
+                </p>
+              ) : null}
             </div>
+            {progress?.series?.length ? <Heatmap series={progress.series} /> : null}
+            {spark.length > 0 ? (
+              <div className="text-muted-foreground">
+                <Sparkline points={spark} />
+              </div>
+            ) : null}
           </section>
         ) : null}
 

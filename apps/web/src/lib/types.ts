@@ -249,6 +249,11 @@ export interface ProgressResponse {
     activeDays: number;
     sessions: number;
   };
+  streak?: {
+    current: number;
+    best: number;
+    todayActive: boolean;
+  };
 }
 
 export type AchievementTier = "bronze" | "silver" | "gold";

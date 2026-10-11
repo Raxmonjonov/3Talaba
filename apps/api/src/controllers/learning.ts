@@ -6,6 +6,7 @@ import {
   awardSlug,
   evaluateLater,
 } from "../services/achievements.js";
+import { computeStreaks, dayKey } from "../services/streaks.js";
 
 /** Returns the diagnostic questions. Answers are not included. */
 export async function getPlacementQuestions(_req: Request, res: Response) {
@@ -71,7 +72,10 @@ export async function getProgress(req: Request, res: Response) {
   since.setHours(0, 0, 0, 0);
   since.setDate(since.getDate() - (days - 1));
 
-  const [rows, sessionTotals] = await Promise.all([
+  const historySince = new Date(since);
+  historySince.setDate(historySince.getDate() - 300);
+
+  const [rows, sessionTotals, history] = await Promise.all([
     prisma.progress.findMany({
       where: { userId, date: { gte: since } },
       orderBy: { date: "asc" },
@@ -80,6 +84,11 @@ export async function getProgress(req: Request, res: Response) {
     prisma.session.findMany({
       where: { userId, startedAt: { gte: since } },
       select: { totalMinutes: true },
+    }),
+    prisma.progress.findMany({
+      where: { userId, minutes: { gt: 0 }, date: { gte: historySince } },
+      orderBy: { date: "asc" },
+      select: { date: true },
     }),
   ]);
 
@@ -105,6 +114,9 @@ export async function getProgress(req: Request, res: Response) {
   const totalCompleted = rows.reduce((sum, r) => sum + r.completed, 0);
   const activeDays = rows.filter((r) => r.minutes > 0).length;
 
+  const active = new Set(history.map((r) => dayKey(r.date)));
+  const streak = computeStreaks(active);
+
   res.json({
     series,
     totals: {
@@ -113,6 +125,7 @@ export async function getProgress(req: Request, res: Response) {
       activeDays,
       sessions: sessionTotals.length,
     },
+    streak,
   });
 }
 
