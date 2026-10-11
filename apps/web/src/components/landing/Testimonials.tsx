@@ -1,8 +1,25 @@
+import { useRef } from "react";
+import { animate, stagger } from "animejs";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Section } from "./Section";
+import { useAnimeScope, prefersReducedMotion } from "@/lib/anime";
 
 export function Testimonials() {
   const { t } = useTranslation();
+  const root = useRef<HTMLDivElement>(null);
+
+  useAnimeScope(root, () => {
+    const cards = root.current?.querySelectorAll<HTMLElement>("[data-card]");
+    if (!cards?.length) return;
+    animate(cards, {
+      opacity: [0, 1],
+      y: [22, 0],
+      rotateX: [-4, 0],
+      delay: stagger(100, { start: 60 }),
+      duration: 560,
+      ease: "outCubic",
+    });
+  }, []);
 
   return (
     <Section
@@ -12,11 +29,13 @@ export function Testimonials() {
       subtitle={t.testimonials.subtitle}
       tone="surface"
     >
-      <div className="grid gap-5 md:grid-cols-3">
+      <div ref={root} className="grid gap-5 md:grid-cols-3" style={{ perspective: "1000px" }}>
         {[0, 1, 2].map((slot) => (
           <div
             key={slot}
+            data-card
             aria-hidden="true"
+            style={{ opacity: prefersReducedMotion() ? 1 : 0 }}
             className="rounded-2xl border border-dashed bg-card/60 p-6"
           >
             <div className="flex items-center gap-3">
