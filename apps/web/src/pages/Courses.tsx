@@ -102,41 +102,42 @@ export default function Courses() {
         ) : (
           <ul className="space-y-3">
             {courses.map((course) => (
-              <li
-                key={course.slug}
-                className="rounded-2xl border bg-card p-5 shadow-sm"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <p className="text-xs text-muted-foreground">
-                      {subjectLabel(course.subject)}
-                    </p>
-                    <button
-                      onClick={() => navigate(`/courses/${course.slug}`)}
-                      className="text-left text-lg font-semibold underline underline-offset-4 hover:text-primary"
-                    >
-                      {course.title}
-                    </button>
-                    <p className="text-sm text-muted-foreground">{course.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {course.moduleCount} modul · {course.lessonCount} dars
-                    </p>
+              <li key={course.slug}>
+                <div className="subject-scene">
+                  <div className="subject-plate rounded-2xl border bg-card p-5 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <p className="text-xs text-muted-foreground">
+                          {subjectLabel(course.subject)}
+                        </p>
+                        <button
+                          onClick={() => navigate(`/courses/${course.slug}`)}
+                          className="text-left text-lg font-semibold underline underline-offset-4 hover:text-primary"
+                        >
+                          {course.title}
+                        </button>
+                        <p className="text-sm text-muted-foreground">{course.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {course.moduleCount} modul · {course.lessonCount} dars
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => enroll(course.slug)}
+                        disabled={enrolling === course.slug || course.enrolled || enrolledOverride[course.slug]}
+                        className={
+                          course.enrolled || enrolledOverride[course.slug]
+                            ? "btn-secondary text-sm"
+                            : "btn-primary text-sm"
+                        }
+                      >
+                        {course.enrolled || enrolledOverride[course.slug]
+                          ? "Yozildingiz"
+                          : enrolling === course.slug
+                            ? "Yozilmoqda…"
+                            : "Yozilish"}
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => enroll(course.slug)}
-                    disabled={enrolling === course.slug || course.enrolled || enrolledOverride[course.slug]}
-                    className={
-                      course.enrolled || enrolledOverride[course.slug]
-                        ? "btn-secondary text-sm"
-                        : "btn-primary text-sm"
-                    }
-                  >
-                    {course.enrolled || enrolledOverride[course.slug]
-                      ? "Yozildingiz"
-                      : enrolling === course.slug
-                        ? "Yozilmoqda…"
-                        : "Yozilish"}
-                  </button>
                 </div>
               </li>
             ))}

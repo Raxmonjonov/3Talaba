@@ -31,36 +31,55 @@ function Step({ index, level }: { index: number; level: number }) {
   );
 }
 
-/** The dream university waiting on the top tread: a glowing graduation cap. */
+/** The dream university waiting on the top tread: a portal ring + graduation cap. */
 function DreamMarker({ active }: { active: boolean }) {
   const group = useRef<Group>(null);
+  const portal = useRef<Group>(null);
 
   useFrame((state, delta) => {
-    if (!group.current || !active) return;
-    group.current.position.y =
-      TOTAL_STEPS * 0.14 + 0.42 + Math.sin(state.clock.elapsedTime * 1.4) * 0.06;
-    group.current.rotation.y += delta * 0.25;
+    const t = state.clock.elapsedTime;
+    if (group.current && active) {
+      group.current.position.y =
+        TOTAL_STEPS * 0.14 + 0.48 + Math.sin(t * 1.4) * 0.06;
+      group.current.rotation.y += delta * 0.25;
+    }
+    if (portal.current && active) {
+      portal.current.rotation.z = t * 0.35;
+      portal.current.scale.setScalar(1 + Math.sin(t * 1.8) * 0.04);
+    }
   });
 
   return (
-    <group
-      ref={group}
-      position={[(TOTAL_STEPS / 2) * STEP_WIDTH, TOTAL_STEPS * 0.14 + 0.42, 0]}
-    >
-      <mesh rotation={[0, 0, 0]}>
-        <cylinderGeometry args={[0.13, 0.17, 0.17, 16]} />
-        <meshStandardMaterial color="#ffd166" roughness={0.4} metalness={0.3} />
-      </mesh>
-      <mesh position={[0, 0.13, 0]} rotation={[0, 0.18, 0.06]}>
-        <boxGeometry args={[0.52, 0.03, 0.52]} />
-        <meshStandardMaterial
-          color="#ffe9a8"
-          roughness={0.35}
-          metalness={0.35}
-          emissive="#ffd166"
-          emissiveIntensity={0.45}
-        />
-      </mesh>
+    <group position={[(TOTAL_STEPS / 2) * STEP_WIDTH, TOTAL_STEPS * 0.14 + 0.35, -0.15]}>
+      {/* Soft portal ring the student is walking toward. */}
+      <group ref={portal}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.42, 0.035, 12, 48]} />
+          <meshStandardMaterial
+            color="#7de2ff"
+            emissive="#47bfff"
+            emissiveIntensity={0.9}
+            roughness={0.35}
+            metalness={0.4}
+          />
+        </mesh>
+      </group>
+      <group ref={group} position={[0, 0.15, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.13, 0.17, 0.17, 16]} />
+          <meshStandardMaterial color="#ffd166" roughness={0.4} metalness={0.3} />
+        </mesh>
+        <mesh position={[0, 0.13, 0]} rotation={[0, 0.18, 0.06]}>
+          <boxGeometry args={[0.52, 0.03, 0.52]} />
+          <meshStandardMaterial
+            color="#ffe9a8"
+            roughness={0.35}
+            metalness={0.35}
+            emissive="#ffd166"
+            emissiveIntensity={0.45}
+          />
+        </mesh>
+      </group>
     </group>
   );
 }

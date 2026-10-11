@@ -305,6 +305,7 @@
 
   .subject-scene:hover .subject-plate,
   .subject-scene:focus-within .subject-plate {
+    transform: translateY(-6px) rotateX(5deg) rotateY(-3deg);
     box-shadow: 0 26px 46px -28px hsl(258 60% 12% / 0.55);
   }
 

@@ -6,6 +6,7 @@ import type {
   ServedQuestion,
 } from "../lib/types";
 import { QuestionBody } from "@/components/QuestionBody";
+import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
 import { subjectLabel } from "@/lib/subjects";
 import { AppShell } from "@/components/AppShell";
 
@@ -253,7 +254,11 @@ export default function Practice() {
         ) : null}
 
         {question ? (
-          <section className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm">
+          <QuestionCard3D
+            step={answered}
+            verdict={verdict}
+            className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm"
+          >
             <QuestionBody
               question={question}
               value={freeText}
@@ -261,7 +266,7 @@ export default function Practice() {
               disabled={submitting || Boolean(verdict)}
               onChoose={choose}
             />
-          </section>
+          </QuestionCard3D>
         ) : null}
 
         {verdict ? (

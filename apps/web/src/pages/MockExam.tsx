@@ -9,6 +9,7 @@ import type {
   MockExamSectionResult,
 } from "../lib/types";
 import { QuestionBody } from "@/components/QuestionBody";
+import { QuestionCard3D } from "@/components/3d/elements/QuestionCard3D";
 import { AppShell } from "@/components/AppShell";
 
 type FlatItem = MockExamQuestion & { section: string; index: number };
@@ -425,7 +426,11 @@ export default function MockExam() {
           </div>
         ) : null}
 
-        <section className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm">
+        <QuestionCard3D
+          step={cursor}
+          verdict={verdict}
+          className="auth-card space-y-6 rounded-2xl border bg-card p-8 shadow-sm"
+        >
           <QuestionBody
             question={current}
             value={freeText}
@@ -433,7 +438,7 @@ export default function MockExam() {
             disabled={submitting || Boolean(verdict)}
             onChoose={submit}
           />
-        </section>
+        </QuestionCard3D>
 
         {verdict ? (
           <button onClick={next} className="btn-primary w-full">
