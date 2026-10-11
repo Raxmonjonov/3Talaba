@@ -1,13 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-import { animate } from "animejs";
+import { useRef, useState } from "react";
+import {
+  animate,
+  createDrawable,
+  createMotionPath,
+  onScroll,
+} from "animejs";
 import { useAnimeScope, prefersReducedMotion } from "@/lib/anime";
 
 type Step = { title: string; body: string };
 
+const PATH_D =
+  "M20 8 C 20 70, 36 90, 20 140 S 4 210, 20 260 S 34 330, 20 392";
+
 /**
- * Scroll-drawn SVG path with a travelling marker. Completed steps light up
- * as the marker passes them. Uses anime.js for the stroke draw and plain
- * scroll math for progress (more reliable than deep scroll containers).
+ * Scroll-drawn SVG path with a travelling marker (createMotionPath).
+ * Completed steps light up as the marker passes them. Both the stroke draw
+ * and the marker ride the same anime.js ScrollObserver with `sync: true`.
  */
 export function LearningPathDemo({ steps }: { steps: Step[] }) {
   const root = useRef<HTMLDivElement>(null);
@@ -16,69 +24,44 @@ export function LearningPathDemo({ steps }: { steps: Step[] }) {
   const [progress, setProgress] = useState(0);
 
   useAnimeScope(root, () => {
-    const path = pathRef.current;
-    if (!path) return;
-    const length = path.getTotalLength();
-    path.style.strokeDasharray = String(length);
-    path.style.strokeDashoffset = String(length);
-  }, [steps.length]);
-
-  useEffect(() => {
+    const host = root.current;
     const path = pathRef.current;
     const marker = markerRef.current;
-    const host = root.current;
-    if (!path || !host) return;
+    if (!host || !path || !marker) return;
 
-    const length = path.getTotalLength();
-    const reduced = prefersReducedMotion();
-    let frame = 0;
-
-    const place = (p: number) => {
-      const clamped = Math.min(1, Math.max(0, p));
-      const pt = path.getPointAtLength(length * clamped);
-      if (marker) {
-        marker.setAttribute("transform", `translate(${pt.x}, ${pt.y})`);
-      }
-      path.style.strokeDashoffset = String(length * (1 - clamped));
-      setProgress(clamped);
+    const scrollOpts = {
+      container: host,
+      enter: "bottom-=80 top",
+      leave: "top bottom+=40",
+      sync: true as const,
+      onUpdate: (self: { progress: number }) => {
+        setProgress(self.progress);
+      },
     };
 
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const rect = host.getBoundingClientRect();
-        const view = window.innerHeight || 1;
-        // 0 when the top of the block enters, 1 when the bottom leaves.
-        const raw = (view * 0.75 - rect.top) / (rect.height + view * 0.35);
-        const p = Math.min(1, Math.max(0, raw));
-        if (reduced) {
-          place(p);
-        } else {
-          // Light smoothing so the draw feels continuous, not stepped.
-          place(p);
-        }
-      });
-    };
+    if (prefersReducedMotion()) {
+      // Static full draw; progress still tracks scroll for step highlighting.
+      const [drawable] = createDrawable(path);
+      drawable.setAttribute("draw", "0 1");
+      onScroll(scrollOpts);
+      return;
+    }
 
-    // Soft bloom when a stage becomes "done".
-    const observer = new MutationObserver(() => {
-      if (prefersReducedMotion()) return;
-      animate(".anime-step.is-done .step-badge", {
-        scale: [1, 1.12, 1],
-        duration: 420,
-        ease: "outBack",
-      });
+    const [drawable] = createDrawable(path);
+    animate(drawable, {
+      draw: "0 1",
+      ease: "linear",
+      autoplay: onScroll(scrollOpts),
     });
 
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      observer.disconnect();
-    };
+    // Marker rides the same curve via createMotionPath.
+    const motion = createMotionPath(path);
+    animate(marker, {
+      translateX: motion.translateX,
+      translateY: motion.translateY,
+      ease: "linear",
+      autoplay: onScroll(scrollOpts),
+    });
   }, [steps.length]);
 
   const activeIndex = Math.min(
@@ -95,7 +78,7 @@ export function LearningPathDemo({ steps }: { steps: Step[] }) {
         preserveAspectRatio="xMidYMin meet"
       >
         <path
-          d="M20 8 C 20 70, 36 90, 20 140 S 4 210, 20 260 S 34 330, 20 392"
+          d={PATH_D}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -104,7 +87,7 @@ export function LearningPathDemo({ steps }: { steps: Step[] }) {
         />
         <path
           ref={pathRef}
-          d="M20 8 C 20 70, 36 90, 20 140 S 4 210, 20 260 S 34 330, 20 392"
+          d={PATH_D}
           fill="none"
           stroke="currentColor"
           strokeWidth="2.5"
@@ -144,10 +127,7 @@ export function LearningPathDemo({ steps }: { steps: Step[] }) {
                 >
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span
-                  className="h-px flex-1 bg-border"
-                  aria-hidden="true"
-                />
+                <span className="h-px flex-1 bg-border" aria-hidden="true" />
               </div>
               <h3 className="mt-4 text-xl font-semibold">{step.title}</h3>
               <p className="mt-2 max-w-xl leading-relaxed text-muted-foreground">

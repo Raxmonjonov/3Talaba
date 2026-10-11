@@ -1,12 +1,20 @@
 import { useRef } from "react";
-import { animate, createTimeline, stagger } from "animejs";
+import { animate, createTimeline, morphTo, stagger } from "animejs";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Section } from "./Section";
 import { useAnimeScope, prefersReducedMotion } from "@/lib/anime";
 
+/** Resting blob shape. Morph targets live as hidden siblings. */
+const ORB_A =
+  "M32 14 C44 14 50 24 48 34 C46 44 40 50 30 50 C18 50 14 40 14 30 C14 20 22 14 32 14 Z";
+const ORB_B =
+  "M32 12 C48 12 54 22 52 34 C50 48 42 54 30 54 C16 54 10 44 10 32 C10 18 18 12 32 12 Z";
+const ORB_C =
+  "M32 16 C46 16 52 26 50 36 C48 46 38 52 28 52 C16 52 12 42 12 30 C12 20 20 16 32 16 Z";
+
 /**
- * AI tutor chat with a morphing SVG orb that "breathes" while the tutor
- * is "speaking". Bubbles fade in as a timeline.
+ * AI tutor chat with an SVG orb that morphTo()s between blob shapes while
+ * the tutor is "speaking". Bubbles fade in as a timeline.
  */
 export function TutorDialogue() {
   const { t } = useTranslation();
@@ -29,23 +37,25 @@ export function TutorDialogue() {
 
     const path = orbRef.current?.querySelector<SVGPathElement>("[data-orb-path]");
     const rings = orbRef.current?.querySelectorAll("[data-orb-ring]");
-    if (path && rings?.length) {
-      createTimeline({ defaults: { ease: "inOutSine", loop: true } })
-        .add(path, {
-          scaleX: [1, 1.08, 0.96, 1],
-          scaleY: [1, 0.94, 1.06, 1],
-          duration: 3200,
-        })
-        .add(
-          rings,
-          {
-            scale: [1, 1.12, 1],
-            opacity: [0.3, 0.65, 0.3],
-            duration: 3200,
-          },
-          0,
-        );
+    if (!path) return;
+
+    if (rings?.length) {
+      animate(rings, {
+        scale: [1, 1.1, 1],
+        opacity: [0.3, 0.65, 0.3],
+        duration: 3200,
+        loop: true,
+        ease: "inOutSine",
+      });
     }
+
+    if (prefersReducedMotion()) return;
+
+    // Speak cycle: A → B → C → A. morphTo resolves the alternate path nodes.
+    createTimeline({ defaults: { ease: "inOutSine", loop: true } })
+      .add(path, { d: morphTo("[data-orb-b]"), duration: 1600 })
+      .add(path, { d: morphTo("[data-orb-c]"), duration: 1600 })
+      .add(path, { d: morphTo("[data-orb-a]"), duration: 1600 });
   }, []);
 
   return (
@@ -58,10 +68,7 @@ export function TutorDialogue() {
     >
       <div ref={root} className="grid gap-8 lg:grid-cols-12">
         <div className="lg:col-span-7">
-          <div
-            ref={chatRef}
-            className="overflow-hidden rounded-2xl border bg-card"
-          >
+          <div ref={chatRef} className="overflow-hidden rounded-2xl border bg-card">
             <div className="flex items-center gap-2 border-b bg-surface px-4 py-3 text-xs font-medium text-muted-foreground">
               {t.dialogue.topic}
             </div>
@@ -108,6 +115,11 @@ export function TutorDialogue() {
             className="h-24 w-24 self-start text-primary"
             aria-hidden="true"
           >
+            {/* Hidden morph targets for morphTo. */}
+            <path data-orb-a d={ORB_A} fill="none" stroke="none" />
+            <path data-orb-b d={ORB_B} fill="none" stroke="none" />
+            <path data-orb-c d={ORB_C} fill="none" stroke="none" />
+
             <circle
               data-orb-ring
               cx="32"
@@ -117,6 +129,7 @@ export function TutorDialogue() {
               stroke="currentColor"
               strokeWidth="1.5"
               opacity="0.35"
+              style={{ transformOrigin: "32px 32px" }}
             />
             <circle
               data-orb-ring
@@ -127,10 +140,11 @@ export function TutorDialogue() {
               stroke="currentColor"
               strokeWidth="1"
               opacity="0.25"
+              style={{ transformOrigin: "32px 32px" }}
             />
             <path
               data-orb-path
-              d="M32 14 C44 14 50 24 48 34 C46 44 40 50 30 50 C18 50 14 40 14 30 C14 20 22 14 32 14 Z"
+              d={ORB_A}
               fill="currentColor"
               opacity="0.18"
               style={{ transformOrigin: "32px 32px" }}
