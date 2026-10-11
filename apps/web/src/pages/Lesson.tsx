@@ -141,6 +141,22 @@ export default function LessonPage() {
                   ))}
                 </ul>
               ) : null}
+              {lesson.skills && lesson.skills.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground">Mavzular:</span>
+                  {lesson.skills.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() =>
+                        navigate(`/practice?skill=${encodeURIComponent(s)}`)
+                      }
+                      className="rounded-full border bg-background px-2.5 py-0.5 text-xs hover:bg-secondary"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={openInTutor}
@@ -172,6 +188,20 @@ export default function LessonPage() {
                     ? "Bu dars oldin yakunlangan edi."
                     : `+${completeInfo.xpAwarded} XP · jami ${completeInfo.xpTotal} XP`}
                 </p>
+              ) : null}
+              {lesson.completed && (lesson.skills?.length ?? 0) > 0 ? (
+                <div className="pt-1">
+                  <button
+                    onClick={() =>
+                      navigate(
+                        `/practice?skills=${encodeURIComponent((lesson.skills ?? []).join(","))}`
+                      )
+                    }
+                    className="btn-secondary"
+                  >
+                    Bu dars mavzulari bo‘yicha mashq
+                  </button>
+                </div>
               ) : null}
               {lesson.completed && nextSlug && nextTitle ? (
                 <div className="pt-1">

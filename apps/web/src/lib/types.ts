@@ -183,6 +183,7 @@ export interface LessonDetail extends LessonRef {
   completedAt?: string | null;
   nextLessonSlug?: string | null;
   nextLessonTitle?: string | null;
+  skills?: string[];
   blocks: LessonBlock[];
 }
 

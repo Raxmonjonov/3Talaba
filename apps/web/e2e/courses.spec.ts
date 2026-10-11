@@ -71,7 +71,22 @@ test.describe("courses", () => {
       timeout: 15_000,
     });
 
-    await page.getByRole("button", { name: "Kursga qaytish" }).click();
+    // Completing a lesson opens the skill-practice loop.
+    const skillPractice = page.getByRole("button", {
+      name: "Bu dars mavzulari bo‘yicha mashq",
+    });
+    await expect(skillPractice).toBeVisible({ timeout: 15_000 });
+    await skillPractice.click();
+    await expect(page).toHaveURL(/\/practice\?skills=/, { timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Mashq" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByRole("button", { name: "Filtrni tozalash" })
+    ).toBeVisible();
+
+    await page.goto("/courses");
+    await page.locator("button.text-lg.underline").first().click();
     await expect(page).toHaveURL(/\/courses\/[^/]+$/);
     await expect(page.getByRole("progressbar")).toBeVisible({ timeout: 15_000 });
 

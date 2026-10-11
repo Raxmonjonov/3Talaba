@@ -277,7 +277,13 @@ export async function getPracticeQuestion(req: Request, res: Response) {
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
   const subject = (req.query.subject as string) || null;
-  const skill = (req.query.skill as string) || null;
+  const skillParam = (req.query.skill as string) || (req.query.skills as string) || null;
+  const skills = skillParam
+    ? skillParam
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
   const review = req.query.review === "1";
   const exclude = String(req.query.exclude ?? "")
     .split(",")
@@ -299,7 +305,12 @@ export async function getPracticeQuestion(req: Request, res: Response) {
     select: { currentLevel: true },
   });
 
-  const row = await nextPracticeQuestion(user?.currentLevel ?? 0, subject, exclude, skill);
+  const row = await nextPracticeQuestion(
+    user?.currentLevel ?? 0,
+    subject,
+    exclude,
+    skills
+  );
   if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
   res.json({ question: serveQuestion(row, localeOf(req)), mode: "drill" });

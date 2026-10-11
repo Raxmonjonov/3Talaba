@@ -16,6 +16,7 @@ export default function Practice() {
   const [searchParams] = useSearchParams();
   const subject = searchParams.get("subject");
   const skill = searchParams.get("skill");
+  const skillsParam = searchParams.get("skills");
   const reviewMode = searchParams.get("review") === "1";
   const [question, setQuestion] = useState<ServedQuestion | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,14 +36,20 @@ export default function Practice() {
 
   const scopeLabel = skill
     ? skill
-    : subject
-      ? subjectLabel(subject)
-      : reviewMode
-        ? "Takrorlash navbati"
-        : "Umumiy savol zaxirasi";
+    : skillsParam
+      ? `${skillsParam.split(",").length} mavzu`
+      : subject
+        ? subjectLabel(subject)
+        : reviewMode
+          ? "Takrorlash navbati"
+          : "Umumiy savol zaxirasi";
 
   function clearFilter() {
-    navigate(skill ? "/skills" : reviewMode ? "/practice?review=1" : "/practice");
+    if (skill || skillsParam) {
+      navigate("/skills");
+      return;
+    }
+    navigate(reviewMode ? "/practice?review=1" : "/practice");
   }
 
   const loadNext = useCallback(
@@ -51,6 +58,7 @@ export default function Practice() {
       if (exclude.length) params.set("exclude", exclude.join(","));
       if (subject) params.set("subject", subject);
       if (skill) params.set("skill", skill);
+      if (skillsParam) params.set("skills", skillsParam);
       if (reviewMode) params.set("review", "1");
       const query = params.toString() ? `?${params.toString()}` : "";
       const data = await api<{ question: ServedQuestion }>(
@@ -59,7 +67,7 @@ export default function Practice() {
       setQuestion(data.question);
       setFreeText("");
     },
-    [subject, skill, reviewMode]
+    [subject, skill, skillsParam, reviewMode]
   );
 
   useEffect(() => {
@@ -205,7 +213,7 @@ export default function Practice() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {skill || subject ? (
+            {skill || skillsParam || subject ? (
               <button
                 onClick={clearFilter}
                 className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"

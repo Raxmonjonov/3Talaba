@@ -268,6 +268,12 @@ export async function getLesson(
       content: pick(locale, b.contentUz, b.contentEn),
       skills: parseJsonArray(b.skills),
     })),
+    // Deduped skill slugs taught by this lesson, for the practice CTA.
+    skills: Array.from(
+      new Set(
+        lesson.blocks.flatMap((b) => parseJsonArray(b.skills))
+      )
+    ),
   };
 }
 
