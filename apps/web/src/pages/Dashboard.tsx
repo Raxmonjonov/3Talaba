@@ -1,10 +1,12 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { animate, stagger } from "animejs";
 import { api } from "../lib/api";
 import type { EnrolledCourse, ProgressResponse, ReviewsResponse, Session, SettingsResponse, User } from "../lib/types";
 import { set3DEnabled } from "../lib/featureFlags";
 import { useAchievements } from "../lib/useAchievements";
-import { use3DEnabled } from "@/components/3d/hooks/usePerfFlags";
+import { use3DEnabled, useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
+import { useAnimeScope } from "@/lib/anime";
 import { ProgressStairs3D } from "@/components/3d/elements/ProgressStairs3D";
 import { MedalsShelf } from "@/components/3d/elements/MedalsShelf";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
@@ -110,6 +112,8 @@ export default function Dashboard({
   onLogout: () => void;
 }) {
   const navigate = useNavigate();
+  const subjectGridRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
   const [focusMode, setFocusMode] = useState(user.focusMode);
   const [softConfirm, setSoftConfirm] = useState(user.softConfirm);
   const [title, setTitle] = useState(user.preferredTitle ?? "");
@@ -209,6 +213,19 @@ export default function Dashboard({
   const levelText =
     user.currentLevel === 0 ? "boshlang‘ich (0)" : `${user.currentLevel} / 10`;
   const spark = progress?.series.map((p) => p.minutes) ?? [];
+
+  useAnimeScope(subjectGridRef, () => {
+    const cards = subjectGridRef.current?.querySelectorAll<HTMLElement>("[data-subject-card]");
+    if (!cards?.length) return;
+    animate(cards, {
+      opacity: [0, 1],
+      y: [20, 0],
+      scale: [0.97, 1],
+      delay: stagger(80, { start: 60 }),
+      duration: 520,
+      ease: "outCubic",
+    });
+  }, []);
 
   return (
     <div className="relative isolate min-h-screen overflow-hidden">
@@ -315,9 +332,14 @@ export default function Dashboard({
               Barcha kurslar
             </button>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div ref={subjectGridRef} className="grid gap-4 sm:grid-cols-2">
             {SUBJECT_CARDS.map((card) => (
-              <div key={card.subject} className="subject-scene">
+              <div
+                key={card.subject}
+                data-subject-card
+                style={{ opacity: reducedMotion ? 1 : 0 }}
+                className="subject-scene"
+              >
                 <button
                   onClick={() =>
                     navigate(`/practice?subject=${encodeURIComponent(card.subject)}`)

@@ -1,9 +1,37 @@
+import { useRef } from "react";
+import { animate, stagger } from "animejs";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Section } from "./Section";
 import { CheckIcon, ClockIcon } from "./Icons";
+import { useAnimeScope, prefersReducedMotion } from "@/lib/anime";
 
 export function WeeklyPlan() {
   const { t } = useTranslation();
+  const root = useRef<HTMLDivElement>(null);
+
+  useAnimeScope(root, () => {
+    const cards = root.current?.querySelectorAll<HTMLElement>("[data-track]");
+    if (!cards?.length) return;
+    animate(cards, {
+      opacity: [0, 1],
+      y: [28, 0],
+      rotateY: [-4, 0],
+      delay: stagger(120, { start: 80 }),
+      duration: 650,
+      ease: "outCubic",
+    });
+
+    const points = root.current?.querySelectorAll<HTMLElement>("[data-point]");
+    if (points?.length) {
+      animate(points, {
+        opacity: [0, 1],
+        x: [-10, 0],
+        delay: stagger(50, { start: 280 }),
+        duration: 420,
+        ease: "outCubic",
+      });
+    }
+  }, []);
 
   const tracks = [
     { track: t.weekly.regular, featured: true },
@@ -17,10 +45,12 @@ export function WeeklyPlan() {
       title={t.weekly.title}
       subtitle={t.weekly.subtitle}
     >
-      <div className="grid gap-6 md:grid-cols-2">
+      <div ref={root} className="grid gap-6 md:grid-cols-2" style={{ perspective: "1200px" }}>
         {tracks.map(({ track, featured }) => (
           <article
             key={track.title}
+            data-track
+            style={{ opacity: prefersReducedMotion() ? 1 : 0 }}
             className={`relative rounded-2xl border p-6 sm:p-8 ${
               featured
                 ? "border-primary/40 bg-card shadow-[0_24px_60px_-40px_hsl(var(--glow)/0.7)]"
@@ -41,11 +71,18 @@ export function WeeklyPlan() {
               </span>
             </div>
 
-            <p className="mt-3 leading-relaxed text-muted-foreground">{track.description}</p>
+            <p className="mt-3 leading-relaxed text-muted-foreground">
+              {track.description}
+            </p>
 
             <ul className="mt-6 space-y-3">
               {track.points.map((point) => (
-                <li key={point} className="flex items-start gap-3 text-sm leading-relaxed">
+                <li
+                  key={point}
+                  data-point
+                  style={{ opacity: prefersReducedMotion() ? 1 : 0 }}
+                  className="flex items-start gap-3 text-sm leading-relaxed"
+                >
                   <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span className="text-foreground/90">{point}</span>
                 </li>
