@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export type LegalKind = "privacy" | "terms";

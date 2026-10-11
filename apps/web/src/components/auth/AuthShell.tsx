@@ -1,11 +1,7 @@
-import { lazy, Suspense, type ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { LOCALES } from "@/i18n/config";
 import { useAuthLocale } from "@/i18n/useAuthLocale";
 import { GlobeIcon } from "@/components/landing/Icons";
-
-// The scene is decoration: it is pulled in after first paint so the form is
-// never waiting on it.
-const HeroScene = lazy(() => import("@/components/landing/HeroScene"));
 
 type AuthShellProps = {
   tagline: string;
@@ -48,11 +44,6 @@ export function AuthShell({ tagline, children, footnote }: AuthShellProps) {
     <div className="relative isolate min-h-screen overflow-hidden bg-background">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 grid-motif" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 glow-violet" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <Suspense fallback={null}>
-          <HeroScene />
-        </Suspense>
-      </div>
 
       <div className="absolute right-5 top-5 z-20">
         <AuthLanguageSwitcher />

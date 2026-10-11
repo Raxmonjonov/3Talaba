@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+﻿import { useMemo, useRef } from "react";
 import { animate, createTimeline, stagger } from "animejs";
 import { useTranslation } from "@/i18n/useTranslation";
 import { authPath } from "@/i18n/config";

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { animate, stagger } from "animejs";
 import { api } from "../lib/api";
@@ -12,8 +12,6 @@ import { MedalsShelf } from "@/components/3d/elements/MedalsShelf";
 import { ConfettiBurst } from "@/components/3d/elements/ConfettiBurst";
 import { ThemeToggle } from "@/components/AppShell";
 import { subjectLabel } from "@/lib/subjects";
-
-const HeroScene = lazy(() => import("@/components/landing/HeroScene"));
 
 /** Quick-start subject plates on the dashboard "classroom" wall. */
 const SUBJECT_CARDS = [
@@ -228,13 +226,7 @@ export default function Dashboard({
   }, []);
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <Suspense fallback={null}>
-          <HeroScene />
-        </Suspense>
-      </div>
-
+    <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 border-b bg-card/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4">
           <div>

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+﻿import { useRef } from "react";
 import { animate, createTimeline, stagger } from "animejs";
 import { useTranslation } from "@/i18n/useTranslation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
