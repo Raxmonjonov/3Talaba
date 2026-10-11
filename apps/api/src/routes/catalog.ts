@@ -16,6 +16,8 @@ import {
   getMockExamList,
   getMockExamDetail,
   answerMockExam,
+  finishMockExamAction,
+  getMockExamAttempts,
 } from "../controllers/catalog.js";
 
 const router = Router();
@@ -39,5 +41,7 @@ router.get("/reviews", requireAuth, getReviews);
 router.get("/mock-exams", requireAuth, getMockExamList);
 router.get("/mock-exams/:slug", requireAuth, getMockExamDetail);
 router.post("/mock-exams/:slug/answer", requireAuth, answerMockExam);
+router.post("/mock-exams/:slug/finish", requireAuth, finishMockExamAction);
+router.get("/mock-exams/:slug/attempts", requireAuth, getMockExamAttempts);
 
 export default router;

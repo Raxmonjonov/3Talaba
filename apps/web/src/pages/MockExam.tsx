@@ -3,8 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import type {
   MockExamAnswerResponse,
+  MockExamAttemptResult,
   MockExamDetail,
   MockExamQuestion,
+  MockExamSectionResult,
 } from "../lib/types";
 import { QuestionBody } from "@/components/QuestionBody";
 
@@ -29,6 +31,27 @@ function formatClock(totalSeconds: number): string {
   return `${m}:${String(rest).padStart(2, "0")}`;
 }
 
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("uz-UZ", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+type LocalResults = {
+  score: number;
+  maxScore: number;
+  correct: number;
+  total: number;
+  sections: MockExamSectionResult[];
+};
+
 export default function MockExam() {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
@@ -44,16 +67,16 @@ export default function MockExam() {
     explanation?: string;
     expected?: string;
   } | null>(null);
-  const [results, setResults] = useState<{
-    score: number;
-    maxScore: number;
-    correct: number;
-    total: number;
-  } | null>(null);
+  const [results, setResults] = useState<LocalResults | null>(null);
+  const [history, setHistory] = useState<MockExamAttemptResult[]>([]);
+  const [historyError, setHistoryError] = useState("");
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
-  const answersRef = useRef<Record<string, { correct: boolean; points: number }>>({});
+  const answersRef = useRef<
+    Record<string, { correct: boolean; points: number; section: string }>
+  >({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const finishingRef = useRef(false);
 
   const items = useMemo(() => (exam ? flatten(exam) : []), [exam]);
   const current = items[cursor];
@@ -86,19 +109,59 @@ export default function MockExam() {
     };
   }, [slug]);
 
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    api<MockExamAttemptResult[]>(`/api/content/mock-exams/${slug}/attempts`)
+      .then((data) => {
+        if (!cancelled) setHistory(data);
+      })
+      .catch(() => {
+        if (!cancelled) setHistoryError("Urinishlar tarixi yuklanmadi");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, results]);
+
   const finish = useCallback(() => {
+    if (finishingRef.current) return;
+    finishingRef.current = true;
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     const answers = Object.values(answersRef.current);
-    setResults({
-      score: answers.reduce((sum, a) => sum + (a.correct ? a.points : 0), 0),
-      maxScore: exam?.maxPoints ?? 0,
-      correct: answers.filter((a) => a.correct).length,
-      total: items.length,
-    });
-  }, [exam?.maxPoints, items.length]);
+    const bySection = new Map<string, MockExamSectionResult>();
+    for (const a of answers) {
+      let section = bySection.get(a.section);
+      if (!section) {
+        section = { title: a.section, score: 0, maxScore: 0, correct: 0, total: 0 };
+        bySection.set(a.section, section);
+      }
+      section.total += 1;
+      section.maxScore += a.points;
+      if (a.correct) {
+        section.correct += 1;
+        section.score += a.points;
+      }
+    }
+    const score = answers.reduce((sum, a) => sum + (a.correct ? a.points : 0), 0);
+    const maxScore = exam?.maxPoints ?? 0;
+    const correct = answers.filter((a) => a.correct).length;
+    const total = items.length;
+    const sections = [...bySection.values()];
+    setResults({ score, maxScore, correct, total, sections });
+
+    if (slug) {
+      api<MockExamAttemptResult>(`/api/content/mock-exams/${slug}/finish`, {
+        method: "POST",
+        body: JSON.stringify({ score, maxScore, correct, total, sections }),
+      }).catch(() => {
+        finishingRef.current = false;
+      });
+    }
+  }, [exam?.maxPoints, items.length, slug]);
 
   useEffect(() => {
     if (!started || results) return;
@@ -117,6 +180,7 @@ export default function MockExam() {
   }, [started, results, finish]);
 
   function begin() {
+    finishingRef.current = false;
     setStarted(true);
     setCursor(0);
     answersRef.current = {};
@@ -145,6 +209,7 @@ export default function MockExam() {
       answersRef.current[current.id] = {
         correct: data.correct,
         points: data.correct ? data.points : 0,
+        section: current.section,
       };
       setAnsweredCount(Object.keys(answersRef.current).length);
       setVerdict(data.correct ? "correct" : "wrong");
@@ -208,6 +273,42 @@ export default function MockExam() {
               {results.correct} / {results.total} to‘g‘ri javob
             </p>
           </div>
+          {results.sections.length > 0 ? (
+            <div className="space-y-2 text-left">
+              <h2 className="text-sm font-semibold">Bo‘limlar kesimida</h2>
+              <ul className="space-y-1 text-sm">
+                {results.sections.map((s) => (
+                  <li
+                    key={s.title}
+                    className="flex justify-between rounded-lg border bg-card px-3 py-2"
+                  >
+                    <span className="text-muted-foreground">{s.title}</span>
+                    <span className="font-medium">
+                      {s.score}/{s.maxScore} · {s.correct}/{s.total}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {history.length > 0 ? (
+            <div className="space-y-2 text-left">
+              <h2 className="text-sm font-semibold">So‘nggi urinishlar</h2>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                {history.slice(0, 5).map((a) => (
+                  <li key={a.id} className="flex justify-between rounded-lg border bg-card px-3 py-2">
+                    <span>{formatDate(a.finishedAt)}</span>
+                    <span>
+                      {a.score}/{a.maxScore}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {historyError ? (
+            <p className="text-xs text-muted-foreground">{historyError}</p>
+          ) : null}
           <p className="text-sm text-muted-foreground">
             Xatolar takrorlash navbatiga tushdi. Dashboard’dan “Takrorlash” bo‘limida
             ularni yechishingiz mumkin.

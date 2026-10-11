@@ -92,6 +92,12 @@ export default function MockExams() {
               <p className="mt-3 text-xs text-muted-foreground">
                 Bo‘limlar: {exam.sections.join(" · ")}
               </p>
+              {typeof exam.bestScore === "number" && exam.bestScore !== null ? (
+                <p className="mt-2 text-xs font-medium">
+                  Eng yaxshi natija: {exam.bestScore}
+                  {typeof exam.bestMaxScore === "number" ? ` / ${exam.bestMaxScore}` : ""}
+                </p>
+              ) : null}
             </button>
           ))
         )}

@@ -11,7 +11,15 @@ import {
 } from "../services/catalog.js";
 import { reviewSummary, listDueReviews, recordAnswer, nextDueReviewId } from "../services/reviews.js";
 import { buildItemPool, nextPracticeQuestion, serveQuestion, gradeAnswer, getQuestionRow } from "../services/questions.js";
-import { listMockExams, getMockExam, gradeMockAnswer } from "../services/mockExams.js";
+import {
+  listMockExams,
+  getMockExam,
+  gradeMockAnswer,
+  finishMockExam,
+  listMockExamAttempts,
+  listMockExamBests,
+  type MockExamSectionResult,
+} from "../services/mockExams.js";
 import { awardSlug, evaluateLater } from "../services/achievements.js";
 import { prisma } from "../config/prisma.js";
 import {
@@ -358,7 +366,18 @@ export async function getReviews(req: Request, res: Response) {
 // ── Mock exams ──────────────────────────────────────────────────────────────
 
 export async function getMockExamList(req: Request, res: Response) {
-  res.json(await listMockExams(localeOf(req)));
+  const uid = userId(req);
+  const exams = await listMockExams(localeOf(req));
+  if (!uid) return res.json(exams);
+
+  const bests = await listMockExamBests(uid);
+  res.json(
+    exams.map((exam) => ({
+      ...exam,
+      bestScore: bests[exam.slug]?.score ?? null,
+      bestMaxScore: bests[exam.slug]?.maxScore ?? null,
+    }))
+  );
 }
 
 export async function getMockExamDetail(req: Request, res: Response) {
@@ -401,4 +420,51 @@ export async function answerMockExam(req: Request, res: Response) {
   } catch {
     res.status(400).json({ message: "Javobni qayta ishlab bo'lmadi" });
   }
+}
+
+const mockSectionResultSchema = z.object({
+  title: z.string().min(1),
+  score: z.number().int().min(0),
+  maxScore: z.number().int().min(0),
+  correct: z.number().int().min(0),
+  total: z.number().int().min(0),
+});
+
+const mockFinishSchema = z.object({
+  score: z.number().int().min(0),
+  maxScore: z.number().int().min(0),
+  correct: z.number().int().min(0),
+  total: z.number().int().min(0),
+  sections: z.array(mockSectionResultSchema).max(50).optional(),
+});
+
+export async function finishMockExamAction(req: Request, res: Response) {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  try {
+    const body = mockFinishSchema.parse(req.body);
+    const sections: MockExamSectionResult[] = body.sections ?? [];
+    const attempt = await finishMockExam(
+      uid,
+      req.params.slug,
+      body.score,
+      body.maxScore,
+      body.correct,
+      body.total,
+      sections
+    );
+    if (!attempt) return res.status(404).json({ message: "Imtihon topilmadi" });
+
+    evaluateLater(uid);
+    res.json(attempt);
+  } catch {
+    res.status(400).json({ message: "Natijani saqlab bo'lmadi" });
+  }
+}
+
+export async function getMockExamAttempts(req: Request, res: Response) {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+  res.json(await listMockExamAttempts(uid, req.params.slug));
 }

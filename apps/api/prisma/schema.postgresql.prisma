@@ -41,6 +41,7 @@ model User {
   reviewCards ReviewCard[]
   achievements UserAchievement[]
   lessonCompletions LessonCompletion[]
+  mockAttempts MockExamAttempt[]
 
   @@index([email])
 }
@@ -214,7 +215,8 @@ model MockExam {
   descriptionEn String
   durationMin Int    @default(60)
 
-  items MockExamItem[]
+  items    MockExamItem[]
+  attempts MockExamAttempt[]
 }
 
 model MockExamItem {
@@ -310,4 +312,24 @@ model LessonCompletion {
 
   @@unique([userId, lessonId])
   @@index([userId, completedAt])
+}
+
+/// Persisted mock-exam result. `sections` is a JSON string of per-section
+/// breakdown (same shape as SQLite).
+model MockExamAttempt {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mockExamId String
+  mockExam   MockExam  @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  score      Int
+  maxScore   Int
+  correct    Int
+  total      Int
+  /// JSON array: [{ title, score, maxScore, correct, total }]
+  sections   String?
+  finishedAt DateTime  @default(now())
+
+  @@index([userId, mockExamId])
+  @@index([userId, finishedAt])
 }

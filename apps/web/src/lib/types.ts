@@ -256,6 +256,8 @@ export interface MockExamListItem {
   itemCount: number;
   maxPoints: number;
   sections: string[];
+  bestScore?: number | null;
+  bestMaxScore?: number | null;
 }
 
 export interface MockExamQuestion extends ServedQuestion {
@@ -285,4 +287,23 @@ export interface MockExamAnswerResponse {
   explanation?: string;
   expected?: string;
   points: number;
+}
+
+export interface MockExamSectionResult {
+  title: string;
+  score: number;
+  maxScore: number;
+  correct: number;
+  total: number;
+}
+
+export interface MockExamAttemptResult {
+  id: string;
+  mockExamSlug: string;
+  score: number;
+  maxScore: number;
+  correct: number;
+  total: number;
+  sections: MockExamSectionResult[];
+  finishedAt: string;
 }

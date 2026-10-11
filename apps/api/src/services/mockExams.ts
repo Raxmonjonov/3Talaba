@@ -129,3 +129,120 @@ export async function gradeMockAnswer(
   const graded = gradeAnswer(row, given, locale);
   return { ...graded, points: item.points };
 }
+
+export interface MockExamSectionResult {
+  title: string;
+  score: number;
+  maxScore: number;
+  correct: number;
+  total: number;
+}
+
+export interface MockExamAttemptResult {
+  id: string;
+  mockExamSlug: string;
+  score: number;
+  maxScore: number;
+  correct: number;
+  total: number;
+  sections: MockExamSectionResult[];
+  finishedAt: string;
+}
+
+function parseSections(raw: string | null): MockExamSectionResult[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as MockExamSectionResult[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Persists a finished attempt so scores survive refresh and feed history. */
+export async function finishMockExam(
+  userId: string,
+  slug: string,
+  score: number,
+  maxScore: number,
+  correct: number,
+  total: number,
+  sections: MockExamSectionResult[]
+): Promise<MockExamAttemptResult | null> {
+  const exam = await prisma.mockExam.findUnique({ where: { slug }, select: { id: true } });
+  if (!exam) return null;
+
+  const row = await prisma.mockExamAttempt.create({
+    data: {
+      userId,
+      mockExamId: exam.id,
+      score,
+      maxScore,
+      correct,
+      total,
+      sections: JSON.stringify(sections),
+    },
+  });
+
+  return {
+    id: row.id,
+    mockExamSlug: slug,
+    score: row.score,
+    maxScore: row.maxScore,
+    correct: row.correct,
+    total: row.total,
+    sections,
+    finishedAt: row.finishedAt.toISOString(),
+  };
+}
+
+export async function listMockExamAttempts(
+  userId: string,
+  slug: string,
+  limit = 10
+): Promise<MockExamAttemptResult[]> {
+  const exam = await prisma.mockExam.findUnique({ where: { slug }, select: { id: true } });
+  if (!exam) return [];
+
+  const rows = await prisma.mockExamAttempt.findMany({
+    where: { userId, mockExamId: exam.id },
+    orderBy: { finishedAt: "desc" },
+    take: limit,
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    mockExamSlug: slug,
+    score: row.score,
+    maxScore: row.maxScore,
+    correct: row.correct,
+    total: row.total,
+    sections: parseSections(row.sections),
+    finishedAt: row.finishedAt.toISOString(),
+  }));
+}
+
+/** Best score per exam for the catalog cards. */
+export async function listMockExamBests(
+  userId: string
+): Promise<Record<string, { score: number; maxScore: number; finishedAt: string }>> {
+  const rows = await prisma.mockExamAttempt.findMany({
+    where: { userId },
+    orderBy: { score: "desc" },
+    include: { mockExam: { select: { slug: true } } },
+  });
+
+  const bests: Record<string, { score: number; maxScore: number; finishedAt: string }> = {};
+  for (const row of rows) {
+    const slug = row.mockExam.slug;
+    const current = bests[slug];
+    if (!current || row.score > current.score) {
+      bests[slug] = {
+        score: row.score,
+        maxScore: row.maxScore,
+        finishedAt: row.finishedAt.toISOString(),
+      };
+    }
+  }
+  return bests;
+}
