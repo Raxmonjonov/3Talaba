@@ -1,6 +1,8 @@
 import { useTranslation } from "@/i18n/useTranslation";
 import { Section } from "./Section";
 import { CheckIcon } from "./Icons";
+import { LearningPathDemo } from "./LearningPathDemo";
+import { DailyTimeDemo, GamificationDemo } from "./AnimeDemos";
 
 export function HowItWorks() {
   const { t } = useTranslation();
@@ -13,23 +15,15 @@ export function HowItWorks() {
       subtitle={t.howItWorks.subtitle}
       tone="surface"
     >
-      <ol className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {t.howItWorks.steps.map((step, index) => (
-          <li key={step.title} className="step-scene relative">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="step-badge inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground"
-              >
-                {index + 1}
-              </span>
-              <span className="h-px flex-1 bg-border" aria-hidden="true" />
-            </div>
-            <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
-            <p className="mt-2 leading-relaxed text-muted-foreground">{step.body}</p>
-          </li>
-        ))}
-      </ol>
+      <div className="grid gap-12 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <LearningPathDemo steps={t.howItWorks.steps} />
+        </div>
+        <div className="space-y-6 lg:col-span-5">
+          <DailyTimeDemo />
+          <GamificationDemo />
+        </div>
+      </div>
 
       <p className="mt-10 inline-flex items-start gap-2 rounded-xl border bg-card p-4 text-sm text-muted-foreground">
         <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />

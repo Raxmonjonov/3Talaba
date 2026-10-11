@@ -39,6 +39,11 @@
     --grid-line: 262 40% 84%;
     --glow: 262 90% 47%;
 
+    /* Anime.js demo language: one accent + monospace numerals for counters. */
+    --demo-accent: 158 64% 42%;
+    --demo-accent-fg: 0 0% 100%;
+    --demo-muted: 258 12% 48%;
+
     color-scheme: light;
   }
 
@@ -76,6 +81,10 @@
     --surface-strong: 256 20% 13%;
     --grid-line: 262 30% 26%;
     --glow: 262 90% 66%;
+
+    --demo-accent: 158 70% 48%;
+    --demo-accent-fg: 256 24% 8%;
+    --demo-muted: 256 12% 62%;
 
     color-scheme: dark;
   }
@@ -599,6 +608,37 @@
   }
 }
 
+/* Anime.js demo language: particle grid + monospace counters. */
+.anime-grid {
+  --mx: 0;
+  --my: 0;
+  background:
+    radial-gradient(
+      600px circle at calc(50% + var(--mx) * 18%) calc(40% + var(--my) * 12%),
+      hsl(var(--primary) / 0.08),
+      transparent 55%
+    );
+}
+
+.anime-dot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.7);
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
+}
+
+.anime-step.is-done .step-badge {
+  box-shadow: 0 0 18px hsl(var(--glow) / 0.4);
+}
+
+.font-mono-nums {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -608,6 +648,11 @@
   .animate-drift-slow,
   .animate-fade-up {
     animation: none !important;
+  }
+
+  .anime-dot {
+    opacity: 0.25 !important;
+    transform: translate(-50%, -50%) !important;
   }
 
   *,

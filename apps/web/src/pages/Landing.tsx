@@ -3,7 +3,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { useSeo } from "@/lib/seo";
 import type { User } from "@/lib/types";
 import { SiteHeader } from "@/components/landing/SiteHeader";
-import { Hero } from "@/components/landing/Hero";
+import { Hero } from "@/components/landing/AnimeHero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ProductPreview } from "@/components/landing/ProductPreview";
 import { TutorDialogue } from "@/components/landing/TutorDialogue";
