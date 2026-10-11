@@ -1,5 +1,5 @@
 ﻿import { useEffect, useRef, type ReactNode } from "react";
-import { gsap } from "gsap";
+import { animate } from "animejs";
 import { useReducedMotion } from "../hooks/usePerfFlags";
 
 type Verdict = "correct" | "wrong" | null | undefined;
@@ -16,8 +16,8 @@ type QuestionCard3DProps = {
 /**
  * Wraps the placement card in a 3D perspective plane: the sheet turns over as
  * the test advances, then blooms green or nudges sideways when a verdict
- * arrives. Nothing here changes the DOM structure the tests rely on, and every
- * animation is skipped under prefers-reduced-motion.
+ * arrives. Driven by anime.js (same engine as the landing demos) and skipped
+ * under prefers-reduced-motion or the Settings motion opt-out.
  */
 export function QuestionCard3D({
   children,
@@ -36,13 +36,17 @@ export function QuestionCard3D({
     }
     if (reduced || !cardRef.current) return;
 
-    const tween = gsap.fromTo(
-      cardRef.current,
-      { rotateY: -24, y: 14, opacity: 0.55 },
-      { rotateY: 0, y: 0, opacity: 1, duration: 0.32, ease: "power2.out" },
-    );
+    const anim = animate(cardRef.current, {
+      rotateY: [-24, 0],
+      y: [14, 0],
+      opacity: [0.55, 1],
+      duration: 320,
+      ease: "outCubic",
+    });
+
     return () => {
-      tween.kill();
+      anim.pause();
+      anim.revert();
     };
   }, [step, reduced]);
 
@@ -50,32 +54,29 @@ export function QuestionCard3D({
     if (reduced || !verdict || !cardRef.current) return;
     const el = cardRef.current;
 
-    const tweens =
+    const anim =
       verdict === "correct"
-        ? [
-            gsap.fromTo(
-              el,
-              { boxShadow: "0 0 0 0 hsl(142 70% 45% / 0)" },
-              {
-                boxShadow: "0 0 32px 2px hsl(142 70% 45% / 0.5)",
-                duration: 0.22,
-                yoyo: true,
-                repeat: 1,
-                ease: "power1.inOut",
-              },
-            ),
-          ]
-        : [
-            gsap.fromTo(
-              el,
-              { x: -6 },
-              { x: 6, duration: 0.05, repeat: 5, yoyo: true, ease: "none" },
-            ),
-          ];
+        ? animate(el, {
+            scale: [1, 1.02, 1],
+            duration: 420,
+            ease: "outBack",
+          })
+        : animate(el, {
+            x: [
+              { value: -6 },
+              { value: 6 },
+              { value: -4 },
+              { value: 4 },
+              { value: 0 },
+            ],
+            duration: 320,
+            ease: "outQuad",
+          });
 
     return () => {
-      tweens.forEach((t) => t.kill());
-      gsap.set(el, { x: 0 });
+      anim.pause();
+      anim.revert();
+      el.style.transform = "";
     };
   }, [verdict, reduced]);
 
