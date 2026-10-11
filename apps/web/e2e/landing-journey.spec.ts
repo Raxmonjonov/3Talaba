@@ -1,47 +1,24 @@
 import { expect, test } from "./test";
 
-test.describe("landing journey", () => {
-  test("the scroll journey mounts its backdrop without touching the content", async ({
-    page,
-  }) => {
-    // The journey scene is WebGL; the shared fixture keeps 3D off, so opt back in.
-    await page.addInitScript(() => {
-      try {
-        localStorage.removeItem("3talab_3d");
-      } catch {
-        /* ignore */
-      }
-    });
+test.describe("landing", () => {
+  test("sections render without a 3D journey backdrop", async ({ page }) => {
     const errors: Error[] = [];
     page.on("pageerror", (error) => errors.push(error));
 
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    const hasWebgl = await page.evaluate(() => {
-      try {
-        return !!document.createElement("canvas").getContext("webgl");
-      } catch {
-        return false;
-      }
-    });
-
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(900);
+    await page.waitForTimeout(400);
 
-    // The journey only ever decorates: headline, footer and links stay intact.
+    // Content stays intact without the fixed 3D backdrop.
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator("footer")).toBeVisible();
     await expect(page.locator("footer a").first()).toBeVisible();
 
-    if (hasWebgl) {
-      const backdrop = page.locator('[class*="-z-10"] canvas').first();
-      await expect(backdrop).toBeVisible({ timeout: 8_000 });
-
-      const box = await backdrop.boundingBox();
-      expect(box?.width).toBeGreaterThan(0);
-      expect(box?.height).toBeGreaterThan(0);
-    }
+    // No journey canvas fixed behind the page.
+    const journeyCanvas = page.locator(".fixed.inset-0 canvas").first();
+    await expect(journeyCanvas).toHaveCount(0);
 
     expect(errors).toEqual([]);
   });
