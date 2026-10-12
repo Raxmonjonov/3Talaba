@@ -98,7 +98,7 @@ export function Hero() {
 
           <h1
             ref={titleRef}
-            className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl"
+            className="mt-6 text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
             style={{ perspective: "900px" }}
           >
             {reduced ? (
