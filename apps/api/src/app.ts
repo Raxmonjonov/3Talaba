@@ -30,7 +30,19 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
-app.get("/health", (_req, res) => {
+app.get("/health", async (_req, res) => {
+  // Readiness probe: /health?db=1 also verifies the database connection.
+  if (_req.query.db === "1") {
+    try {
+      const { getPrisma } = await import("./config/prisma.js");
+      const started = Date.now();
+      await getPrisma().$queryRaw`SELECT 1`;
+      return res.json({ ok: true, service: "3talab-api", db: "up", latencyMs: Date.now() - started });
+    } catch (err) {
+      console.error("Health db check failed:", err);
+      return res.status(503).json({ ok: false, service: "3talab-api", db: "down" });
+    }
+  }
   res.json({ ok: true, service: "3talab-api" });
 });
 

@@ -20,6 +20,32 @@ export const handler = async (event: any, context: any) => {
   // Always answer /health even if the app fails to load.
   const path = event.path || event.rawUrl || "";
   if (path.includes("/health") || path === "/.netlify/functions/api/health") {
+    // Readiness probe: /health?db=1 also verifies the database connection.
+    const url = event.rawUrl || event.headers?.["x-original-url"] || "";
+    if (/[?&]db=1\b/.test(url)) {
+      try {
+        const { getPrisma } = await import("../../apps/api/src/config/prisma.js");
+        const started = Date.now();
+        await getPrisma().$queryRaw`SELECT 1`;
+        return {
+          statusCode: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ok: true,
+            service: "3talab-api",
+            db: "up",
+            latencyMs: Date.now() - started,
+          }),
+        };
+      } catch (err) {
+        console.error("Health db check failed:", err);
+        return {
+          statusCode: 503,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ok: false, service: "3talab-api", db: "down" }),
+        };
+      }
+    }
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
