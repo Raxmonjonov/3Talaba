@@ -1,6 +1,17 @@
-import { useRef, useState } from "react";
-import { animate, createDraggable, createSpring, stagger } from "animejs";
-import { useAnimeScope, prefersReducedMotion, formatMinutesShort } from "@/lib/anime";
+import { useEffect, useRef, useState } from "react";
+import {
+  animate,
+  createAnimatable,
+  createDraggable,
+  createSpring,
+  stagger,
+} from "animejs";
+import type { AnimatableObject } from "animejs";
+import {
+  useAnimeScope,
+  prefersReducedMotion,
+  formatMinutesShort,
+} from "@/lib/anime";
 import { ClockIcon } from "./Icons";
 
 const MIN = 15;
@@ -23,67 +34,110 @@ export function DailyTimeDemo() {
   const knobRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
   const valueRef = useRef<HTMLSpanElement>(null);
+  const animatableRef = useRef<AnimatableObject | null>(null);
   const [minutes, setMinutes] = useState(60);
   const [custom, setCustom] = useState(false);
+  const suppressSync = useRef(false);
+
+  const railWidth = () => {
+    const track = knobRef.current?.parentElement;
+    if (!track || !knobRef.current) return 0;
+    return track.clientWidth - knobRef.current.clientWidth;
+  };
+  const toX = (m: number) => ((m - MIN) / (MAX - MIN)) * railWidth();
+  const fromX = (x: number) => {
+    const w = railWidth();
+    return w > 0 ? MIN + (x / w) * (MAX - MIN) : MIN;
+  };
+  const toPct = (m: number) => ((m - MIN) / (MAX - MIN)) * 100;
+
+  const paint = (m: number) => {
+    if (fillRef.current) fillRef.current.style.width = `${toPct(m)}%`;
+    if (valueRef.current) valueRef.current.textContent = formatMinutesShort(m);
+    const knob = knobRef.current;
+    if (knob) {
+      knob.setAttribute("aria-valuenow", String(m));
+      knob.setAttribute("aria-valuetext", formatMinutesShort(m));
+    }
+  };
+
+  const moveKnob = (m: number, instant = false) => {
+    const knob = knobRef.current;
+    if (!knob) return;
+    const x = toX(m);
+    const animatable = animatableRef.current;
+    if (instant || prefersReducedMotion() || !animatable) {
+      knob.style.transform = `translate3d(${x}px, 0, 0)`;
+      return;
+    }
+    animatable.x(x, 420, "outCubic");
+  };
+
+  const goTo = (m: number) => {
+    const next = snap(m);
+    suppressSync.current = true;
+    setMinutes(next);
+    setCustom(next >= CUSTOM_BEYOND);
+    paint(next);
+    moveKnob(next);
+  };
 
   useAnimeScope(root, () => {
     const knob = knobRef.current;
-    const fill = fillRef.current;
-    if (!knob || !fill) return;
+    if (!knob) return;
 
-    const track = knob.parentElement;
-    if (!track) return;
+    const spring = createSpring({ stiffness: 150, damping: 16 });
+    const animatable = createAnimatable(knob, {
+      x: 420,
+      ease: "outCubic",
+    });
+    animatableRef.current = animatable;
 
-    const railWidth = () => track.clientWidth - knob.clientWidth;
-    const toX = (m: number) => ((m - MIN) / (MAX - MIN)) * railWidth();
-
-    // Place the knob at the initial value without animation.
-    knob.style.transform = `translate3d(${toX(60)}px, 0, 0)`;
-    fill.style.width = `${((60 - MIN) / (MAX - MIN)) * 100}%`;
+    // initial placement without animation
+    moveKnob(60, true);
+    paint(60);
 
     if (prefersReducedMotion()) return;
 
-    const spring = createSpring({ stiffness: 120, damping: 6 });
-
     const draggable = createDraggable(knob, {
-      container: [0, 0, 0, 0],
       y: false,
+      x: { snap: (d) => toX(snap(fromX(Number(d.x) || 0))) },
+      container: knob.parentElement!,
       releaseEase: spring,
-      onUpdate: () => {
-        const x = Number(draggable.x) || 0;
-        const ratio = railWidth() > 0 ? x / railWidth() : 0;
-        const m = snap(MIN + ratio * (MAX - MIN));
-        fill.style.width = `${((m - MIN) / (MAX - MIN)) * 100}%`;
-        if (valueRef.current) {
-          valueRef.current.textContent = formatMinutesShort(m);
-        }
-        setMinutes(m);
+      onDrag: () => {
+        const raw = fromX(Number(draggable.x) || 0);
+        // fill follows the raw pointer for a smooth continuous feel
+        if (fillRef.current) fillRef.current.style.width = `${toPct(raw)}%`;
+        if (valueRef.current)
+          valueRef.current.textContent = formatMinutesShort(snap(raw));
       },
       onRelease: () => {
         const x = Number(draggable.x) || 0;
-        const ratio = railWidth() > 0 ? x / railWidth() : 0;
-        const m = snap(MIN + ratio * (MAX - MIN));
-        animate(knob, {
-          x: toX(m),
-          duration: 500,
-          ease: spring,
-        });
+        const m = snap(fromX(x));
+        moveKnob(m);
+        paint(m);
+        suppressSync.current = true;
         setMinutes(m);
         setCustom(m >= CUSTOM_BEYOND);
       },
     });
 
-    // Keep position in sync on resize.
-    const onResize = () => {
-      animate(knob, { x: toX(minutes), duration: 0 });
-    };
-    window.addEventListener("resize", onResize);
-
     return () => {
-      window.removeEventListener("resize", onResize);
-      draggable.revert?.();
+      animatableRef.current = null;
+      animatable.revert();
+      draggable.revert();
     };
-  }, [minutes >= CUSTOM_BEYOND]);
+  }, []);
+
+  // Sync knob when minutes changes from keyboard / preset / custom input.
+  useEffect(() => {
+    if (suppressSync.current) {
+      suppressSync.current = false;
+      return;
+    }
+    paint(minutes);
+    moveKnob(minutes);
+  }, [minutes]);
 
   const ticks = [15, 30, 45, 60, 90, 120, 150, 180];
 
@@ -129,11 +183,11 @@ export function DailyTimeDemo() {
           onKeyDown={(e) => {
             if (e.key === "ArrowRight" || e.key === "ArrowUp") {
               e.preventDefault();
-              setMinutes((m) => Math.min(MAX, m + STEP));
+              goTo(minutes + STEP);
             }
             if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
               e.preventDefault();
-              setMinutes((m) => Math.max(MIN, m - STEP));
+              goTo(minutes - STEP);
             }
           }}
         >
@@ -159,23 +213,7 @@ export function DailyTimeDemo() {
             max={480}
             step={STEP}
             value={minutes}
-            onChange={(e) => {
-              const next = snap(Number(e.target.value) || MIN);
-              setMinutes(next);
-              const knob = knobRef.current;
-              if (knob) {
-                const track = knob.parentElement;
-                const rail = track ? track.clientWidth - knob.clientWidth : 0;
-                animate(knob, {
-                  x: ((next - MIN) / (MAX - MIN)) * rail,
-                  duration: 400,
-                  ease: "outCubic",
-                });
-              }
-              if (fillRef.current) {
-                fillRef.current.style.width = `${((next - MIN) / (MAX - MIN)) * 100}%`;
-              }
-            }}
+            onChange={(e) => goTo(Number(e.target.value) || MIN)}
             className="field font-mono"
           />
         </label>
@@ -186,19 +224,7 @@ export function DailyTimeDemo() {
           <button
             key={preset}
             type="button"
-            onClick={() => {
-              setMinutes(preset);
-              setCustom(false);
-              const track = knobRef.current?.parentElement;
-              if (!track || !knobRef.current || !fillRef.current) return;
-              const rail = track.clientWidth - knobRef.current.clientWidth;
-              animate(knobRef.current, {
-                x: ((preset - MIN) / (MAX - MIN)) * rail,
-                duration: prefersReducedMotion() ? 0 : 450,
-                ease: "outCubic",
-              });
-              fillRef.current.style.width = `${((preset - MIN) / (MAX - MIN)) * 100}%`;
-            }}
+            onClick={() => goTo(preset)}
             className={`rounded-full border px-4 py-1.5 font-mono text-sm transition-colors ${
               minutes === preset
                 ? "border-primary bg-primary text-primary-foreground"
