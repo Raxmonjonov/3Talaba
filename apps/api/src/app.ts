@@ -10,6 +10,9 @@ import catalogRoutes from "./routes/catalog.js";
 
 export const app = express();
 
+// Behind Netlify's proxy — required for express-rate-limit to see the real IP.
+app.set("trust proxy", 1);
+
 app.use(helmet());
 
 // SITE_URL may be a single origin or a comma-separated list so one API host
