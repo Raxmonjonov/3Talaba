@@ -6,6 +6,9 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
+  // Netlify CLI builds on the local machine (Windows) but the function runs
+  // on AWS Lambda (Amazon Linux), so both engines must be generated.
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
