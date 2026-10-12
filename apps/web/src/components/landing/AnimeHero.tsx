@@ -19,8 +19,13 @@ export function Hero() {
   const reduced = prefersReducedMotion();
 
   const headline = `${t.hero.title} ${t.hero.titleAccent}`;
-  const letters = useMemo(
-    () => Array.from(headline).map((ch, i) => ({ ch, i })),
+  const words = useMemo(
+    () =>
+      Array.from(headline.split(" ")).map((word, wordIndex, list) => ({
+        word,
+        wordIndex,
+        spacer: wordIndex < list.length - 1,
+      })),
     [headline],
   );
 
@@ -93,7 +98,7 @@ export function Hero() {
 
           <h1
             ref={titleRef}
-            className="mt-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl"
+            className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl"
             style={{ perspective: "900px" }}
           >
             {reduced ? (
@@ -101,14 +106,21 @@ export function Hero() {
                 {headline}
               </span>
             ) : (
-              letters.map(({ ch, i }) => (
-                <span
-                  key={i}
-                  data-letter
-                  className="inline-block will-change-transform"
-                  style={{ opacity: 0 }}
-                >
-                  {ch === " " ? " " : ch}
+              words.map(({ word, wordIndex, spacer }) => (
+                <span key={wordIndex}>
+                  <span className="inline-block whitespace-nowrap">
+                    {Array.from(word).map((ch, charIndex) => (
+                      <span
+                        key={charIndex}
+                        data-letter
+                        className="inline-block will-change-transform"
+                        style={{ opacity: 0 }}
+                      >
+                        {ch}
+                      </span>
+                    ))}
+                  </span>
+                  {spacer ? <span className="inline-block">{"\u00A0"}</span> : null}
                 </span>
               ))
             )}
