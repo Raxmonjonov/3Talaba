@@ -58,5 +58,9 @@ app.use((_req: Request, res: Response) => {
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
-  res.status(500).json({ message: "Server xatosi" });
+  // Body-parser / zod carry their own status (400) — don't mask it as a 500.
+  const status = (err as { status?: number; statusCode?: number }).status
+    ?? (err as { statusCode?: number }).statusCode
+    ?? 500;
+  res.status(status).json({ message: status >= 500 ? "Server xatosi" : err.message });
 });
