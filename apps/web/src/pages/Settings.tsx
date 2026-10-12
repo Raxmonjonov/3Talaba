@@ -126,13 +126,16 @@ export default function Settings({
     }
     setSavingPassword(true);
     try {
-      await api("/api/user/password", {
+      const result = await api<{ ok: boolean; token?: string }>("/api/user/password", {
         method: "POST",
         body: JSON.stringify({
           currentPassword: password.current,
           newPassword: password.next,
         }),
       });
+      if (result.token) {
+        localStorage.setItem("3talab_token", result.token);
+      }
       setPassword({ current: "", next: "", confirm: "" });
       flash(setPasswordSaved);
     } catch (err) {

@@ -30,6 +30,8 @@ model User {
   softConfirm    Boolean  @default(true)
   locale         String   @default("uz")
   role           String   @default("STUDENT")
+  /// Tokens issued before this instant are rejected (password change / revoke).
+  passwordChangedAt DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -42,6 +44,7 @@ model User {
   achievements UserAchievement[]
   lessonCompletions LessonCompletion[]
   mockAttempts MockExamAttempt[]
+  placementSession PlacementSession?
 
   @@index([email])
 }
@@ -296,6 +299,7 @@ model UserAchievement {
 /// One open diagnostic per user; deleted when the test finishes.
 model PlacementSession {
   userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   state     String
   updatedAt DateTime @updatedAt
 }

@@ -6,29 +6,32 @@ import {
   awardSlug,
   evaluateLater,
 } from "../services/achievements.js";
-import { computeStreaks, dayKey } from "../services/streaks.js";
+import { computeStreaks, dayKey, utcMidnightToday } from "../services/streaks.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 /** Returns the diagnostic questions. Answers are not included. */
-export async function getPlacementQuestions(_req: Request, res: Response) {
-  res.json(
-    PLACEMENT.map((q) => ({
-      id: q.id,
-      level: q.level,
-      question: q.question,
-      options: q.options,
-    }))
-  );
-}
+export const getPlacementQuestions = asyncHandler(
+  async (_req: Request, res: Response) => {
+    res.json(
+      PLACEMENT.map((q) => ({
+        id: q.id,
+        level: q.level,
+        question: q.question,
+        options: q.options,
+      }))
+    );
+  }
+);
 
 const submitSchema = z.object({
-  answers: z.record(z.string(), z.number().int().min(0)),
+  answers: z.record(z.string(), z.number().int().min(0).max(3)),
   // check: score the answers but leave the stored level alone. The client uses
   // it for instant per-question feedback; the real submit still runs at the end.
   check: z.boolean().optional(),
 });
 
 /** Scores the diagnostic and stores the resulting level on the user. */
-export async function submitPlacement(req: Request, res: Response) {
+export const submitPlacement = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
@@ -60,20 +63,19 @@ export async function submitPlacement(req: Request, res: Response) {
         : "Natija saqlanmadi";
     res.status(400).json({ message });
   }
-}
+});
 
 /** Daily study minutes and completed steps for the last n days. */
-export async function getProgress(req: Request, res: Response) {
+export const getProgress = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
   const days = Math.min(90, Math.max(7, Number(req.query.days ?? 30)));
-  const since = new Date();
-  since.setHours(0, 0, 0, 0);
-  since.setDate(since.getDate() - (days - 1));
+  const since = utcMidnightToday();
+  since.setUTCDate(since.getUTCDate() - (days - 1));
 
   const historySince = new Date(since);
-  historySince.setDate(historySince.getDate() - 300);
+  historySince.setUTCDate(historySince.getUTCDate() - 300);
 
   const [rows, sessionTotals, history] = await Promise.all([
     prisma.progress.findMany({
@@ -94,14 +96,14 @@ export async function getProgress(req: Request, res: Response) {
 
   const map = new Map<string, { minutes: number; completed: number }>();
   for (const row of rows) {
-    const key = row.date.toISOString().slice(0, 10);
+    const key = dayKey(row.date);
     map.set(key, { minutes: row.minutes, completed: row.completed });
   }
 
   const series = Array.from({ length: days }, (_, i) => {
     const d = new Date(since);
-    d.setDate(since.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
+    d.setUTCDate(since.getUTCDate() + i);
+    const key = dayKey(d);
     const value = map.get(key);
     return {
       date: key,
@@ -127,27 +129,42 @@ export async function getProgress(req: Request, res: Response) {
     },
     streak,
   });
-}
+});
+
+const DAILY_MINUTES_CAP = 960;
 
 const logSchema = z.object({
-  minutes: z.number().int().min(0).max(600),
+  minutes: z.number().int().min(0),
   completed: z.number().int().min(0).max(1000).optional(),
 });
 
-/** Records study time for today. */
-export async function logProgress(req: Request, res: Response) {
+/** Records study time for today (UTC midnight). */
+export const logProgress = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
   try {
     const { minutes, completed = 0 } = logSchema.parse(req.body);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = utcMidnightToday();
+
+    // Cap the daily total so a flood of calls cannot inflate achievements.
+    const existing = await prisma.progress.findUnique({
+      where: { userId_date: { userId, date: today } },
+      select: { minutes: true },
+    });
+    const currentMinutes = existing?.minutes ?? 0;
+    const safeMinutes = Math.max(
+      0,
+      Math.min(minutes, DAILY_MINUTES_CAP - currentMinutes)
+    );
 
     const record = await prisma.progress.upsert({
       where: { userId_date: { userId, date: today } },
-      create: { userId, date: today, minutes, completed },
-      update: { minutes: { increment: minutes }, completed: { increment: completed } },
+      create: { userId, date: today, minutes: safeMinutes, completed },
+      update: {
+        minutes: { increment: safeMinutes },
+        completed: { increment: completed },
+      },
       select: { date: true, minutes: true, completed: true },
     });
 
@@ -161,4 +178,4 @@ export async function logProgress(req: Request, res: Response) {
         : "Ma'lumot saqlanmadi";
     res.status(400).json({ message });
   }
-}
+});

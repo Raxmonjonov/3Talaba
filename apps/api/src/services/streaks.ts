@@ -5,9 +5,15 @@ export function dayKey(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-function utcMidnightDaysAgo(n: number): Date {
+/** UTC midnight of "today" so Progress.date keys stay consistent with dayKey. */
+export function utcMidnightToday(): Date {
   const d = new Date();
   d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
+function utcMidnightDaysAgo(n: number): Date {
+  const d = utcMidnightToday();
   d.setUTCDate(d.getUTCDate() - n);
   return d;
 }

@@ -34,9 +34,9 @@ export default function Study({ user }: { user: User }) {
   /** Focused milliseconds banked across breaks. */
   const focusedRef = useRef(0);
   /** Start of the current focus segment (reset on break). */
-  const segmentStartRef = useRef(0);
+  const segmentStartRef = useRef(Date.now());
   /** Start of the current pomodoro cycle (reset on break). */
-  const cycleStartRef = useRef(0);
+  const cycleStartRef = useRef(Date.now());
   /** Minutes / answers already POSTed to /learning/progress. */
   const loggedMinutesRef = useRef(0);
   const loggedAnswersRef = useRef(0);

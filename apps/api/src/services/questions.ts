@@ -122,7 +122,14 @@ export function gradeAnswer(
 }
 
 /** Builds the adaptive item pool, optionally narrowed to one subject. */
+const poolCache = new Map<string, { items: Item[]; at: number }>();
+const POOL_TTL_MS = 60_000;
+
 export async function buildItemPool(subject?: string | null): Promise<Item[]> {
+  const key = subject ?? "__all__";
+  const cached = poolCache.get(key);
+  if (cached && Date.now() - cached.at < POOL_TTL_MS) return cached.items;
+
   const rows = await prisma.question.findMany({
     where: subject
       ? { skill: { subject } }
@@ -131,11 +138,14 @@ export async function buildItemPool(subject?: string | null): Promise<Item[]> {
     orderBy: { id: "asc" },
   });
 
-  return rows.map((r) => ({
+  const items = rows.map((r) => ({
     id: r.id,
     difficulty: toRaschDifficulty(r.difficulty),
     skillId: r.skillSlug,
   }));
+
+  poolCache.set(key, { items, at: Date.now() });
+  return items;
 }
 
 export async function getQuestionRow(id: string) {

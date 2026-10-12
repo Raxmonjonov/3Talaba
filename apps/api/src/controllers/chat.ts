@@ -12,6 +12,7 @@ import {
   nextTurn,
 } from "../services/engine.js";
 import { evaluateLater } from "../services/achievements.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const chatSchema = z.object({
   sessionId: z.string().uuid("Sessiya topilmadi"),
@@ -39,7 +40,7 @@ const startSchema = z.object({
   lessonSlug: z.string().min(1).optional(),
 });
 
-export async function startSession(req: Request, res: Response) {
+export const startSession = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
@@ -76,7 +77,7 @@ export async function startSession(req: Request, res: Response) {
   evaluateLater(userId);
 
   res.status(201).json(session);
-}
+});
 
 function parseJsonArray(value: string | null): string[] {
   if (!value) return [];
@@ -121,7 +122,7 @@ async function loadLessonTutorContext(lessonId: string) {
   };
 }
 
-export async function chat(req: Request, res: Response) {
+export const chat = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
@@ -143,11 +144,13 @@ export async function chat(req: Request, res: Response) {
       data: { userId, sessionId, role: "user", content: message },
     });
 
-    const history = await prisma.message.findMany({
+    // Fetch the most recent 40 messages, then restore chronological order.
+    const historyRaw = await prisma.message.findMany({
       where: { sessionId, userId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
       take: 40,
     });
+    const history = [...historyRaw].reverse();
 
     const address = user.preferredTitle || user.firstName;
     const state = parseState(session.engineState);
@@ -221,7 +224,7 @@ export async function chat(req: Request, res: Response) {
         : "Xabar yuborishda xatolik";
     res.status(400).json({ message });
   }
-}
+});
 
 async function callModel(messages: TutorMessage[]): Promise<string | null> {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -258,7 +261,7 @@ async function callModel(messages: TutorMessage[]): Promise<string | null> {
   }
 }
 
-export async function listSessions(req: Request, res: Response) {
+export const listSessions = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
@@ -288,9 +291,9 @@ export async function listSessions(req: Request, res: Response) {
       messageCount: s._count.messages,
     }))
   );
-}
+});
 
-export async function getSession(req: Request, res: Response) {
+export const getSession = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
@@ -303,7 +306,8 @@ export async function getSession(req: Request, res: Response) {
       lessonId: true,
       lesson: { select: { slug: true, titleUz: true, titleEn: true } },
       messages: {
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
+        take: 200,
         select: { id: true, role: true, content: true, createdAt: true },
       },
     },
@@ -311,10 +315,12 @@ export async function getSession(req: Request, res: Response) {
 
   if (!session) return res.status(404).json({ message: "Sessiya topilmadi" });
 
+  // Restore chronological order after taking the most recent slice.
+  session.messages.reverse();
   res.json(session);
-}
+});
 
-export async function endSession(req: Request, res: Response) {
+export const endSession = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
@@ -336,4 +342,4 @@ export async function endSession(req: Request, res: Response) {
   });
 
   res.json(session);
-}
+});

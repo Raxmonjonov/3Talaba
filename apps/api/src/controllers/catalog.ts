@@ -15,13 +15,14 @@ import {
   listMockExams,
   getMockExam,
   gradeMockAnswer,
-  finishMockExam,
+  finishMockExamFromAnswers,
   listMockExamAttempts,
   listMockExamBests,
   type MockExamSectionResult,
 } from "../services/mockExams.js";
 import { awardSlug, evaluateLater } from "../services/achievements.js";
 import { prisma } from "../config/prisma.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   initialState,
   selectNextItem,
@@ -64,20 +65,20 @@ async function savePlacementState(uid: string, state: PlacementState): Promise<v
   });
 }
 
-export async function getCourses(req: Request, res: Response) {
+export const getCourses = asyncHandler(async (req: Request, res: Response) => {
   const subject = (req.query.subject as string) || null;
   res.json(
     await listCourses(subject, localeOf(req), (req as any).user?.userId)
   );
-}
+});
 
-export async function getMyEnrollments(req: Request, res: Response) {
+export const getMyEnrollments = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
   res.json(await listEnrollments(uid, localeOf(req)));
-}
+});
 
-export async function getCourseDetail(req: Request, res: Response) {
+export const getCourseDetail = asyncHandler(async (req: Request, res: Response) => {
   const course = await getCourse(
     req.params.slug,
     localeOf(req),
@@ -85,9 +86,9 @@ export async function getCourseDetail(req: Request, res: Response) {
   );
   if (!course) return res.status(404).json({ message: "Kurs topilmadi" });
   res.json(course);
-}
+});
 
-export async function getLessonDetail(req: Request, res: Response) {
+export const getLessonDetail = asyncHandler(async (req: Request, res: Response) => {
   const lesson = await getLesson(
     req.params.slug,
     localeOf(req),
@@ -95,24 +96,24 @@ export async function getLessonDetail(req: Request, res: Response) {
   );
   if (!lesson) return res.status(404).json({ message: "Dars topilmadi" });
   res.json(lesson);
-}
+});
 
 /** Marks the lesson done and awards its XP (idempotent). */
-export async function completeLessonAction(req: Request, res: Response) {
+export const completeLessonAction = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
   const result = await completeLesson(uid, req.params.slug);
   if (!result) return res.status(404).json({ message: "Dars topilmadi" });
   res.json(result);
-}
+});
 
-export async function getSkills(req: Request, res: Response) {
+export const getSkills = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   res.json(await skillMap(uid ?? "", localeOf(req)));
-}
+});
 
-export async function enrollCourse(req: Request, res: Response) {
+export const enrollCourse = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
@@ -123,12 +124,12 @@ export async function enrollCourse(req: Request, res: Response) {
   } catch {
     res.status(400).json({ message: "Kursni yozib bo'lmadi" });
   }
-}
+});
 
 // ── Adaptive placement (Rasch IRT) ──────────────────────────────────────────
 
 /** Starts (or resumes) an adaptive diagnostic and serves the next item. */
-export async function startPlacement(req: Request, res: Response) {
+export const startPlacement = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
@@ -171,16 +172,16 @@ export async function startPlacement(req: Request, res: Response) {
     resumed,
     subject: state.subject ?? null,
   });
-}
+});
 
 const answerSchema = z.object({
   questionId: z.string().min(1),
-  given: z.string().min(1),
+  given: z.string().min(1).max(500),
   ms: z.number().int().min(0).max(3_600_000).optional(),
 });
 
 /** Grades one placement item and returns the next one (or the final result). */
-export async function answerPlacement(req: Request, res: Response) {
+export const answerPlacement = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
@@ -275,12 +276,12 @@ export async function answerPlacement(req: Request, res: Response) {
       err instanceof z.ZodError ? err.errors[0]?.message || "Javob noto'g'ri" : "Javobni qayta ishlab bo'lmadi";
     res.status(400).json({ message });
   }
-}
+});
 
 // ── Adaptive practice ───────────────────────────────────────────────────────
 
 /** Serves the next drill question near the student's current level. */
-export async function getPracticeQuestion(req: Request, res: Response) {
+export const getPracticeQuestion = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
@@ -322,10 +323,10 @@ export async function getPracticeQuestion(req: Request, res: Response) {
   if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
   res.json({ question: serveQuestion(row, localeOf(req)), mode: "drill" });
-}
+});
 
 /** Grades a practice answer and schedules its spaced review. */
-export async function submitPractice(req: Request, res: Response) {
+export const submitPractice = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
@@ -351,21 +352,21 @@ export async function submitPractice(req: Request, res: Response) {
   } catch {
     res.status(400).json({ message: "Javobni qayta ishlab bo'lmadi" });
   }
-}
+});
 
 // ── Spaced repetition ───────────────────────────────────────────────────────
 
-export async function getReviews(req: Request, res: Response) {
+export const getReviews = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
   const [due, summary] = await Promise.all([listDueReviews(uid), reviewSummary(uid)]);
   res.json({ due, summary });
-}
+});
 
 // ── Mock exams ──────────────────────────────────────────────────────────────
 
-export async function getMockExamList(req: Request, res: Response) {
+export const getMockExamList = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   const exams = await listMockExams(localeOf(req));
   if (!uid) return res.json(exams);
@@ -378,21 +379,21 @@ export async function getMockExamList(req: Request, res: Response) {
       bestMaxScore: bests[exam.slug]?.maxScore ?? null,
     }))
   );
-}
+});
 
-export async function getMockExamDetail(req: Request, res: Response) {
+export const getMockExamDetail = asyncHandler(async (req: Request, res: Response) => {
   const exam = await getMockExam(req.params.slug, localeOf(req));
   if (!exam) return res.status(404).json({ message: "Imtihon topilmadi" });
   res.json(exam);
-}
+});
 
 const mockAnswerSchema = z.object({
   questionId: z.string().min(1),
-  given: z.string().min(1),
+  given: z.string().min(1).max(500),
   ms: z.number().int().min(0).max(3_600_000).optional(),
 });
 
-export async function answerMockExam(req: Request, res: Response) {
+export const answerMockExam = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
@@ -420,10 +421,10 @@ export async function answerMockExam(req: Request, res: Response) {
   } catch {
     res.status(400).json({ message: "Javobni qayta ishlab bo'lmadi" });
   }
-}
+});
 
 const mockSectionResultSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().min(1).max(120),
   score: z.number().int().min(0),
   maxScore: z.number().int().min(0),
   correct: z.number().int().min(0),
@@ -431,29 +432,18 @@ const mockSectionResultSchema = z.object({
 });
 
 const mockFinishSchema = z.object({
-  score: z.number().int().min(0),
-  maxScore: z.number().int().min(0),
-  correct: z.number().int().min(0),
-  total: z.number().int().min(0),
+  /** Client-supplied breakdown kept for display; authoritative score is recomputed. */
   sections: z.array(mockSectionResultSchema).max(50).optional(),
 });
 
-export async function finishMockExamAction(req: Request, res: Response) {
+export const finishMockExamAction = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
   try {
-    const body = mockFinishSchema.parse(req.body);
+    const body = mockFinishSchema.parse(req.body ?? {});
     const sections: MockExamSectionResult[] = body.sections ?? [];
-    const attempt = await finishMockExam(
-      uid,
-      req.params.slug,
-      body.score,
-      body.maxScore,
-      body.correct,
-      body.total,
-      sections
-    );
+    const attempt = await finishMockExamFromAnswers(uid, req.params.slug, sections);
     if (!attempt) return res.status(404).json({ message: "Imtihon topilmadi" });
 
     evaluateLater(uid);
@@ -461,10 +451,10 @@ export async function finishMockExamAction(req: Request, res: Response) {
   } catch {
     res.status(400).json({ message: "Natijani saqlab bo'lmadi" });
   }
-}
+});
 
-export async function getMockExamAttempts(req: Request, res: Response) {
+export const getMockExamAttempts = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
   res.json(await listMockExamAttempts(uid, req.params.slug));
-}
+});

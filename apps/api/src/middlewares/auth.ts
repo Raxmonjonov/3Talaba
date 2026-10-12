@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt.js";
+import { verifyToken, type TokenPayload } from "../utils/jwt.js";
+import { prisma } from "../config/prisma.js";
 
 export interface AuthRequest extends Request {
-  user?: { userId: string; role: string };
+  user?: TokenPayload;
 }
 
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
@@ -12,10 +13,31 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
     return res.status(401).json({ message: "Unauthorized" });
   }
 
+  let payload: TokenPayload;
   try {
-    req.user = verifyToken(header.slice(7));
-    next();
+    payload = verifyToken(header.slice(7));
   } catch {
-    res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized" });
   }
+
+  // Revocation: reject tokens issued before the last password change.
+  void prisma.user
+    .findUnique({ where: { id: payload.userId }, select: { passwordChangedAt: true } })
+    .then((user) => {
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      if (
+        user.passwordChangedAt &&
+        payload.pwdAt &&
+        payload.pwdAt < Math.floor(user.passwordChangedAt.getTime() / 1000)
+      ) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      req.user = payload;
+      next();
+    })
+    .catch(() => {
+      res.status(500).json({ message: "Server xatosi" });
+    });
 }

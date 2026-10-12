@@ -159,18 +159,78 @@ function parseSections(raw: string | null): MockExamSectionResult[] {
   }
 }
 
-/** Persists a finished attempt so scores survive refresh and feed history. */
-export async function finishMockExam(
+/**
+ * Rebuilds the score from answers already graded server-side during the exam.
+ * The client only sends a section breakdown for display — numbers are ignored.
+ */
+export async function finishMockExamFromAnswers(
   userId: string,
   slug: string,
-  score: number,
-  maxScore: number,
-  correct: number,
-  total: number,
   sections: MockExamSectionResult[]
 ): Promise<MockExamAttemptResult | null> {
-  const exam = await prisma.mockExam.findUnique({ where: { slug }, select: { id: true } });
+  const exam = await prisma.mockExam.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      items: { select: { questionId: true, points: true, section: true } },
+    },
+  });
   if (!exam) return null;
+
+  const questionIds = exam.items.map((i) => i.questionId);
+  const answers = await prisma.answer.findMany({
+    where: { userId, questionId: { in: questionIds } },
+    orderBy: { answeredAt: "asc" },
+    select: { questionId: true, correct: true },
+  });
+
+  // Keep only the latest answer per question (retries overwrite).
+  const latest = new Map<string, boolean>();
+  for (const a of answers) latest.set(a.questionId, a.correct);
+
+  const pointOf = new Map(exam.items.map((i) => [i.questionId, i.points]));
+  const sectionOf = new Map(exam.items.map((i) => [i.questionId, i.section]));
+
+  let score = 0;
+  let correct = 0;
+  const sectionAcc = new Map<string, { score: number; correct: number; total: number; maxScore: number }>();
+  for (const [questionId, isCorrect] of latest) {
+    const section = sectionOf.get(questionId) ?? "General";
+    const pts = pointOf.get(questionId) ?? 0;
+    const acc = sectionAcc.get(section) ?? { score: 0, correct: 0, total: 0, maxScore: 0 };
+    acc.total += 1;
+    acc.maxScore += pts;
+    if (isCorrect) {
+      acc.score += pts;
+      acc.correct += 1;
+      score += pts;
+      correct += 1;
+    }
+    sectionAcc.set(section, acc);
+  }
+
+  // Include unanswered items so totals reflect the full exam.
+  const answeredIds = new Set(latest.keys());
+  const total = exam.items.length;
+  for (const item of exam.items) {
+    if (!answeredIds.has(item.questionId)) {
+      const acc = sectionAcc.get(item.section) ?? { score: 0, correct: 0, total: 0, maxScore: 0 };
+      acc.total += 1;
+      acc.maxScore += item.points;
+      sectionAcc.set(item.section, acc);
+    }
+  }
+
+  const maxScore = exam.items.reduce((sum, i) => sum + i.points, 0);
+  const computedSections: MockExamSectionResult[] = [...sectionAcc.entries()].map(
+    ([title, v]) => ({
+      title,
+      score: v.score,
+      maxScore: v.maxScore,
+      correct: v.correct,
+      total: v.total,
+    })
+  );
 
   const row = await prisma.mockExamAttempt.create({
     data: {
@@ -180,7 +240,7 @@ export async function finishMockExam(
       maxScore,
       correct,
       total,
-      sections: JSON.stringify(sections),
+      sections: JSON.stringify(computedSections.length ? computedSections : sections),
     },
   });
 
@@ -191,7 +251,7 @@ export async function finishMockExam(
     maxScore: row.maxScore,
     correct: row.correct,
     total: row.total,
-    sections,
+    sections: computedSections.length ? computedSections : sections,
     finishedAt: row.finishedAt.toISOString(),
   };
 }
@@ -228,7 +288,8 @@ export async function listMockExamBests(
 ): Promise<Record<string, { score: number; maxScore: number; finishedAt: string }>> {
   const rows = await prisma.mockExamAttempt.findMany({
     where: { userId },
-    orderBy: { score: "desc" },
+    orderBy: { finishedAt: "desc" },
+    take: 200,
     include: { mockExam: { select: { slug: true } } },
   });
 
