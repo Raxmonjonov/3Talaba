@@ -20,7 +20,7 @@
     },
     "dependencies": {
         "@netlify/functions": "^6.0.2",
-        "@prisma/adapter-pg": "^7.10.0",
+        "@prisma/adapter-pg": "^5.22.0",
         "@prisma/client": "^5.22.0",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",

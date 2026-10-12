@@ -1,11 +1,16 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { ALL_COURSES } from "./data/courses-index.js";
 import { ALL_QUESTIONS } from "./data/questions-index.js";
 import { SKILLS } from "./data/skills.js";
 import { MOCK_EXAMS } from "./data/mock-exams.js";
 
-const prisma = new PrismaClient();
+const url = process.env.DATABASE_URL || "";
+const prisma = url.startsWith("postgres")
+  ? new PrismaClient({ adapter: new PrismaPg(new Pool({ connectionString: url })) } as never)
+  : new PrismaClient();
 
 /** Deterministic id so re-seeding updates instead of duplicating. */
 function questionId(skillSlug: string, promptUz: string, index: number): string {
