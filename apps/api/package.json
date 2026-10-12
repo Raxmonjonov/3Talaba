@@ -19,7 +19,6 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@netlify/database": "^2.0.1",
         "@netlify/functions": "^6.0.2",
         "@prisma/adapter-pg": "^7.10.0",
         "@prisma/client": "^5.22.0",
