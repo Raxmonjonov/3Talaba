@@ -15,6 +15,8 @@ export function validateEnv(): void {
     console.error(
       `[env] Missing or invalid: ${missing.join(", ")}. Set them in .env before starting.`
     );
-    process.exit(1);
+    // In serverless (Netlify Functions) don't kill the process — individual
+    // routes will 500 but /health stays reachable.
+    if (process.env.NETLIFY !== "true") process.exit(1);
   }
 }

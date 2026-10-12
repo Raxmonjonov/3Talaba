@@ -3,20 +3,29 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-function createPrisma(): PrismaClient {
+let client: PrismaClient | null = null;
+
+/** Lazy singleton — only connects when first query runs. */
+export function getPrisma(): PrismaClient {
+  if (client) return client;
+
   const url = process.env.DATABASE_URL || "";
 
-  // Postgres (Netlify Database / Neon / any pg URL) → use the pg adapter
-  // so Prisma works inside serverless functions.
   if (url.startsWith("postgres")) {
     const adapter = new PrismaPg({ connectionString: url });
-    return new PrismaClient({ adapter } as never);
+    client = new PrismaClient({ adapter } as never);
+  } else {
+    client = new PrismaClient({ log: ["error"] });
   }
 
-  // SQLite (local dev) → default engine.
-  return new PrismaClient({ log: ["error"] });
+  if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = client;
+  return client;
 }
 
-export const prisma = globalForPrisma.prisma || createPrisma();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Keep a `prisma` export for existing imports — it proxies through the
+// lazy getter so importing the module never triggers a connection.
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    return (getPrisma() as any)[prop];
+  },
+});
