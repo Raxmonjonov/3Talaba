@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://3talaba.netlify.app/sitemap.xml
+Sitemap: https://rococo-moxie-6005f7.netlify.app/sitemap.xml

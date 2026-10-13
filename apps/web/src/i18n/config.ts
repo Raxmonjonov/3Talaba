@@ -38,7 +38,7 @@ export function getLocaleOption(locale: Locale): LocaleOption {
 
 /** Canonical origin, overridable for preview deployments. */
 export const SITE_URL = (
-  import.meta.env.VITE_SITE_URL ?? "https://3talaba.netlify.app"
+  import.meta.env.VITE_SITE_URL ?? "https://rococo-moxie-6005f7.netlify.app"
 ).replace(/\/+$/, "");
 
 /** Landing pages are locale-prefixed: /uz, /en, /ru. */
