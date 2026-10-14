@@ -10,6 +10,7 @@
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
     "dev:api": "npm run dev --workspace=@3talab/api",
     "dev:web": "npm run dev --workspace=@3talab/web",
+    "dev:netlify": "npm run prisma:generate:pg --workspace=@3talab/api && npx netlify dev --filter @3talab/web",
     "build": "npm run build --workspace=@3talab/api && npm run build --workspace=@3talab/web",
     "typecheck": "npm run typecheck --workspace=@3talab/api && npm run typecheck --workspace=@3talab/web",
     "lint": "npm run lint --workspace=@3talab/web && npm run lint --workspace=@3talab/api",
