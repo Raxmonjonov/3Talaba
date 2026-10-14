@@ -1,5 +1,8 @@
 [build]
-  command = "cd apps/api && npx prisma generate --schema=prisma/schema.postgresql.prisma && cd ../.. && npm run build --workspace=@3talab/web"
+  # Generates the Postgres client (binaryTargets includes rhel for Lambda).
+  # This overwrites the local SQLite client in node_modules — `npm run dev`
+  # regenerates it automatically, so local dev recovers on the next start.
+  command = "npm run prisma:generate:pg --workspace=@3talab/api && npm run build --workspace=@3talab/web"
   publish = "apps/web/dist"
 
 [build.environment]
