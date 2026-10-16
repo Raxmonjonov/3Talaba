@@ -50,4 +50,26 @@ test.describe("practice", () => {
     ).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole("button", { name: "Dashboard" })).toBeVisible();
   });
+
+  test("timed mode shows a per-question countdown and a pace note", async ({
+    page,
+  }) => {
+    await registerFreshUser(page);
+
+    await page.goto("/practice?timed=1");
+    await expect(page.getByRole("heading", { name: "Mashq" })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // The pacing clock is visible while the question is unanswered.
+    await expect(page.getByLabel("Qolgan vaqt")).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await answerCurrentQuestion(page);
+
+    await expect(page.getByRole("status")).toBeVisible({ timeout: 15_000 });
+    // After grading, the pace feedback compares elapsed time to the target.
+    await expect(page.getByText(/maqsad \d+s/)).toBeVisible();
+  });
 });

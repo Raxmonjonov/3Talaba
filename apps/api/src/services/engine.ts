@@ -9,6 +9,10 @@ export interface EngineState {
   misses: number;
   /** Set once the student says they understand or wants the next topic. */
   awaitingNextTopic: boolean;
+  /** Waiting for the student to restate a concept in their own words (Feynman). */
+  awaitingExplanation: boolean;
+  /** How many times the explanation prompt was repeated for the current concept. */
+  explanationTries: number;
 }
 
 export function initialState(): EngineState {
@@ -18,6 +22,8 @@ export function initialState(): EngineState {
     streak: 0,
     misses: 0,
     awaitingNextTopic: false,
+    awaitingExplanation: false,
+    explanationTries: 0,
   };
 }
 
@@ -139,6 +145,36 @@ function topicPrompt(level: number): string {
   return `Qaysi mavzudan boshlaymiz? Hozirgi darajangiz bo'yicha imkoniyatlar: ${options}.`;
 }
 
+/** Renders the step currently at `state.stepIndex`, used after a Feynman check. */
+function renderCurrentStep(
+  lesson: Lesson,
+  state: EngineState,
+  address: string
+): { reply: string; state: EngineState } {
+  const current = lesson.steps[state.stepIndex];
+  const cleared: EngineState = {
+    ...state,
+    awaitingExplanation: false,
+    explanationTries: 0,
+  };
+
+  if (!current) {
+    return {
+      reply: `Bu mavzu yakunlandi, ${address}. Zo'r ish!`,
+      state: { ...cleared, lessonId: null, stepIndex: 0, awaitingNextTopic: true },
+    };
+  }
+
+  return {
+    reply: [
+      "Rahmat, yaxshi tushuntirdingiz.",
+      `${current.concept}: ${current.explain}`,
+      current.deepen,
+    ].join("\n\n"),
+    state: cleared,
+  };
+}
+
 /** Opens a lesson at its first step and produces the opening explanation. */
 function beginLesson(
   lesson: Lesson,
@@ -206,38 +242,73 @@ export function nextTurn(
     const step = lesson?.steps[next.stepIndex];
 
     if (lesson && step) {
-      // A student who names a different topic is asking to switch. Honour that
-      // instead of forcing them to finish the current lesson first.
-      const requested = detectLesson(userText, level);
-      if (requested && requested.id !== lesson.id) {
-        return beginLesson(requested, level, address, next);
-      }
+        // A student who names a different topic is asking to switch. Honour that
+        // instead of forcing them to finish the current lesson first.
+        const requested = detectLesson(userText, level);
+        if (requested && requested.id !== lesson.id) {
+          return beginLesson(requested, level, address, next);
+        }
 
-      if (isCorrect(step, userText)) {
-        next.streak += 1;
-        next.misses = 0;
+        // Feynman-style recall check: the student must explain the previous
+        // concept in their own words before moving to the next idea.
+        if (next.awaitingExplanation) {
+          const t = normalize(userText);
+          const words = t.split(" ").filter(Boolean).length;
+          const substantive = t.length >= 25 && words >= 5;
+          const gaveUp = /bilmayman|bilmadim|esimda yo/.test(t);
 
-        if (next.stepIndex + 1 < lesson.steps.length) {
-          next.stepIndex += 1;
-          const upcoming = lesson.steps[next.stepIndex];
+          if (!substantive && !gaveUp && next.explanationTries < 1) {
+            next.explanationTries += 1;
+            return {
+              reply: "Yaqin keldi. Yana bir oz batafsilroq qilib ko'ring: bu tushuncha nima uchun muhim va qanday ishlaydi?",
+              state: next,
+            };
+          }
+
+          return renderCurrentStep(lesson, next, address);
+        }
+
+        if (isCorrect(step, userText)) {
+          const learned = step.concept;
+          next.streak += 1;
+          next.misses = 0;
+
+          if (next.stepIndex + 1 < lesson.steps.length) {
+            next.stepIndex += 1;
+
+            // Every second correct answer, pause for a Feynman-style explanation
+            // check before the next concept is introduced (skip the final step).
+            if (next.streak % 2 === 0) {
+              next.awaitingExplanation = true;
+              next.explanationTries = 0;
+              return {
+                reply: [
+                  "Ajoyib, to'g'ri.",
+                  `Endi kichik bir tekshiruv, ${address}: "${learned}" tushunchasini hech bilmaydigan odamga oddiy tilda, bir-ikki gap bilan tushuntirib bering.`,
+                ].join("\n\n"),
+                state: next,
+              };
+            }
+
+            const upcoming = lesson.steps[next.stepIndex];
+            return {
+              reply: [
+                "Ajoyib, to'g'ri.",
+                `${upcoming.concept}: ${upcoming.explain}`,
+                upcoming.deepen,
+              ].join("\n\n"),
+              state: next,
+            };
+          }
+
+          next.lessonId = null;
+          next.stepIndex = 0;
+          next.awaitingNextTopic = true;
           return {
-            reply: [
-              "Ajoyib, to'g'ri.",
-              `${upcoming.concept}: ${upcoming.explain}`,
-              upcoming.deepen,
-            ].join("\n\n"),
+            reply: `Bu mavzu yakunlandi, ${address}. Zo'r ish! ${topicPrompt(level)}`,
             state: next,
           };
         }
-
-        next.lessonId = null;
-        next.stepIndex = 0;
-        next.awaitingNextTopic = true;
-        return {
-          reply: `Bu mavzu yakunlandi, ${address}. Zo'r ish! ${topicPrompt(level)}`,
-          state: next,
-        };
-      }
 
       if (isSkip(userText)) {
         next.awaitingNextTopic = true;
@@ -247,26 +318,28 @@ export function nextTurn(
         };
       }
 
-      if (next.streak > 0) {
-        next.streak = 0;
-      }
-      next.misses += 1;
+        if (next.streak > 0) {
+          next.streak = 0;
+        }
+        next.misses += 1;
 
-      if (isAffirmative(userText) && next.misses > 0) {
-        return {
-          reply: `Yaxshi, ${address}. Unda boshqa qilib ko'ramiz. ${step.hint}`,
-          state: next,
-        };
-      }
+        if (isAffirmative(userText) && next.misses > 0) {
+          return {
+            reply: `Yaxshi, ${address}. Unda boshqa qilib ko'ramiz. ${step.hint}`,
+            state: next,
+          };
+        }
 
-      if (next.misses >= 2) {
-        next.misses = 0;
-        next.stepIndex = Math.max(0, next.stepIndex - 1);
-        return {
-          reply: `Bu qiyin bo'ldimi? Normal, keling, sekin boshlaymiz.\n\n${step.concept}: ${step.explain}\n${step.example}\n\n${step.ask}`,
-          state: next,
-        };
-      }
+        if (next.misses >= 2) {
+          next.misses = 0;
+          next.awaitingExplanation = false;
+          next.explanationTries = 0;
+          next.stepIndex = Math.max(0, next.stepIndex - 1);
+          return {
+            reply: `Bu qiyin bo'ldimi? Normal, keling, sekin boshlaymiz.\n\n${step.concept}: ${step.explain}\n${step.example}\n\n${step.ask}`,
+            state: next,
+          };
+        }
 
       return {
         reply: `Tushundim. Boshqa qilib ko'ramiz.\n\n${step.hint}\n\n${step.ask}`,

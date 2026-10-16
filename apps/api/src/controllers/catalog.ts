@@ -10,6 +10,15 @@ import {
   listEnrollments,
 } from "../services/catalog.js";
 import { reviewSummary, listDueReviews, recordAnswer, nextDueReviewId } from "../services/reviews.js";
+import { listMistakes } from "../services/mistakes.js";
+import { calibrationSummary } from "../services/calibration.js";
+import { getNote, saveNote, listNotes } from "../services/notes.js";
+import { getReflection, saveReflection } from "../services/reflections.js";
+import {
+  listSelfQuestions,
+  createSelfQuestion as createSelfQuestionService,
+  deleteSelfQuestion as deleteSelfQuestionService,
+} from "../services/selfQuestions.js";
 import { buildItemPool, nextPracticeQuestion, serveQuestion, gradeAnswer, getQuestionRow } from "../services/questions.js";
 import {
   listMockExams,
@@ -18,6 +27,7 @@ import {
   finishMockExamFromAnswers,
   listMockExamAttempts,
   listMockExamBests,
+  saveAttemptReflection,
   type MockExamSectionResult,
 } from "../services/mockExams.js";
 import { awardSlug, evaluateLater } from "../services/achievements.js";
@@ -108,6 +118,113 @@ export const completeLessonAction = asyncHandler(async (req: Request, res: Respo
   res.json(result);
 });
 
+// ── Lesson summaries ("konspekt") ───────────────────────────────────────────
+
+const noteSchema = z.object({ body: z.string().max(8000) });
+const reflectionSchema = z.object({ body: z.string().max(4000) });
+
+/** The student's summary of one lesson (null when none written yet). */
+export const getLessonNote = asyncHandler(async (req: Request, res: Response) => {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  const note = await getNote(uid, req.params.slug);
+  if (note === null) return res.status(404).json({ message: "Dars topilmadi" });
+  res.json({ note });
+});
+
+/** Writes or clears the student's summary of one lesson (upsert). */
+export const saveLessonNote = asyncHandler(async (req: Request, res: Response) => {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  const { body } = noteSchema.parse(req.body);
+  const note = await saveNote(uid, req.params.slug, body);
+  if (note === null) return res.status(404).json({ message: "Dars topilmadi" });
+  res.json({ note });
+});
+
+/** Every summary the student has written, newest first. */
+export const getNotes = asyncHandler(async (req: Request, res: Response) => {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  const items = await listNotes(uid, localeOf(req));
+  res.json({ count: items.length, items });
+});
+
+// ── Error self-explanation ("Xato tahlili") ─────────────────────────────────
+
+/** The student's self-explanation for one question (null when none written). */
+export const getQuestionReflection = asyncHandler(
+  async (req: Request, res: Response) => {
+    const uid = userId(req);
+    if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+    const reflection = await getReflection(uid, req.params.id);
+    res.json({ reflection });
+  }
+);
+
+/** Writes or clears the student's error analysis for one question (upsert). */
+export const saveQuestionReflection = asyncHandler(
+  async (req: Request, res: Response) => {
+    const uid = userId(req);
+    if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+    const { body } = reflectionSchema.parse(req.body);
+    const reflection = await saveReflection(uid, req.params.id, body);
+    if (reflection === null) return res.status(404).json({ message: "Savol topilmadi" });
+    res.json({ reflection });
+  }
+);
+
+// ── Self-generated questions ("Mening savollarim") ──────────────────────────
+
+const selfQuestionSchema = z.object({
+  prompt: z.string().max(2000),
+  answer: z.string().max(4000),
+  lessonSlug: z.string().max(200).optional().nullable(),
+});
+
+/** Every question the student has written for themselves, newest first. */
+export const getSelfQuestions = asyncHandler(
+  async (req: Request, res: Response) => {
+    const uid = userId(req);
+    if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+    const items = await listSelfQuestions(uid);
+    res.json({ count: items.length, items });
+  }
+);
+
+/** Stores a new self-written question (generation effect). */
+export const createSelfQuestion = asyncHandler(
+  async (req: Request, res: Response) => {
+    const uid = userId(req);
+    if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+    const input = selfQuestionSchema.parse(req.body);
+    const item = await createSelfQuestionService(uid, input);
+    if (item === null) {
+      return res.status(400).json({ message: "Savol matni bo‘sh" });
+    }
+    res.status(201).json({ item });
+  }
+);
+
+/** Deletes one of the student's own questions. */
+export const deleteSelfQuestion = asyncHandler(
+  async (req: Request, res: Response) => {
+    const uid = userId(req);
+    if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+    const ok = await deleteSelfQuestionService(uid, req.params.id);
+    if (!ok) return res.status(404).json({ message: "Savol topilmadi" });
+    res.json({ ok: true });
+  }
+);
+
 export const getSkills = asyncHandler(async (req: Request, res: Response) => {
   const uid = userId(req);
   res.json(await skillMap(uid ?? "", localeOf(req)));
@@ -178,6 +295,8 @@ const answerSchema = z.object({
   questionId: z.string().min(1),
   given: z.string().min(1).max(500),
   ms: z.number().int().min(0).max(3_600_000).optional(),
+  // Self-rated confidence before grading: 1=low, 2=medium, 3=high.
+  confidence: z.number().int().min(1).max(3).optional(),
 });
 
 /** Grades one placement item and returns the next one (or the final result). */
@@ -318,7 +437,8 @@ export const getPracticeQuestion = asyncHandler(async (req: Request, res: Respon
     user?.currentLevel ?? 0,
     subject,
     exclude,
-    skills
+    skills,
+    uid
   );
   if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
@@ -331,12 +451,12 @@ export const submitPractice = asyncHandler(async (req: Request, res: Response) =
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
 
   try {
-    const { questionId, given, ms } = answerSchema.parse(req.body);
+    const { questionId, given, ms, confidence } = answerSchema.parse(req.body);
     const row = await getQuestionRow(questionId);
     if (!row) return res.status(404).json({ message: "Savol topilmadi" });
 
     const { correct, explanation, expected } = gradeAnswer(row, given, localeOf(req));
-    const review = await recordAnswer({ userId: uid, questionId, given, correct, ms });
+    const review = await recordAnswer({ userId: uid, questionId, given, correct, ms, confidence });
 
     // Bump the level on a streak of correct answers, never downward.
     if (correct) {
@@ -362,6 +482,28 @@ export const getReviews = asyncHandler(async (req: Request, res: Response) => {
 
   const [due, summary] = await Promise.all([listDueReviews(uid), reviewSummary(uid)]);
   res.json({ due, summary });
+});
+
+// ── Mistake journal (error analysis) ────────────────────────────────────────
+
+/** Recent mistakes the student has not since answered correctly. */
+export const getMistakes = asyncHandler(async (req: Request, res: Response) => {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit ?? 20)));
+  const items = await listMistakes(uid, localeOf(req), limit);
+  res.json({ count: items.length, items });
+});
+
+// ── Metacognitive calibration ───────────────────────────────────────────────
+
+/** How well the student's confidence matches their actual correctness. */
+export const getCalibration = asyncHandler(async (req: Request, res: Response) => {
+  const uid = userId(req);
+  if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+  res.json(await calibrationSummary(uid));
 });
 
 // ── Mock exams ──────────────────────────────────────────────────────────────
@@ -458,3 +600,16 @@ export const getMockExamAttempts = asyncHandler(async (req: Request, res: Respon
   if (!uid) return res.status(401).json({ message: "Unauthorized" });
   res.json(await listMockExamAttempts(uid, req.params.slug));
 });
+
+/** Saves the student's post-exam reflection ("exam wrapper") on an attempt. */
+export const saveMockExamReflection = asyncHandler(
+  async (req: Request, res: Response) => {
+    const uid = userId(req);
+    if (!uid) return res.status(401).json({ message: "Unauthorized" });
+
+    const { body } = reflectionSchema.parse(req.body);
+    const reflection = await saveAttemptReflection(uid, req.params.id, body);
+    if (reflection === null) return res.status(404).json({ message: "Urinish topilmadi" });
+    res.json({ reflection });
+  }
+);

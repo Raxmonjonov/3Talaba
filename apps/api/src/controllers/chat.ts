@@ -29,6 +29,8 @@ function parseState(raw: string | null): EngineState {
       streak: parsed.streak ?? 0,
       misses: parsed.misses ?? 0,
       awaitingNextTopic: parsed.awaitingNextTopic ?? false,
+      awaitingExplanation: parsed.awaitingExplanation ?? false,
+      explanationTries: parsed.explanationTries ?? 0,
     };
   } catch {
     return initialState();

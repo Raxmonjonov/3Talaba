@@ -37,6 +37,8 @@ export const en: Dictionary = {
     ctaPrimary: "Test my level for free",
     ctaSecondary: "Log in",
     note: "Signing up is free. No credit card required.",
+    visualCaption:
+      "Every step brings the university closer — your plan climbs this staircase day by day.",
     benefits: [
       { value: "1 year", label: "A measured plan that fits a year of real progress" },
       { value: "Built for you", label: "Your weakest topics get scheduled first" },

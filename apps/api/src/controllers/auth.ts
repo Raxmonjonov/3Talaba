@@ -37,6 +37,7 @@ const publicUser = {
   xp: true,
   focusMode: true,
   softConfirm: true,
+  dailyGoalMinutes: true,
 } as const;
 
 const GENDER_TITLES: Record<string, string> = {

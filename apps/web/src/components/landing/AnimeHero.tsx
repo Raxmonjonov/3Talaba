@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { SparkIcon, ClockIcon } from "./Icons";
 import { useAnimeScope, prefersReducedMotion } from "@/lib/anime";
 import { useTilt3D } from "@/components/3d/hooks/useTilt3D";
+import { ProgressStairs3D } from "@/components/3d/elements/ProgressStairs3D";
 
 const GRID = 13;
 
@@ -90,82 +91,93 @@ export function Hero() {
       </div>
 
       <div className="page-shell relative z-10 py-20 sm:py-28 lg:py-36">
-        <div className="max-w-4xl">
-          <p className="eyebrow">
-            <ClockIcon className="h-4 w-4" />
-            {t.hero.eyebrow}
-          </p>
+        <div className="grid items-center gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <p className="eyebrow">
+              <ClockIcon className="h-4 w-4" />
+              {t.hero.eyebrow}
+            </p>
 
-          <h1
-            ref={titleRef}
-            className="mt-6 text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
-            style={{ perspective: "900px" }}
-          >
-            {reduced ? (
-              <span className="bg-gradient-to-r from-primary via-foreground to-gradient-end bg-clip-text text-transparent">
-                {headline}
-              </span>
-            ) : (
-              words.map(({ word, wordIndex, spacer }) => (
-                <span key={wordIndex}>
-                  <span className="inline-block whitespace-nowrap">
-                    {Array.from(word).map((ch, charIndex) => (
-                      <span
-                        key={charIndex}
-                        data-letter
-                        className="inline-block will-change-transform"
-                        style={{ opacity: 0 }}
-                      >
-                        {ch}
-                      </span>
-                    ))}
-                  </span>
-                  {spacer ? <span className="inline-block">{"\u00A0"}</span> : null}
+            <h1
+              ref={titleRef}
+              className="mt-6 text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-6xl xl:text-7xl"
+              style={{ perspective: "900px" }}
+            >
+              {reduced ? (
+                <span className="bg-gradient-to-r from-primary via-foreground to-gradient-end bg-clip-text text-transparent">
+                  {headline}
                 </span>
-              ))
-            )}
-          </h1>
+              ) : (
+                words.map(({ word, wordIndex, spacer }) => (
+                  <span key={wordIndex}>
+                    <span className="inline-block whitespace-nowrap">
+                      {Array.from(word).map((ch, charIndex) => (
+                        <span
+                          key={charIndex}
+                          data-letter
+                          className="inline-block will-change-transform"
+                          style={{ opacity: 0 }}
+                        >
+                          {ch}
+                        </span>
+                      ))}
+                    </span>
+                    {spacer ? <span className="inline-block">{"\u00A0"}</span> : null}
+                  </span>
+                ))
+              )}
+            </h1>
 
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            {t.hero.subtitle}
-          </p>
+            <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              {t.hero.subtitle}
+            </p>
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              ref={ctaRef}
-              to={authPath("register", locale)}
-              className="btn-primary btn-lg btn-tilt text-center"
-            >
-              <span className="inline-flex items-center gap-2">
-                <SparkIcon className="h-5 w-5" />
-                {t.hero.ctaPrimary}
-              </span>
-            </Link>
-            <Link
-              to={authPath("login", locale)}
-              className="btn-secondary btn-lg text-center"
-            >
-              {t.hero.ctaSecondary}
-            </Link>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                ref={ctaRef}
+                to={authPath("register", locale)}
+                className="btn-primary btn-lg btn-tilt text-center"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <SparkIcon className="h-5 w-5" />
+                  {t.hero.ctaPrimary}
+                </span>
+              </Link>
+              <Link
+                to={authPath("login", locale)}
+                className="btn-secondary btn-lg text-center"
+              >
+                {t.hero.ctaSecondary}
+              </Link>
+            </div>
+
+            <p className="mt-5 text-sm text-muted-foreground">{t.hero.note}</p>
           </div>
 
-          <p className="mt-5 text-sm text-muted-foreground">{t.hero.note}</p>
-
-          <ul className="mt-14 grid gap-6 border-t border-border pt-8 sm:grid-cols-3">
-            {t.hero.benefits.map(
-              (benefit: { value: string; label: string }) => (
-                <li key={benefit.value} className="space-y-1">
-                  <p className="font-mono text-lg font-semibold text-foreground">
-                    {benefit.value}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {benefit.label}
-                  </p>
-                </li>
-              ),
-            )}
-          </ul>
+          <div className="hidden lg:col-span-5 lg:block">
+            <div className="surface-card relative overflow-hidden p-6">
+              <ProgressStairs3D level={4} />
+              <p className="mt-5 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">
+                {t.hero.visualCaption}
+              </p>
+            </div>
+          </div>
         </div>
+
+        <ul className="mt-14 grid gap-6 border-t border-border pt-8 sm:grid-cols-3">
+          {t.hero.benefits.map(
+            (benefit: { value: string; label: string }) => (
+              <li key={benefit.value} className="space-y-1">
+                <p className="font-mono text-lg font-semibold text-foreground">
+                  {benefit.value}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {benefit.label}
+                </p>
+              </li>
+            ),
+          )}
+        </ul>
       </div>
     </section>
   );

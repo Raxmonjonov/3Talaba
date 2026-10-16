@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { animate, stagger } from "animejs";
 import { api } from "../lib/api";
-import type { EnrolledCourse, ProgressResponse, ReviewsResponse, Session, SettingsResponse, User } from "../lib/types";
+import type { CalibrationSummary, EnrolledCourse, MistakesResponse, ProgressResponse, ReviewsResponse, Session, SettingsResponse, User } from "../lib/types";
 import { set3DEnabled } from "../lib/featureFlags";
 import { useAchievements } from "../lib/useAchievements";
 import { use3DEnabled, useReducedMotion } from "@/components/3d/hooks/usePerfFlags";
@@ -115,6 +115,10 @@ export default function Dashboard({
   const [focusMode, setFocusMode] = useState(user.focusMode);
   const [softConfirm, setSoftConfirm] = useState(user.softConfirm);
   const [title, setTitle] = useState(user.preferredTitle ?? "");
+  const [dailyGoal, setDailyGoal] = useState(user.dailyGoalMinutes ?? 30);
+  useEffect(() => {
+    setDailyGoal(user.dailyGoalMinutes ?? 30);
+  }, [user.dailyGoalMinutes]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -122,6 +126,8 @@ export default function Dashboard({
   const [statsError, setStatsError] = useState("");
   const [openSession, setOpenSession] = useState<Session | null>(null);
   const [reviews, setReviews] = useState<ReviewsResponse | null>(null);
+  const [mistakes, setMistakes] = useState<MistakesResponse | null>(null);
+  const [calibration, setCalibration] = useState<CalibrationSummary | null>(null);
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [error, setError] = useState("");
@@ -165,6 +171,20 @@ export default function Dashboard({
       .catch(() => {
         /* review counts are optional */
       });
+    api<MistakesResponse>("/api/content/mistakes?limit=5")
+      .then((data) => {
+        if (!cancelled) setMistakes(data);
+      })
+      .catch(() => {
+        /* mistake journal is optional */
+      });
+    api<CalibrationSummary>("/api/content/calibration")
+      .then((data) => {
+        if (!cancelled) setCalibration(data);
+      })
+      .catch(() => {
+        /* calibration is optional */
+      });
     api<EnrolledCourse[]>("/api/content/enrollments")
       .then((list) => {
         if (!cancelled) setEnrollments(list);
@@ -182,11 +202,18 @@ export default function Dashboard({
   async function saveSettings() {
     setSaving(true);
     setError("");
+    const goalMinutes = Math.min(240, Math.max(5, dailyGoal || 30));
     try {
       await api<SettingsResponse>("/api/user/settings", {
         method: "PATCH",
-        body: JSON.stringify({ preferredTitle: title, focusMode, softConfirm }),
+        body: JSON.stringify({
+          preferredTitle: title,
+          focusMode,
+          softConfirm,
+          dailyGoalMinutes: goalMinutes,
+        }),
       });
+      setDailyGoal(goalMinutes);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
@@ -211,6 +238,46 @@ export default function Dashboard({
   const levelText =
     user.currentLevel === 0 ? "boshlang‘ich (0)" : `${user.currentLevel} / 10`;
   const spark = progress?.series.map((p) => p.minutes) ?? [];
+  const mistakeSkills = (() => {
+    const seen = new Map<string, string>();
+    for (const m of mistakes?.items ?? []) {
+      if (!seen.has(m.skill)) seen.set(m.skill, m.skillName);
+    }
+    return [...seen.entries()].slice(0, 6).map(([slug, name]) => ({ slug, name }));
+  })();
+
+  // Bugungi reja — today's steps, ordered by what helps most: spaced review
+  // first (distributed practice), then weak topics (deliberate practice),
+  // then fixing mistakes (error analysis).
+  const dueNow = reviews?.summary.dueNow ?? 0;
+  const weakSkills = reviews?.summary.weakSkills ?? [];
+  const mistakeCount = mistakes?.count ?? 0;
+  const planSteps: { key: string; title: string; hint: string; href: string }[] = [];
+  if (dueNow > 0) {
+    planSteps.push({
+      key: "review",
+      title: "Takrorlash navbati",
+      hint: `${dueNow} savol qayta ko‘rib chiqishni kutmoqda`,
+      href: "/practice?review=1",
+    });
+  }
+  if (weakSkills.length > 0) {
+    planSteps.push({
+      key: "weak",
+      title: "Zaif mavzular",
+      hint: `${weakSkills.length} mavzu e’tibor talab qiladi`,
+      href: `/practice?skill=${encodeURIComponent(weakSkills[0].skill)}`,
+    });
+  }
+  if (mistakeCount > 0) {
+    planSteps.push({
+      key: "mistakes",
+      title: "Xatolarni tuzatish",
+      hint: `${mistakeCount} xatoni ko‘rib chiqish`,
+      href: "/mistakes",
+    });
+  }
+  const planHref = planSteps[0]?.href ?? "/practice";
 
   useAnimeScope(subjectGridRef, () => {
     const cards = subjectGridRef.current?.querySelectorAll<HTMLElement>("[data-subject-card]");
@@ -304,11 +371,70 @@ export default function Dashboard({
             <button onClick={() => navigate("/skills")} className="btn-secondary">
               Mavzular
             </button>
+            <button onClick={() => navigate("/mistakes")} className="btn-secondary">
+              Xatolar daftari
+            </button>
+            <button onClick={() => navigate("/notes")} className="btn-secondary">
+              Konspektlar
+            </button>
+            <button
+              onClick={() => navigate("/self-questions")}
+              className="btn-secondary"
+            >
+              Savollarim
+            </button>
+            <button onClick={() => navigate("/methods")} className="btn-secondary">
+              Usullar
+            </button>
             <button onClick={() => navigate("/mock-exams")} className="btn-secondary">
               Imtihonlar
             </button>
             <button onClick={() => navigate("/settings")} className="btn-secondary">
               Hisob
+            </button>
+          </div>
+        </section>
+
+        <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-semibold">Bugungi reja</h3>
+            {progress?.goal && progress.goal.minutes > 0 ? (
+              <span className="text-xs text-muted-foreground">
+                Bugun: {progress.goal.todayMinutes} / {progress.goal.minutes} daqiqa
+              </span>
+            ) : null}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Eng foydali tartib: avval takrorlash, keyin zaif mavzular, so‘ng
+            xatolarni tuzatish. Shu ketma-ketlikda o‘qish — tarqoq mashq
+            (distributed practice) va maqsadli mashq (deliberate practice)
+            tamoyillariga asoslangan.
+          </p>
+          {planSteps.length > 0 ? (
+            <ol className="space-y-2">
+              {planSteps.map((step, i) => (
+                <li key={step.key} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium">
+                    {i + 1}
+                  </span>
+                  <button onClick={() => navigate(step.href)} className="text-left">
+                    <span className="font-medium hover:text-primary">{step.title}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {step.hint}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Bugun kutayotgan takrorlash yoki xato yo‘q — yangi mashq bilan
+              davom eting.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3 pt-1">
+            <button onClick={() => navigate(planHref)} className="btn-primary">
+              {planSteps.length > 0 ? "Rejani boshlash" : "Yangi mashq"}
             </button>
           </div>
         </section>
@@ -536,6 +662,100 @@ export default function Dashboard({
 
         <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-semibold">Xatolar daftari</h3>
+            <span className="text-xs text-muted-foreground">
+              {mistakes
+                ? mistakes.count > 0
+                  ? `${mistakes.count} ta xato`
+                  : "Toza — xato yo‘q"
+                : "Yuklanmoqda…"}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Hali to‘g‘rilanmagan xatolar. Ularni qayta ko‘rib, o‘zingiz tuzating
+            — bu eng tez o‘sish yo‘li.
+          </p>
+          {mistakes && mistakes.items.length > 0 ? (
+            <>
+              {mistakeSkills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {mistakeSkills.map((s) => (
+                    <button
+                      key={s.slug}
+                      onClick={() =>
+                        navigate(`/practice?skill=${encodeURIComponent(s.slug)}`)
+                      }
+                      className="rounded-full border bg-background px-3 py-1 text-xs hover:bg-secondary"
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <div className="flex flex-wrap gap-3 pt-1">
+                <button onClick={() => navigate("/mistakes")} className="btn-secondary">
+                  Daftarni ochish
+                </button>
+              </div>
+            </>
+          ) : null}
+        </section>
+
+        {calibration && calibration.rated > 0 ? (
+          <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-lg font-semibold">Ishonch aniqligi</h3>
+              <span className="text-xs text-muted-foreground">
+                {Math.round(calibration.accuracy * 100)}% aniqlik ·{" "}
+                {calibration.rated} javob
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              O‘zingizga ishonchingiz bilan haqiqiy natija qanchalik mos keladi
+              — bu o‘z bilimingizni to‘g‘ri baholash (metakognitsiya) ko‘rsatkichi.
+            </p>
+            {calibration.overconfident > 0 ? (
+              <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                {calibration.overconfident} ta holatda ishonchingiz komil edi,
+                ammo xato qildingiz — bu eng xavfli xatolik turi. Bu mavzularni
+                alohida mashq qiling.
+              </p>
+            ) : null}
+            <div className="grid grid-cols-3 gap-3">
+              {calibration.buckets.map((bucket) => (
+                <div
+                  key={bucket.level}
+                  className="rounded-xl border bg-background p-3 text-center"
+                >
+                  <p className="text-xs text-muted-foreground">
+                    {bucket.level === 1
+                      ? "Past"
+                      : bucket.level === 2
+                        ? "O‘rta"
+                        : "Yuqori"}
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {bucket.total > 0 ? `${Math.round(bucket.accuracy * 100)}%` : "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {bucket.correct}/{bucket.total}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-3 pt-1">
+              <button
+                onClick={() => navigate("/practice?confidence=1")}
+                className="btn-secondary"
+              >
+                Ishonch rejimida mashq
+              </button>
+            </div>
+          </section>
+        ) : null}
+
+        <section className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h3 className="text-lg font-semibold">Yo‘lingiz</h3>
             <span className="text-xs text-muted-foreground">
               Tepada maqsadingiz
@@ -630,6 +850,40 @@ export default function Dashboard({
           </div>
         </section>
 
+        {progress?.goal && progress.goal.minutes > 0 ? (
+          <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">Bugungi maqsad</p>
+              <p className="text-sm">
+                <span className="font-semibold">
+                  {progress.goal.todayMinutes} / {progress.goal.minutes} daqiqa
+                </span>
+                {progress.goal.met ? (
+                  <span className="text-muted-foreground"> · bajarildi 🎯</span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · yana {progress.goal.minutes - progress.goal.todayMinutes} daqiqa
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    Math.round(
+                      (progress.goal.todayMinutes / progress.goal.minutes) * 100
+                    )
+                  )}%`,
+                }}
+              />
+            </div>
+          </section>
+        ) : null}
+
         {spark.length > 0 || progress?.streak ? (
           <section className="space-y-3 rounded-2xl border bg-card p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -689,6 +943,32 @@ export default function Dashboard({
               Bo‘sh qoldirilsa, jinsingizga qarab avtomatik tanlanadi. Bu
               murojaat sizga yoqsa — majburlash emas.
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="dailyGoal" className="text-sm font-medium">
+              Kunlik maqsad (daqiqada)
+            </label>
+            <input
+              id="dailyGoal"
+              type="number"
+              inputMode="numeric"
+              min={5}
+              max={240}
+              value={dailyGoal}
+              onChange={(e) => setDailyGoal(Number(e.target.value) || 0)}
+              className="field"
+            />
+            <p className="text-xs text-muted-foreground">
+              Kunlik o‘rganish maqsadingizni belgilang. Maqsadga erishish
+              odatni mustahkamlaydi.
+            </p>
+            {progress?.goal ? (
+              <p className="text-xs text-muted-foreground">
+                Bugun: {progress.goal.todayMinutes} / {progress.goal.minutes} daqiqa
+                {progress.goal.met ? " · Maqsadga erishildi! 🎯" : ""}
+              </p>
+            ) : null}
           </div>
 
           <label className="flex cursor-pointer items-start gap-3">

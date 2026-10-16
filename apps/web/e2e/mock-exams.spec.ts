@@ -87,4 +87,53 @@ test.describe("mock exams", () => {
     });
     await expect(page.getByText(/Eng yaxshi natija/).first()).toBeVisible({ timeout: 15_000 });
   });
+
+  test("saves a post-exam reflection (exam wrapper) after finishing", async ({
+    page,
+    request,
+  }) => {
+    await registerFreshUser(page);
+
+    await page.getByRole("button", { name: "Imtihonlar" }).click();
+    await expect(page).toHaveURL(/\/mock-exams$/);
+    await page.locator("main button").first().click();
+    await expect(page).toHaveURL(/\/mock-exams\/.+/);
+    const slug = page.url().split("/mock-exams/")[1];
+
+    await page.getByRole("button", { name: "Imtihonni boshlash" }).click();
+
+    const freeInput = page.getByRole("textbox", { name: "Javob" });
+    if (await freeInput.isVisible().catch(() => false)) {
+      await freeInput.fill("1");
+      await page.getByRole("button", { name: "Yuborish" }).click();
+    } else {
+      const options = page.locator(".auth-card button:not([type='submit'])");
+      const count = await options.count();
+      await options.nth(count - 1).click();
+    }
+    await expect(page.getByRole("status")).toBeVisible({ timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Tugatish" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Imtihon tahlili" })
+    ).toBeVisible({ timeout: 15_000 });
+    const reflection = "O‘qish bo‘limi uzoq ketdi — keyingi safar vaqtni bo‘laman.";
+    await page
+      .getByPlaceholder("Masalan: O‘qish bo‘limini tezroq o‘tdim")
+      .fill(reflection);
+    await page.getByRole("button", { name: "Tahlilni saqlash" }).click();
+    await expect(page.getByText("Saqlandi")).toBeVisible();
+
+    // The reflection must be persisted on the attempt.
+    const token = await page.evaluate(() =>
+      localStorage.getItem("3talab_token")
+    );
+    const res = await request.get(
+      `http://localhost:4000/api/content/mock-exams/${slug}/attempts`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const attempts = await res.json();
+    expect(attempts[0]?.reflection).toBe(reflection);
+  });
 });

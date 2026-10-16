@@ -16,6 +16,7 @@ export interface User {
   xp?: number;
   focusMode: boolean;
   softConfirm: boolean;
+  dailyGoalMinutes?: number;
 }
 
 export interface Session {
@@ -58,6 +59,7 @@ export interface SettingsResponse {
   preferredTitle: string | null;
   focusMode: boolean;
   softConfirm: boolean;
+  dailyGoalMinutes: number;
   currentLevel: number;
 }
 
@@ -74,6 +76,7 @@ export interface ProfileResponse {
   xp: number;
   focusMode: boolean;
   softConfirm: boolean;
+  dailyGoalMinutes?: number;
 }
 
 export interface PlacementOption {
@@ -137,6 +140,82 @@ export interface ReviewSummary {
 export interface ReviewsResponse {
   due: { questionId: string; due: string }[];
   summary: ReviewSummary;
+}
+
+export interface Mistake {
+  id: string;
+  skill: string;
+  skillName: string;
+  type: string;
+  prompt: string;
+  passage?: string;
+  options: PlacementOption[];
+  difficulty: number;
+  given: string;
+  correctAnswer: string;
+  answeredAt: string;
+  /** The student's own error analysis ("Xato tahlili"), when written. */
+  reflection?: string;
+}
+
+export interface MistakesResponse {
+  count: number;
+  items: Mistake[];
+}
+
+export interface QuestionReflection {
+  questionId: string;
+  body: string;
+  updatedAt: string;
+}
+
+export interface CalibrationBucket {
+  level: number;
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+
+export interface CalibrationSummary {
+  rated: number;
+  total: number;
+  buckets: CalibrationBucket[];
+  overconfident: number;
+  underconfident: number;
+  accuracy: number;
+}
+
+export interface LessonNote {
+  lessonSlug: string;
+  body: string;
+  updatedAt: string;
+}
+
+export interface NoteListItem {
+  lessonSlug: string;
+  lessonTitle: string;
+  courseSlug: string;
+  body: string;
+  updatedAt: string;
+}
+
+export interface NotesResponse {
+  count: number;
+  items: NoteListItem[];
+}
+
+export interface SelfQuestionItem {
+  id: string;
+  prompt: string;
+  answer: string;
+  lessonSlug: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelfQuestionsResponse {
+  count: number;
+  items: SelfQuestionItem[];
 }
 
 export interface CourseListItem {
@@ -254,6 +333,11 @@ export interface ProgressResponse {
     best: number;
     todayActive: boolean;
   };
+  goal?: {
+    minutes: number;
+    todayMinutes: number;
+    met: boolean;
+  };
 }
 
 export type AchievementTier = "bronze" | "silver" | "gold";
@@ -326,4 +410,6 @@ export interface MockExamAttemptResult {
   total: number;
   sections: MockExamSectionResult[];
   finishedAt: string;
+  /** The student's post-exam reflection ("exam wrapper"), when written. */
+  reflection?: string;
 }

@@ -1,0 +1,76 @@
+{
+  "version": "5",
+  "remote": {
+    "https://edge.netlify.com/": "607baf43414ddf5d42a24cf0e0ac7d03cc02fbc96f21bc34f027935060e28793",
+    "https://edge.netlify.com/bootstrap/config.ts": "6a2ce0e544e15e8f8883a5c18da5948e37fd0f2619f68cb31f3af53c51817025",
+    "https://edge.netlify.com/bootstrap/context.ts": "2260177df4a7d692f31177ccbf2de969cd8db1269c564a45517d6e47fd7d248f",
+    "https://edge.netlify.com/bootstrap/cookie.ts": "8b0baae708989ca183c6f3b4ab3d029e6abcbc2e43f93edeb0ff447b3bbc3a05",
+    "https://edge.netlify.com/bootstrap/edge_function.ts": "0c6c24959154a4ac64e24077adea5b4d23f01704a1dd1290df56fa9e4c6801f3",
+    "https://edge.netlify.com/bootstrap/globals/types.ts": "eaa6148ded3121d8dee62dd91c86e7fe76601df0f3ca8d7962243a30f4c8935f"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:concurrently@^9.1.2"
+      ]
+    },
+    "members": {
+      "apps/api": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@netlify/functions@^6.0.2",
+            "npm:@prisma/adapter-pg@^5.22.0",
+            "npm:@prisma/client@^5.22.0",
+            "npm:@types/bcryptjs@^2.4.6",
+            "npm:@types/cors@^2.8.17",
+            "npm:@types/express@^4.17.21",
+            "npm:@types/jsonwebtoken@^9.0.7",
+            "npm:@types/node@^22.10.2",
+            "npm:@types/pg@^8.23.1",
+            "npm:bcryptjs@^2.4.3",
+            "npm:cors@^2.8.5",
+            "npm:dotenv@^16.4.7",
+            "npm:express-rate-limit@^8.7.1",
+            "npm:express@^4.21.2",
+            "npm:helmet@^8.3.0",
+            "npm:jsonwebtoken@^9.0.2",
+            "npm:oxlint@^1.87.0",
+            "npm:pg@^8.23.1",
+            "npm:prisma@^5.22.0",
+            "npm:serverless-http@4",
+            "npm:tsx@^4.19.2",
+            "npm:typescript@^5.7.2",
+            "npm:vitest@^5.0.3",
+            "npm:zod@^3.24.1"
+          ]
+        }
+      },
+      "apps/web": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@playwright/test@^1.64.0",
+            "npm:@react-three/drei@^10.7.9",
+            "npm:@react-three/fiber@^9.8.1",
+            "npm:@react-three/postprocessing@^3.1.3",
+            "npm:@types/node@^24.13.3",
+            "npm:@types/react-dom@^19.2.7",
+            "npm:@types/react@^19.2.18",
+            "npm:@types/three@0.186",
+            "npm:@vitejs/plugin-react@^6.1.1",
+            "npm:animejs@^4.5.0",
+            "npm:autoprefixer@^10.4.20",
+            "npm:oxlint@^1.81.0",
+            "npm:postcss@^8.4.49",
+            "npm:react-dom@^19.2.8",
+            "npm:react-router-dom@^7.1.1",
+            "npm:react@^19.2.8",
+            "npm:tailwindcss@^3.4.17",
+            "npm:three@~0.186.1",
+            "npm:typescript@~6.0.2",
+            "npm:vite@^8.3.0"
+          ]
+        }
+      }
+    }
+  }
+}

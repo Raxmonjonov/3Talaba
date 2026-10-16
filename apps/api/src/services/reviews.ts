@@ -52,6 +52,7 @@ export async function recordAnswer(params: {
   given: string;
   correct: boolean;
   ms?: number | null;
+  confidence?: number | null;
 }): Promise<{ grade: Grade; dueAt: Date; interval: string }> {
   const now = new Date();
   const grade = gradeFromResult(params.correct, params.ms);
@@ -63,6 +64,7 @@ export async function recordAnswer(params: {
       given: params.given,
       correct: params.correct,
       ms: params.ms ?? null,
+      confidence: params.confidence ?? null,
     },
   });
 

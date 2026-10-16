@@ -17,6 +17,7 @@ const settingsSchema = z.object({
   preferredTitle: z.string().max(40).optional().nullable(),
   focusMode: z.boolean().optional(),
   softConfirm: z.boolean().optional(),
+  dailyGoalMinutes: z.number().int().min(5).max(240).optional(),
 });
 
 const profileSchema = z.object({
@@ -48,6 +49,7 @@ const publicUserSelect = {
   xp: true,
   focusMode: true,
   softConfirm: true,
+  dailyGoalMinutes: true,
 } as const;
 
 /** Full medal catalog with this student's earned timestamps. */
@@ -81,12 +83,16 @@ export const updateSettings = asyncHandler(async (req: Request, res: Response) =
         ...(data.softConfirm !== undefined
           ? { softConfirm: data.softConfirm }
           : {}),
+        ...(data.dailyGoalMinutes !== undefined
+          ? { dailyGoalMinutes: data.dailyGoalMinutes }
+          : {}),
       },
       select: {
         id: true,
         preferredTitle: true,
         focusMode: true,
         softConfirm: true,
+        dailyGoalMinutes: true,
         currentLevel: true,
       },
     });

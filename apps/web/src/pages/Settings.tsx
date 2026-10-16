@@ -38,6 +38,7 @@ export default function Settings({
   const reducedMotion = useReducedMotion();
   const [focusMode, setFocusMode] = useState(user.focusMode);
   const [softConfirm, setSoftConfirm] = useState(user.softConfirm);
+  const [dailyGoal, setDailyGoal] = useState(user.dailyGoalMinutes ?? 30);
   const [password, setPassword] = useState({
     current: "",
     next: "",
@@ -63,6 +64,7 @@ export default function Settings({
     setTitle(user.preferredTitle ?? "");
     setFocusMode(user.focusMode);
     setSoftConfirm(user.softConfirm);
+    setDailyGoal(user.dailyGoalMinutes ?? 30);
   }, [user]);
 
   function flash(setter: (v: boolean) => void) {
@@ -98,17 +100,25 @@ export default function Settings({
   async function saveSoftSettings() {
     setSavingSettings(true);
     setError("");
+    const goalMinutes = Math.min(240, Math.max(5, dailyGoal || 30));
     try {
       const updated = await api<SettingsResponse>("/api/user/settings", {
         method: "PATCH",
-        body: JSON.stringify({ preferredTitle: title, focusMode, softConfirm }),
+        body: JSON.stringify({
+          preferredTitle: title,
+          focusMode,
+          softConfirm,
+          dailyGoalMinutes: goalMinutes,
+        }),
       });
       onUserChange({
         ...user,
         preferredTitle: updated.preferredTitle,
         focusMode: updated.focusMode,
         softConfirm: updated.softConfirm,
+        dailyGoalMinutes: updated.dailyGoalMinutes,
       });
+      setDailyGoal(goalMinutes);
       flash(setSettingsSaved);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sozlama saqlanmadi");
@@ -305,6 +315,25 @@ export default function Settings({
               </span>
             </span>
           </label>
+          <div className="space-y-2">
+            <label htmlFor="dailyGoal" className="text-sm font-medium">
+              Kunlik maqsad (daqiqada)
+            </label>
+            <input
+              id="dailyGoal"
+              type="number"
+              inputMode="numeric"
+              min={5}
+              max={240}
+              value={dailyGoal}
+              onChange={(e) => setDailyGoal(Number(e.target.value) || 0)}
+              className="field"
+            />
+            <p className="text-xs text-muted-foreground">
+              Kunlik o‘rganish maqsadingiz. Maqsadga erishish odatni
+              mustahkamlaydi.
+            </p>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={saveSoftSettings}

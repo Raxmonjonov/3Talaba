@@ -5,6 +5,14 @@ function pick(locale: "uz" | "en", uz: string, en: string): string {
   return locale === "uz" ? uz : en || uz;
 }
 
+/** Hard cap on an exam reflection so a runaway paste cannot bloat the row. */
+export const MAX_ATTEMPT_REFLECTION_CHARS = 3000;
+
+/** Trims surrounding whitespace and clamps the length (empty = no reflection). */
+export function normalizeAttemptReflection(body: string): string {
+  return body.trim().slice(0, MAX_ATTEMPT_REFLECTION_CHARS);
+}
+
 export interface MockExamListItem {
   id: string;
   slug: string;
@@ -147,6 +155,8 @@ export interface MockExamAttemptResult {
   total: number;
   sections: MockExamSectionResult[];
   finishedAt: string;
+  /** The student's post-exam reflection ("exam wrapper"), when written. */
+  reflection?: string;
 }
 
 function parseSections(raw: string | null): MockExamSectionResult[] {
@@ -253,7 +263,28 @@ export async function finishMockExamFromAnswers(
     total: row.total,
     sections: computedSections.length ? computedSections : sections,
     finishedAt: row.finishedAt.toISOString(),
+    reflection: row.reflection ?? undefined,
   };
+}
+
+/** Writes or clears the post-exam reflection on one of the student's attempts. */
+export async function saveAttemptReflection(
+  userId: string,
+  attemptId: string,
+  body: string
+): Promise<{ id: string; reflection: string } | null> {
+  const attempt = await prisma.mockExamAttempt.findFirst({
+    where: { id: attemptId, userId },
+    select: { id: true },
+  });
+  if (!attempt) return null;
+
+  const clean = normalizeAttemptReflection(body);
+  await prisma.mockExamAttempt.update({
+    where: { id: attempt.id },
+    data: { reflection: clean || null },
+  });
+  return { id: attempt.id, reflection: clean };
 }
 
 export async function listMockExamAttempts(
@@ -279,6 +310,7 @@ export async function listMockExamAttempts(
     total: row.total,
     sections: parseSections(row.sections),
     finishedAt: row.finishedAt.toISOString(),
+    reflection: row.reflection ?? undefined,
   }));
 }
 

@@ -73,6 +73,11 @@ export default function MockExam() {
   const [results, setResults] = useState<LocalResults | null>(null);
   const [history, setHistory] = useState<MockExamAttemptResult[]>([]);
   const [historyError, setHistoryError] = useState("");
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [reflectionBody, setReflectionBody] = useState("");
+  const [reflectionSaving, setReflectionSaving] = useState(false);
+  const [reflectionSaved, setReflectionSaved] = useState(false);
+  const [reflectionError, setReflectionError] = useState("");
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
   const answersRef = useRef<
@@ -160,9 +165,14 @@ export default function MockExam() {
       api<MockExamAttemptResult>(`/api/content/mock-exams/${slug}/finish`, {
         method: "POST",
         body: JSON.stringify({ score, maxScore, correct, total, sections }),
-      }).catch(() => {
-        finishingRef.current = false;
-      });
+      })
+        .then((attempt) => {
+          setAttemptId(attempt.id);
+          setReflectionBody(attempt.reflection ?? "");
+        })
+        .catch(() => {
+          finishingRef.current = false;
+        });
     }
   }, [exam?.maxPoints, items.length, slug]);
 
@@ -192,6 +202,10 @@ export default function MockExam() {
     setFeedback(null);
     setFreeText("");
     setResults(null);
+    setAttemptId(null);
+    setReflectionBody("");
+    setReflectionSaved(false);
+    setReflectionError("");
   }
 
   async function submit(given: string) {
@@ -236,6 +250,29 @@ export default function MockExam() {
       return;
     }
     setCursor((c) => c + 1);
+  }
+
+  async function saveExamWrapper() {
+    if (!attemptId || reflectionSaving) return;
+    setReflectionSaving(true);
+    setReflectionError("");
+    try {
+      await api<{ reflection: { id: string; reflection: string } }>(
+        `/api/content/mock-exam-attempts/${attemptId}/reflection`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ body: reflectionBody }),
+        }
+      );
+      setReflectionSaved(true);
+      window.setTimeout(() => setReflectionSaved(false), 2000);
+    } catch (err) {
+      setReflectionError(
+        err instanceof Error ? err.message : "Xulosa saqlanmadi"
+      );
+    } finally {
+      setReflectionSaving(false);
+    }
   }
 
   if (loading) {
@@ -292,6 +329,50 @@ export default function MockExam() {
                   </li>
                 ))}
               </ul>
+            </div>
+          ) : null}
+          {attemptId ? (
+            <div className="space-y-3 rounded-2xl border bg-card p-5 text-left shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold">Imtihon tahlili</h2>
+                <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium">
+                  Exam wrapper
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Natijani ko‘rib chiqing va quyidagi savollarga javob yozing.
+                Imtihondan keyin o‘ylab yozish keyingi natijani yaxshilaydi.
+              </p>
+              <ul className="space-y-0.5 text-xs text-muted-foreground">
+                <li>• Nima yaxshi o‘tdi?</li>
+                <li>• Qayerda vaqt yoki bilim yetmadi?</li>
+                <li>• Keyingi safar nimani o‘zgartiraman?</li>
+              </ul>
+              <textarea
+                value={reflectionBody}
+                onChange={(e) => setReflectionBody(e.target.value)}
+                disabled={reflectionSaving}
+                rows={3}
+                placeholder="Masalan: O‘qish bo‘limini tezroq o‘tdim, shuning uchun matematikaga vaqt qoldiraman."
+                className="field min-h-[80px] resize-y text-sm"
+              />
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={saveExamWrapper}
+                  disabled={reflectionSaving}
+                  className="btn-secondary"
+                >
+                  {reflectionSaving ? "Saqlanmoqda…" : "Tahlilni saqlash"}
+                </button>
+                {reflectionSaved ? (
+                  <span role="status" className="text-sm text-muted-foreground">
+                    Saqlandi
+                  </span>
+                ) : null}
+                {reflectionError ? (
+                  <span className="text-sm text-red-700">{reflectionError}</span>
+                ) : null}
+              </div>
             </div>
           ) : null}
           {history.length > 0 ? (

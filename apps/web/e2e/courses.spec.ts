@@ -124,4 +124,30 @@ test.describe("courses", () => {
       page.getByRole("button", { name: /Davom:|Birinchi darsni ochish/ })
     ).toBeVisible();
   });
+
+  test("lesson cover-and-recall hides block text until revealed", async ({
+    page,
+  }) => {
+    await registerFreshUser(page);
+
+    await page.goto("/courses");
+    await page.locator("button.text-lg.underline").first().click();
+    await page.locator("ul li button").first().click();
+    await expect(page).toHaveURL(/\/lessons\/[^/]+$/, { timeout: 15_000 });
+
+    // Block text is visible by default.
+    await expect(page.locator("article p.whitespace-pre-wrap").first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("Matn yashirilgan")).toHaveCount(0);
+
+    // Turning on recall mode covers every block.
+    await page.getByRole("button", { name: /Yoddan eslash/ }).click();
+    await expect(page.getByText("Matn yashirilgan").first()).toBeVisible();
+    await expect(page.locator("article p.whitespace-pre-wrap")).toHaveCount(0);
+
+    // Revealing one block shows its text again.
+    await page.getByRole("button", { name: /Ko.rsatish/ }).first().click();
+    await expect(page.locator("article p.whitespace-pre-wrap").first()).toBeVisible();
+  });
 });

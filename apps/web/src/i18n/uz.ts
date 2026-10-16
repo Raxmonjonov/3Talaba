@@ -35,6 +35,8 @@
     ctaPrimary: "Bepul darajamni aniqlayman",
     ctaSecondary: "Kirish",
     note: "Ro'yxatdan o'tish bepul. Kredit kartasi talab qilinmaydi.",
+    visualCaption:
+      "Har qadam sizni oliygohga yaqinlashtiradi — reja shu zinapoya bo'ylab kunma-kun ko'tariladi.",
     benefits: [
       { value: "1 yil", label: "Shuncha muddatga aniq, o'lchagan reja" },
       { value: "Sizga mos", label: "Zaif mavzular birinchi bo'lib qayta ishlaydi" },

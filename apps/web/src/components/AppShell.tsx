@@ -6,9 +6,13 @@ import { MoonIcon, SunIcon } from "@/components/landing/Icons";
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", match: /^\/dashboard$/ },
   { to: "/practice", label: "Mashq", match: /^\/practice/ },
+  { to: "/mistakes", label: "Xatolar", match: /^\/mistakes/ },
+  { to: "/notes", label: "Konspekt", match: /^\/notes/ },
+  { to: "/self-questions", label: "Savollar", match: /^\/self-questions/ },
   { to: "/courses", label: "Kurslar", match: /^\/courses/ },
   { to: "/skills", label: "Mavzular", match: /^\/skills/ },
   { to: "/mock-exams", label: "Imtihonlar", match: /^\/mock-exams/ },
+  { to: "/methods", label: "Usullar", match: /^\/methods/ },
   { to: "/settings", label: "Hisob", match: /^\/settings$/ },
 ] as const;
 

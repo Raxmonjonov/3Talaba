@@ -15,6 +15,10 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Study = lazy(() => import("./pages/Study"));
 const Placement = lazy(() => import("./pages/Placement"));
 const Practice = lazy(() => import("./pages/Practice"));
+const Mistakes = lazy(() => import("./pages/Mistakes"));
+const Notes = lazy(() => import("./pages/Notes"));
+const SelfQuestions = lazy(() => import("./pages/SelfQuestions"));
+const Methods = lazy(() => import("./pages/Methods"));
 const Courses = lazy(() => import("./pages/Courses"));
 const CourseDetail = lazy(() => import("./pages/CourseDetail"));
 const Lesson = lazy(() => import("./pages/Lesson"));
@@ -181,6 +185,54 @@ export default function App() {
             user ? (
               <Suspense fallback={<RouteFallback />}>
                 <Practice />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/mistakes"
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <Mistakes />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/notes"
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <Notes />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/self-questions"
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <SelfQuestions />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/methods"
+          element={
+            user ? (
+              <Suspense fallback={<RouteFallback />}>
+                <Methods />
               </Suspense>
             ) : (
               <Navigate to="/login" replace />

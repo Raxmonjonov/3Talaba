@@ -5,9 +5,14 @@ import { requireAuth } from "../middlewares/auth.js";
 
 const router = Router();
 
+// Production keeps a tight brute-force ceiling. The e2e suite registers a fresh
+// student for nearly every test, which legitimately exceeds 30 in one window, so
+// dev/test use a much higher ceiling (matching prisma.ts's NODE_ENV check).
+const isProduction = process.env.NODE_ENV === "production";
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: isProduction ? 30 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Juda ko'p urinish. Biroz kuting." },

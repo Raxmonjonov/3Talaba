@@ -77,7 +77,7 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
   const historySince = new Date(since);
   historySince.setUTCDate(historySince.getUTCDate() - 300);
 
-  const [rows, sessionTotals, history] = await Promise.all([
+  const [rows, sessionTotals, history, account] = await Promise.all([
     prisma.progress.findMany({
       where: { userId, date: { gte: since } },
       orderBy: { date: "asc" },
@@ -91,6 +91,10 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
       where: { userId, minutes: { gt: 0 }, date: { gte: historySince } },
       orderBy: { date: "asc" },
       select: { date: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { dailyGoalMinutes: true },
     }),
   ]);
 
@@ -119,6 +123,10 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
   const active = new Set(history.map((r) => dayKey(r.date)));
   const streak = computeStreaks(active);
 
+  // Today's minutes come from the last point of the series (built up to today).
+  const todayMinutes = series[series.length - 1]?.minutes ?? 0;
+  const goalMinutes = account?.dailyGoalMinutes ?? 0;
+
   res.json({
     series,
     totals: {
@@ -128,6 +136,11 @@ export const getProgress = asyncHandler(async (req: Request, res: Response) => {
       sessions: sessionTotals.length,
     },
     streak,
+    goal: {
+      minutes: goalMinutes,
+      todayMinutes,
+      met: goalMinutes > 0 && todayMinutes >= goalMinutes,
+    },
   });
 });
 

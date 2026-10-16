@@ -15,6 +15,8 @@ describe("initialState", () => {
       streak: 0,
       misses: 0,
       awaitingNextTopic: false,
+      awaitingExplanation: false,
+      explanationTries: 0,
     });
   });
 });
@@ -90,10 +92,21 @@ describe("lesson flow", () => {
 
   it("walks the whole lesson to completion and returns to the menu", () => {
     let state = beginFirstLesson(0).state;
-    for (const answer of ["9", "24", "6", "2"]) {
-      const out = nextTurn(state, answer, 0, NAME);
-      state = out.state;
-    }
+    // 0->1: "9"
+    state = nextTurn(state, "9", 0, NAME).state;
+    // 1->2: "24" triggers Feynman checkpoint
+    const after24 = nextTurn(state, "24", 0, NAME);
+    state = after24.state;
+    expect(state.awaitingExplanation).toBe(true);
+    // Explanation accepted
+    const afterExplain = nextTurn(state, "Men sonlarni qo'shishni sodda so'zlar bilan tushuntira olaman.", 0, NAME);
+    state = afterExplain.state;
+    expect(state.awaitingExplanation).toBe(false);
+    // 2->3: "6"
+    state = nextTurn(state, "6", 0, NAME).state;
+    // Final: "2" completes lesson (no checkpoint on final)
+    const final = nextTurn(state, "2", 0, NAME);
+    state = final.state;
     expect(state.lessonId).toBeNull();
     expect(state.awaitingNextTopic).toBe(true);
   });
