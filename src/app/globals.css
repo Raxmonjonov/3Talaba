@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   3TALAB DIZAYN TIZIMI — YAGONA CSS O'ZGARUVCHILAR MARKAZI
+   "Chiroyli zamonaviy sinfxona + Matrix vaqt oqimi"
+   ========================================================================== */
+
+:root {
+  /* Shriftlar (O'zbek lotin harflari va o', g', ʻ belgilarini to'liq qo'llab-quvvatlaydi) */
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, monospace;
+
+  /* O'lchamlar va radiuslar */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+
+  /* Sukut bo'yicha Qorong'u rejim (Chuqur zumrad sinfxona + Neon yashil + Oltin) */
+  --bg-canvas: #050a0e;
+  --bg-surface: #0b141b;
+  --bg-elevated: #111f2a;
+  --border-subtle: rgba(16, 185, 129, 0.18);
+  --border-strong: rgba(16, 185, 129, 0.38);
+
+  --accent-neon: #10b981;
+  --accent-neon-bright: #00e676;
+  --accent-neon-soft: rgba(16, 185, 129, 0.14);
+  --accent-neon-glow: rgba(0, 230, 118, 0.32);
+
+  --accent-gold: #f59e0b;
+  --accent-gold-bright: #fbbf24;
+  --accent-gold-soft: rgba(245, 158, 11, 0.15);
+
+  --text-primary: #ecfdf5;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --danger: #ef4444;
+
+  /* Soyalar */
+  --shadow-neon: 0 0 28px -4px rgba(16, 185, 129, 0.35), 0 8px 20px -6px rgba(0, 0, 0, 0.6);
+  --shadow-gold: 0 0 28px -4px rgba(245, 158, 11, 0.32), 0 8px 20px -6px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Yorug' rejim ("Yorug' zamonaviy sinfxona") */
+html.light {
+  --bg-canvas: #f4f8f6;
+  --bg-surface: #ffffff;
+  --bg-elevated: #eaf2ee;
+  --border-subtle: rgba(5, 150, 105, 0.18);
+  --border-strong: rgba(5, 150, 105, 0.38);
+
+  --accent-neon: #059669;
+  --accent-neon-bright: #10b981;
+  --accent-neon-soft: rgba(5, 150, 105, 0.11);
+  --accent-neon-glow: rgba(5, 150, 105, 0.22);
+
+  --accent-gold: #d97706;
+  --accent-gold-bright: #f59e0b;
+  --accent-gold-soft: rgba(217, 119, 6, 0.12);
+
+  --text-primary: #061812;
+  --text-secondary: #1e293b;
+  --text-muted: #475569;
+  --danger: #dc2626;
+
+  --shadow-neon: 0 10px 25px -5px rgba(5, 150, 105, 0.22), 0 4px 10px -4px rgba(6, 24, 18, 0.06);
+  --shadow-gold: 0 10px 25px -5px rgba(217, 119, 6, 0.22), 0 4px 10px -4px rgba(6, 24, 18, 0.06);
+  --shadow-card: 0 12px 30px -8px rgba(6, 24, 18, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+}
+
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  ::selection {
+    background-color: var(--accent-neon-soft);
+    color: var(--accent-neon-bright);
+  }
+}
+
+/* ==========================================================================
+   KOMPONENT USLUBLARI VA MIKRO-INTERAKSIYALAR (60 FPS Transform/Opacity)
+   ========================================================================== */
+
+.classroom-grid-bg {
+  background-image:
+    linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.glass-card {
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-neon);
+}
+
+.btn-neon {
+  background: linear-gradient(135deg, var(--accent-neon) 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-neon);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-neon:hover {
+  transform: translateY(-2px) scale(1.01);
+  filter: brightness(1.08);
+}
+
+.btn-neon:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--accent-gold) 0%, #d97706 100%);
+  color: #050a0e;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-gold);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), filter 0.18s ease;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px) scale(1.01);
+  filter: brightness(1.06);
+}
+
+/* CSS Scroll-Driven Animations (Qo'llab-quvvatlovchi brauzerlar uchun) */
+@supports (animation-timeline: view()) {
+  html:not(.reduce-motion) .scroll-reveal-css {
+    animation: scrollFadeUp linear both;
+    animation-timeline: view();
+    animation-range: entry 8% cover 26%;
+  }
+}
+
+@keyframes scrollFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* prefers-reduced-motion va "Animatsiyalarni kamaytirish" rejimi */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

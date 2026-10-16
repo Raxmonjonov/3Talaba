@@ -1,16 +1,14 @@
 [build]
-  # Generates the Postgres client (binaryTargets includes rhel for Lambda).
-  # This overwrites the local SQLite client in node_modules — `npm run dev`
-  # regenerates it automatically, so local dev recovers on the next start.
-  command = "npm run prisma:generate:pg --workspace=@3talab/api && npm run build --workspace=@3talab/web"
-  publish = "apps/web/dist"
+  command = "prisma generate --schema=prisma/schema.postgresql.prisma && prisma db push --schema=prisma/schema.postgresql.prisma --skip-generate && tsx prisma/seed.ts && next build"
+  publish = ".next"
 
 [build.environment]
-  # Vite 8 and TypeScript 6 need Node 20.19+ / 22.12+.
   NODE_VERSION = "22"
 
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [functions]
-  directory = "netlify/functions"
   node_bundler = "esbuild"
 
 [[headers]]
@@ -21,21 +19,3 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-# API → Netlify Function
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
-
-# Client-side routing: unknown paths fall through to the SPA shell.
-# Existing files (sitemap.xml, robots.txt, og images) are served first.
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200

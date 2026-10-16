@@ -1,0 +1,331 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================================================================
+// 1. FOYDALANUVCHI VA PROFIL (Autentifikatsiya, Onboarding va Sozlamalar)
+// ==============================================================================
+
+model User {
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  phone             String?
+  passwordHash      String?
+  image             String?
+  role              String   @default("STUDENT") // "STUDENT" | "ADMIN" | "GUARDIAN"
+  guardianShareCode String   @unique @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  profile          Profile?
+  attempts         Attempt[]
+  placementResults PlacementResult[]
+  roadmaps         Roadmap[]
+  dailyPlans       DailyPlan[]
+  xpEvents         XPEvent[]
+  badges           UserBadge[]
+  streak           Streak?
+  chatSessions     ChatSession[]
+
+  @@index([email])
+  @@index([guardianShareCode])
+}
+
+model Profile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender             String   @default("MALE") // "FEMALE" (Qiz - Malikam) | "MALE" (O'g'il - Shag'zodam)
+  age                Int      @default(16)
+  grade              String   @default("10-sinf")
+  region             String   @default("Toshkent sh.")
+  targetUniversity   String?  // Masalan: "MIT, Harvard, Westminster, NU"
+  targetCountry      String?  // Masalan: "AQSh, Buyuk Britaniya, O'zbekiston"
+  targetSatScore     Int?     @default(1450)
+  targetIeltsScore   Float?   @default(7.5)
+  selfAssessedLevel  String   @default("BEGINNER") // "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
+  currentLevel       String   @default("ZERO")     // Placement testdan keyingi haqiqiy daraja
+  strongSubjectsJson String   @default("[]")       // JSON array of subject slugs
+  weakSubjectsJson   String   @default("[]")       // JSON array of subject slugs
+  learningStyle      String   @default("VISUAL_PRACTICE") // "VISUAL_PRACTICE" | "SOCRATIC_CHAT" | "DEEP_THEORY" | "POMODORO_SPRINT"
+  preferredStudyTime String   @default("EVENING")  // "MORNING" | "AFTERNOON" | "EVENING" | "NIGHT"
+  dailyGoalMinutes   Int      @default(60)         // Standart <= 120 daq yoki qo'lda kiritilgan > 120 daq
+  onboardingDone     Boolean  @default(false)
+  placementDone      Boolean  @default(false)
+  reduceMotion       Boolean  @default(false)
+  theme              String   @default("dark")     // "dark" | "light"
+  reminderEnabled    Boolean  @default(true)
+  reminderTime       String   @default("19:00")
+  xpTotal            Int      @default(0)
+  levelNumber        Int      @default(1)
+  updatedAt          DateTime @updatedAt
+}
+
+// ==============================================================================
+// 2. FANLAR, MAVZULAR, DARSLAR VA SAVOLLAR BANKI
+// ==============================================================================
+
+model Subject {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  nameUz        String
+  descriptionUz String
+  icon          String
+  color         String
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  topics    Topic[]
+  questions Question[]
+
+  @@index([order])
+}
+
+model Topic {
+  id            String   @id @default(cuid())
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  slug          String   @unique
+  titleUz       String
+  descriptionUz String
+  level         String   @default("BEGINNER") // "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
+  estHours      Int      @default(4)
+  order         Int      @default(0)
+
+  lessons      Lesson[]
+  questions    Question[]
+  roadmapItems RoadmapItem[]
+  chatSessions ChatSession[]
+
+  @@index([subjectId, order])
+}
+
+model Lesson {
+  id             String   @id @default(cuid())
+  topicId        String
+  topic          Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  slug           String   @unique
+  titleUz        String
+  summaryUz      String
+  theoryMarkdown String
+  examplesJson   String   @default("[]") // JSON array of { title, problem, stepByStepSolution, takeaway }
+  estMinutes     Int      @default(30)
+  xpReward       Int      @default(50)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  questions    Question[]
+  attempts     Attempt[]
+  roadmapItems RoadmapItem[]
+  chatSessions ChatSession[]
+
+  @@index([topicId, order])
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topicId       String
+  topic         Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  lessonId      String?
+  lesson        Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  type          String   @default("MCQ") // "MCQ" | "NUMERIC" | "WRITING"
+  difficulty    Int      @default(1)     // 1: Noldan, 2: Boshlang'ich, 3: O'rta, 4: Yuqori
+  promptUz      String
+  passageUz     String?
+  optionsJson   String   @default("[]")  // JSON array of { id: "A"|"B"|"C"|"D", text: string }
+  correctAnswer String
+  explanationUz String
+  hintsJson     String   @default("[]")  // JSON array of Socratic hints
+  isPlacement   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  attempts Attempt[]
+
+  @@index([subjectId, difficulty])
+  @@index([topicId])
+  @@index([isPlacement, difficulty])
+}
+
+model Attempt {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  lessonId     String?
+  lesson       Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  givenAnswer  String
+  isCorrect    Boolean
+  timeSpentSec Int      @default(0)
+  aiFeedback   String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([questionId])
+}
+
+// ==============================================================================
+// 3. SARALASH TESTI (PLACEMENT) VA 12 OYLIK YO'L XARITASI (ROADMAP)
+// ==============================================================================
+
+model PlacementResult {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  overallLevel          String   // "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
+  scorePercent          Int      @default(0)
+  estimatedSat          Int      @default(950)
+  estimatedIelts        Float    @default(5.0)
+  subjectScoresJson     String   @default("{}") // JSON: { "sat-math": { pct, level }, ... }
+  strengthsJson         String   @default("[]")
+  weaknessesJson        String   @default("[]")
+  writingSpeakingAdvice String   @default("")
+  createdAt             DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Roadmap {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyMinutes  Int      @default(60)
+  startLevel    String   @default("ZERO")
+  targetSummary String
+  totalMonths   Int      @default(12)
+  totalWeeks    Int      @default(48)
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items RoadmapItem[]
+
+  @@index([userId, status])
+}
+
+model RoadmapItem {
+  id              String    @id @default(cuid())
+  roadmapId       String
+  roadmap         Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  monthNumber     Int       // 1..12
+  weekNumber      Int       // 1..48
+  dayOfWeek       Int       // 1..6 (Dushanba..Shanba)
+  topicId         String?
+  topic           Topic?    @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  lessonId        String?
+  lesson          Lesson?   @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  titleUz         String
+  descriptionUz   String
+  taskType        String    @default("LESSON") // "LESSON" | "PRACTICE" | "REVIEW" | "MOCK_TEST" | "WRITING"
+  durationMinutes Int       @default(60)
+  xpReward        Int       @default(40)
+  isCompleted     Boolean   @default(false)
+  completedAt     DateTime?
+
+  @@index([roadmapId, monthNumber, weekNumber])
+}
+
+model DailyPlan {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateKey          String   // "YYYY-MM-DD"
+  selectedMinutes  Int      @default(60) // Standart <=120 yoki qo'lda kiritilgan >120
+  completedMinutes Int      @default(0)
+  tasksJson        String   @default("[]")
+  isCompleted      Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, dateKey])
+  @@index([userId, dateKey])
+}
+
+// ==============================================================================
+// 4. GAMIFIKATSIYA (XP, NISHONLAR, STREAK) VA AI MURABBIY SUHBATLARI
+// ==============================================================================
+
+model XPEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String   // "LESSON_COMPLETE" | "CORRECT_ANSWER" | "STREAK_BONUS" | "PLACEMENT_DONE" | "WRITING_SUBMIT"
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Badge {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  titleUz        String
+  descriptionUz  String
+  icon           String
+  xpBonus        Int      @default(100)
+  conditionType  String   // "FIRST_STEP" | "STREAK_7" | "XP_500" | "SAT_MASTER" | "IELTS_WRITER"
+  conditionValue Int      @default(1)
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model Streak {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveDate String?  // "YYYY-MM-DD"
+  freezeCount    Int      @default(1)
+  HistoryJson    String   @default("[]") // Oxirgi faol kunlar ro'yxati
+  updatedAt      DateTime @updatedAt
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId   String?
+  topic     Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  lessonId  String?
+  lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  mode      String   @default("SOCRATIC_TUTOR") // "SOCRATIC_TUTOR" | "WRITING_REVIEW" | "MOTIVATION"
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model ChatMessage {
+  id           String      @id @default(cuid())
+  sessionId    String
+  session      ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role         String      // "USER" | "ASSISTANT" | "SYSTEM"
+  content      String
+  metadataJson String?     // Socratic step, writing score breakdown, mood hint
+  createdAt    DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+}

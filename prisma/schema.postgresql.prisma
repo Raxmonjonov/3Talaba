@@ -1,0 +1,320 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================================================================
+// 1. FOYDALANUVCHI VA PROFIL (Autentifikatsiya, Onboarding va Sozlamalar)
+// ==============================================================================
+
+model User {
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  phone             String?
+  passwordHash      String?
+  image             String?
+  role              String   @default("STUDENT")
+  guardianShareCode String   @unique @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  profile          Profile?
+  attempts         Attempt[]
+  placementResults PlacementResult[]
+  roadmaps         Roadmap[]
+  dailyPlans       DailyPlan[]
+  xpEvents         XPEvent[]
+  badges           UserBadge[]
+  streak           Streak?
+  chatSessions     ChatSession[]
+
+  @@index([email])
+  @@index([guardianShareCode])
+}
+
+model Profile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender             String   @default("MALE")
+  age                Int      @default(16)
+  grade              String   @default("10-sinf")
+  region             String   @default("Toshkent sh.")
+  targetUniversity   String?
+  targetCountry      String?
+  targetSatScore     Int?     @default(1450)
+  targetIeltsScore   Float?   @default(7.5)
+  selfAssessedLevel  String   @default("BEGINNER")
+  currentLevel       String   @default("ZERO")
+  strongSubjectsJson String   @default("[]")
+  weakSubjectsJson   String   @default("[]")
+  learningStyle      String   @default("VISUAL_PRACTICE")
+  preferredStudyTime String   @default("EVENING")
+  dailyGoalMinutes   Int      @default(60)
+  onboardingDone     Boolean  @default(false)
+  placementDone      Boolean  @default(false)
+  reduceMotion       Boolean  @default(false)
+  theme              String   @default("dark")
+  reminderEnabled    Boolean  @default(true)
+  reminderTime       String   @default("19:00")
+  xpTotal            Int      @default(0)
+  levelNumber        Int      @default(1)
+  updatedAt          DateTime @updatedAt
+}
+
+model Subject {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  nameUz        String
+  descriptionUz String
+  icon          String
+  color         String
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  topics    Topic[]
+  questions Question[]
+
+  @@index([order])
+}
+
+model Topic {
+  id            String   @id @default(cuid())
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  slug          String   @unique
+  titleUz       String
+  descriptionUz String
+  level         String   @default("BEGINNER")
+  estHours      Int      @default(4)
+  order         Int      @default(0)
+
+  lessons      Lesson[]
+  questions    Question[]
+  roadmapItems RoadmapItem[]
+  chatSessions ChatSession[]
+
+  @@index([subjectId, order])
+}
+
+model Lesson {
+  id             String   @id @default(cuid())
+  topicId        String
+  topic          Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  slug           String   @unique
+  titleUz        String
+  summaryUz      String
+  theoryMarkdown String
+  examplesJson   String   @default("[]")
+  estMinutes     Int      @default(30)
+  xpReward       Int      @default(50)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  questions    Question[]
+  attempts     Attempt[]
+  roadmapItems RoadmapItem[]
+  chatSessions ChatSession[]
+
+  @@index([topicId, order])
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topicId       String
+  topic         Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  lessonId      String?
+  lesson        Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  type          String   @default("MCQ")
+  difficulty    Int      @default(1)
+  promptUz      String
+  passageUz     String?
+  optionsJson   String   @default("[]")
+  correctAnswer String
+  explanationUz String
+  hintsJson     String   @default("[]")
+  isPlacement   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  attempts Attempt[]
+
+  @@index([subjectId, difficulty])
+  @@index([topicId])
+  @@index([isPlacement, difficulty])
+}
+
+model Attempt {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  lessonId     String?
+  lesson       Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  givenAnswer  String
+  isCorrect    Boolean
+  timeSpentSec Int      @default(0)
+  aiFeedback   String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([questionId])
+}
+
+model PlacementResult {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  overallLevel          String
+  scorePercent          Int      @default(0)
+  estimatedSat          Int      @default(950)
+  estimatedIelts        Float    @default(5.0)
+  subjectScoresJson     String   @default("{}")
+  strengthsJson         String   @default("[]")
+  weaknessesJson        String   @default("[]")
+  writingSpeakingAdvice String   @default("")
+  createdAt             DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Roadmap {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyMinutes  Int      @default(60)
+  startLevel    String   @default("ZERO")
+  targetSummary String
+  totalMonths   Int      @default(12)
+  totalWeeks    Int      @default(48)
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items RoadmapItem[]
+
+  @@index([userId, status])
+}
+
+model RoadmapItem {
+  id              String    @id @default(cuid())
+  roadmapId       String
+  roadmap         Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  monthNumber     Int
+  weekNumber      Int
+  dayOfWeek       Int
+  topicId         String?
+  topic           Topic?    @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  lessonId        String?
+  lesson          Lesson?   @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  titleUz         String
+  descriptionUz   String
+  taskType        String    @default("LESSON")
+  durationMinutes Int       @default(60)
+  xpReward        Int       @default(40)
+  isCompleted     Boolean   @default(false)
+  completedAt     DateTime?
+
+  @@index([roadmapId, monthNumber, weekNumber])
+}
+
+model DailyPlan {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateKey          String
+  selectedMinutes  Int      @default(60)
+  completedMinutes Int      @default(0)
+  tasksJson        String   @default("[]")
+  isCompleted      Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, dateKey])
+  @@index([userId, dateKey])
+}
+
+model XPEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Badge {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  titleUz        String
+  descriptionUz  String
+  icon           String
+  xpBonus        Int      @default(100)
+  conditionType  String
+  conditionValue Int      @default(1)
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model Streak {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveDate String?
+  freezeCount    Int      @default(1)
+  HistoryJson    String   @default("[]")
+  updatedAt      DateTime @updatedAt
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId   String?
+  topic     Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  lessonId  String?
+  lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  mode      String   @default("SOCRATIC_TUTOR")
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model ChatMessage {
+  id           String      @id @default(cuid())
+  sessionId    String
+  session      ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role         String
+  content      String
+  metadataJson String?
+  createdAt    DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+}

@@ -1,31 +1,48 @@
 {
   "name": "3talab",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "workspaces": [
-    "apps/*"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
-    "dev:api": "npm run dev --workspace=@3talab/api",
-    "dev:web": "npm run dev --workspace=@3talab/web",
-    "dev:netlify": "npm run prisma:generate:pg --workspace=@3talab/api && npx netlify dev --filter @3talab/web",
-    "build": "npm run build --workspace=@3talab/api && npm run build --workspace=@3talab/web",
-    "typecheck": "npm run typecheck --workspace=@3talab/api && npm run typecheck --workspace=@3talab/web",
-    "lint": "npm run lint --workspace=@3talab/web && npm run lint --workspace=@3talab/api",
-    "db:reset": "npm run db:reset --workspace=@3talab/api",
-    "seed": "npm run seed --workspace=@3talab/api",
-    "test": "npm run test --workspace=@3talab/api",
-    "test:e2e": "npm run test:e2e --workspace=@3talab/web"
+    "dev": "next dev -p 3000",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && next build",
+    "start": "next start -p 3000",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate --schema=prisma/schema.prisma",
+    "prisma:generate:pg": "prisma generate --schema=prisma/schema.postgresql.prisma",
+    "prisma:push": "prisma db push --schema=prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate deploy --schema=prisma/schema.postgresql.prisma",
+    "prisma:studio": "prisma studio",
+    "seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma db push --force-reset && npm run seed",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "animejs": "^4.5.0",
+    "bcryptjs": "^2.4.3",
+    "lucide-react": "^0.475.0",
+    "next": "^15.2.0",
+    "next-auth": "^4.24.11",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
-  },
-  "allowScripts": {
-    "prisma@5.22.0": true,
-    "@prisma/client@5.22.0": true,
-    "@prisma/engines@5.22.0": true,
-    "esbuild@0.28.2": true
+    "@netlify/plugin-nextjs": "^5.16.2",
+    "@playwright/test": "^1.50.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
   }
 }
