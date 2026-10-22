@@ -1,7 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { Volume2, VolumeX, Mic, MicOff, Sparkles, MessageCircle, Send } from "lucide-react";
+import {
+  Volume2,
+  VolumeX,
+  Mic,
+  MicOff,
+  Sparkles,
+  MessageCircle,
+  Send,
+  Settings2,
+  User,
+  Sliders,
+} from "lucide-react";
 import { useBrowserSpeech } from "@/lib/voice/useBrowserSpeech";
 
 interface VoiceTutorProps {
@@ -19,12 +30,24 @@ export function VoiceTutor({
   honorific,
   lessonSlug,
 }: VoiceTutorProps) {
-  const { speaking, listening, speak, stop, startListening, stopListening } =
-    useBrowserSpeech("uz-UZ");
+  const {
+    speaking,
+    listening,
+    speak,
+    stop,
+    startListening,
+    stopListening,
+    settings,
+    setSettings,
+    availableVoices,
+    selectedVoiceName,
+    setSelectedVoiceName,
+  } = useBrowserSpeech("uz-UZ");
 
   const [tutorReply, setTutorReply] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
   const [inputText, setInputText] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleStartVoiceLesson = () => {
     if (speaking) {
@@ -32,7 +55,7 @@ export function VoiceTutor({
       return;
     }
 
-    const script = `Assalomu alaykum, ${honorific}! Bugun siz bilan «${lessonTitle}» mavzusini o'rganamiz. ${summaryUz}. Keling, asosiy qoidalarni birma-bir ko'rib chiqamiz: ${theoryText}. Savollaringiz bo'lsa, mikrofonni yoqib so'rashingiz mumkin!`;
+    const script = `Assalomu alaykum, ${honorific}! Bugun siz bilan «${lessonTitle}» mavzusini o'rganamiz. ${summaryUz}. Keling, asosiy qoidalarni birma-bir ko'rib chiqamiz: ${theoryText}. Savollaringiz bo'lsa, mikrofon orqali bemalol so'rang!`;
     speak(script);
   };
 
@@ -84,6 +107,15 @@ export function VoiceTutor({
     }
   };
 
+  const handleTestVoice = (gender: "female" | "male") => {
+    setSettings((prev) => ({ ...prev, voiceGender: gender }));
+    const sample =
+      gender === "female"
+        ? `Salom! Men Madinaman. Darsingizni birgalikda o'rganishga tayyorman.`
+        : `Salom! Men Sardorman. Darsingizni birgalikda o'rganishga tayyorman.`;
+    speak(sample);
+  };
+
   return (
     <div className="rounded-2xl border-2 border-neon/40 bg-neon-soft/10 p-5 shadow-lg">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -102,19 +134,30 @@ export function VoiceTutor({
               <span className="rounded-full bg-neon/20 px-2.5 py-0.5 font-mono text-[11px] font-bold text-neon">
                 OVOZLI AI USTOZ
               </span>
-              <span className="text-xs text-fg-muted">Jonli o&apos;qitish rejimi</span>
+              <span className="text-xs text-fg-muted">Tabiiy insoniy ovoz rejimi</span>
             </div>
             <h3 className="mt-0.5 text-sm font-bold text-fg sm:text-base">
               {speaking
                 ? "Ustoz darsni tushuntiryapti…"
                 : listening
                   ? "Sizni tinglayapman… gapiring"
-                  : `Ustoz bilan dars o'tish (${honorific})`}
+                  : `Ustoz bilan jonli dars (${honorific})`}
             </h3>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Ovoz sozlamalari tugmasi */}
+          <button
+            type="button"
+            onClick={() => setShowSettings(!showSettings)}
+            title="Ovozni sozlash"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-semibold text-fg hover:border-neon"
+          >
+            <Settings2 className="h-3.5 w-3.5 text-neon" />
+            <span className="hidden sm:inline">Ovoz sozlamasi</span>
+          </button>
+
           <button
             type="button"
             onClick={handleStartVoiceLesson}
@@ -160,6 +203,95 @@ export function VoiceTutor({
           </button>
         </div>
       </div>
+
+      {/* Ovoz sozlamalari paneli */}
+      {showSettings && (
+        <div className="mt-4 rounded-xl border border-neon/30 bg-surface/95 p-4 text-xs transition-all animate-fadeIn">
+          <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-3">
+            <div className="flex items-center gap-2 font-bold text-fg">
+              <Sliders className="h-4 w-4 text-neon" />
+              <span>Ovoz va O'qish Tebranishini Moslash</span>
+            </div>
+            <span className="text-[11px] text-fg-muted">Odamdek tabiiy talaffuz uchun</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {/* Ovoz turi (Erkak / Ayol) */}
+            <div>
+              <label className="block text-fg-muted font-medium mb-1">Ustoz ovozi:</label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleTestVoice("female")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
+                    settings.voiceGender === "female"
+                      ? "border-neon bg-neon/20 text-neon"
+                      : "border-border bg-surface text-fg hover:border-fg-muted"
+                  }`}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  Madina (Ayol)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTestVoice("male")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
+                    settings.voiceGender === "male"
+                      ? "border-neon bg-neon/20 text-neon"
+                      : "border-border bg-surface text-fg hover:border-fg-muted"
+                  }`}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  Sardor (Erkak)
+                </button>
+              </div>
+            </div>
+
+            {/* Nutq tezligi */}
+            <div>
+              <div className="flex justify-between text-fg-muted mb-1">
+                <span>Nutq tezligi:</span>
+                <span className="font-mono text-neon font-bold">{settings.rate}x</span>
+              </div>
+              <input
+                type="range"
+                min="0.75"
+                max="1.25"
+                step="0.05"
+                value={settings.rate}
+                onChange={(e) =>
+                  setSettings((prev) => ({ ...prev, rate: parseFloat(e.target.value) }))
+                }
+                className="w-full accent-neon cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-fg-muted mt-0.5">
+                <span>Sekin</span>
+                <span>Odamdek (0.95x)</span>
+                <span>Tez</span>
+              </div>
+            </div>
+
+            {/* Brauzer ovozini qo'lda tanlash */}
+            <div>
+              <label className="block text-fg-muted font-medium mb-1">Brauzer ovozi:</label>
+              <select
+                value={selectedVoiceName}
+                onChange={(e) => setSelectedVoiceName(e.target.value)}
+                className="w-full rounded-lg border border-border bg-surface px-2.5 py-2 text-[11px] text-fg focus:border-neon focus:outline-none"
+              >
+                {availableVoices.length === 0 && (
+                  <option value="">Standart tizim ovozi</option>
+                )}
+                {availableVoices.map((v) => (
+                  <option key={v.name} value={v.name}>
+                    {v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {tutorReply && (
         <div className="mt-4 rounded-xl border border-neon/30 bg-surface/90 p-4 text-xs leading-relaxed text-fg sm:text-sm">
