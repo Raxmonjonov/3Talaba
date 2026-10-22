@@ -50,7 +50,7 @@ export async function GET(request: Request) {
 
     const gender: "FEMALE" | "MALE" =
       user.profile?.gender === "FEMALE" ? "FEMALE" : "MALE";
-    const honorific = gender === "FEMALE" ? "Malikam" : "Shag'zodam";
+    const honorific = user?.name?.split(" ")[0] || "Aziz o'quvchi";
     const xpTotal = user.profile?.xpTotal ?? 50;
     const dailyMinutes =
       user.dailyPlans?.[0]?.selectedMinutes ??

@@ -232,7 +232,7 @@ export default function OnboardingPage() {
     );
   }
 
-  const honorific = userData?.honorific ?? session?.user?.honorific ?? "Shag'zodam";
+  const honorific = userData?.name?.split(" ")[0] ?? session?.user?.name?.split(" ")[0] ?? "Aziz o'quvchi";
   const displayName = userData?.name ?? session?.user?.name ?? "O'quvchi";
 
   return (

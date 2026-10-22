@@ -28,7 +28,7 @@ export async function GET() {
     });
 
     const gender = user?.profile?.gender === "FEMALE" ? "FEMALE" : "MALE";
-    const honorific = gender === "FEMALE" ? "Malikam" : "Shag'zodam";
+    const honorific = user?.name?.split(" ")[0] || "Aziz o'quvchi";
 
     return NextResponse.json({
       name: user?.name ?? "O'quvchi",
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     });
 
     const gender = user?.profile?.gender === "FEMALE" ? "FEMALE" : "MALE";
-    const honorific = gender === "FEMALE" ? "Malikam" : "Shag'zodam";
+    const honorific = user?.name?.split(" ")[0] || "Aziz o'quvchi";
 
     if (user?.profile) {
       await prisma.profile.update({

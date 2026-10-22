@@ -41,7 +41,7 @@ model Profile {
   id                 String   @id @default(cuid())
   userId             String   @unique
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gender             String   @default("MALE") // "FEMALE" (Qiz - Malikam) | "MALE" (O'g'il - Shag'zodam)
+  gender             String   @default("MALE") // "FEMALE" (Qiz) | "MALE" (O'g'il)
   age                Int      @default(16)
   grade              String   @default("10-sinf")
   region             String   @default("Toshkent sh.")

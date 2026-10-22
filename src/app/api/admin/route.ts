@@ -102,7 +102,7 @@ export async function GET() {
         email: u.email,
         role: u.role,
         gender: u.profile?.gender ?? "FEMALE",
-        honorific: u.profile?.gender === "FEMALE" ? "Malikam" : "Shag'zodam",
+        honorific: u.name?.split(" ")[0] || "Aziz o'quvchi",
         region: u.profile?.region ?? "Toshkent sh.",
         grade: u.profile?.grade ?? "10-sinf",
         xpTotal: u.profile?.xpTotal ?? 50,

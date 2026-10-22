@@ -9,8 +9,7 @@
  *
  * Barcha 6-bo'lim AI Murabbiy qoidalariga qat'iy amal qiladi:
  * 1) Har doim o'zbek tilida, hurmat va iliqlik bilan gapiradi.
- * 2) Qiz o'quvchiga «Malikam», o'g'il o'quvchiga «Shag'zodam» va shunga o'xshash iliq iboralarni
- *    aralashtirib, takrorlanmasdan ishlatadi.
+ * 2) O'quvchiga doimo hurmat va samimiyat bilan («Aziz o'quvchi» yoki ismi bilan) murojaat qiladi.
  * 3) Socratic usul: javobni darrov bermaydi, avval o'ylashga yo'naltiradi, so'ng qadamma-qadam tushuntiradi.
  * 4) Xato qilganda hech qachon kamsitmaydi — xatoni o'sish imkoniyati sifatida ko'rsatadi.
  * 5) O'quvchi darajasiga (ZERO/BEGINNER/INTERMEDIATE/ADVANCED) moslab soddalashtiradi yoki chuqurlashtiradi.
@@ -68,29 +67,26 @@ export interface AICoachResponse {
 }
 
 // ── 1. Murojaat variatsiyalari (aralashtirib, takrorlanmasdan ishlatish) ──────
-const FEMALE_WARM_ADDRESSES = [
-  "Malikam",
-  "Bilimdon Malikam",
-  "Zukko Malikam",
-  "Bo'lajak olima Malikam",
-  "Intiluvchan Malikam",
+const GENERAL_WARM_ADDRESSES = [
+  "Aziz o'quvchi",
+  "Bilimdon do'stim",
+  "Zukko o'quvchi",
+  "Bo'lajak talaba",
+  "Intiluvchan do'stim",
 ] as const;
 
-const MALE_WARM_ADDRESSES = [
-  "Shag'zodam",
-  "Bilimdon Shag'zodam",
-  "Zukko Shag'zodam",
-  "Mard Shag'zodam",
-  "Intiluvchan Shag'zodam",
-] as const;
+
 
 export function getVariedHonorific(
   gender: "FEMALE" | "MALE",
-  turnIndex = 0
+  turnIndex = 0,
+  studentName?: string
 ): string {
-  const pool = gender === "FEMALE" ? FEMALE_WARM_ADDRESSES : MALE_WARM_ADDRESSES;
-  const safeIdx = Math.abs(turnIndex) % pool.length;
-  return pool[safeIdx] ?? (gender === "FEMALE" ? "Malikam" : "Shag'zodam");
+  if (studentName && studentName.trim()) {
+    return studentName.trim().split(" ")[0];
+  }
+  const safeIdx = Math.abs(turnIndex) % GENERAL_WARM_ADDRESSES.length;
+  return GENERAL_WARM_ADDRESSES[safeIdx] ?? "Aziz o'quvchi";
 }
 
 // ── 2. Voyaga yetmaganlar shaxsiy ma'lumotini (PII) tozalash ─────────────────
@@ -499,7 +495,7 @@ function buildSystemPrompt(req: AICoachRequest, honorific: string): string {
     `Sen "3Talab" o'quv platformasining AI murabbiyisan.`,
     `MUHIM QOIDALAR:`,
     `1. Har doim faqat o'zbek tilida (lotin alifbosida), hurmat va iliqlik bilan gapir.`,
-    `2. O'quvchiga "${honorific}" deb murojaat qil (jinsi: ${req.gender === "FEMALE" ? "Qiz bola -> Malikam" : "O'g'il bola -> Shag'zodam"}).`,
+    `2. O'quvchiga "${honorific}" deb hurmat bilan murojaat qil.`,
     `3. SOCRATIC USUL: Javobni darrov berib qo'yma! Avval o'quvchini o'ylashga yo'naltiradigan savol ber, keyin bosqichma-bosqich tushuntir.`,
     `4. Xato qilganda hech qachon kamsitma, xatoni o'rganish imkoniyati sifatida ko'rsat.`,
     `5. O'quvchi darajasi: ${req.studentLevel ?? "BEGINNER"}. Maqsadi: ${req.targetUniversity ?? "Top xorijiy universitet"}.`,

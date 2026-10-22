@@ -90,7 +90,7 @@ export default function RegisterPage() {
 
       setSuccessMsg(
         data.message ??
-          `Tabriklaymiz, ${gender === "FEMALE" ? "Malikam" : "Shag'zodam"}! Sinfxonaga kirilmoqda...`,
+          `Tabriklaymiz, ${name || "Aziz o'quvchi"}! Sinfxonaga kirilmoqda...`,
       );
 
       // Avtomatik tizimga kirish
@@ -162,10 +162,10 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-          {/* Jins tanlovi ("Malikam" / "Shag'zodam") */}
+          {/* Jins tanlovi */}
           <div>
             <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-fg-muted">
-              AI Murabbiy sizga qanday murojaat qilsin? (Jinsingiz)
+              Jinsingiz
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -177,7 +177,7 @@ export default function RegisterPage() {
                     : "border-border bg-elevated/60 text-fg-muted hover:text-fg"
                 }`}
               >
-                <span>👑 Qiz bola («Malikam»)</span>
+                <span>👩 Qiz bola</span>
               </button>
               <button
                 type="button"
@@ -188,7 +188,7 @@ export default function RegisterPage() {
                     : "border-border bg-elevated/60 text-fg-muted hover:text-fg"
                 }`}
               >
-                <span>🛡️ O&apos;g&apos;il bola («Shag&apos;zodam»)</span>
+                <span>👨 O&apos;g&apos;il bola</span>
               </button>
             </div>
           </div>
@@ -363,7 +363,7 @@ export default function RegisterPage() {
             <span>
               {loading
                 ? "Ro'yxatdan o'tkazilmoqda..."
-                : `Ro'yxatdan o'tish va Boshlash (${gender === "FEMALE" ? "Malikam" : "Shag'zodam"})`}
+                : "Ro'yxatdan o'tish va Boshlash"}
             </span>
             <ArrowRight className="h-4 w-4" />
           </button>

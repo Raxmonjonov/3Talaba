@@ -103,7 +103,7 @@ export function LandingExperience() {
   const [customMode, setCustomMode] = useState<boolean>(false);
   const [customMinutesInput, setCustomMinutesInput] = useState<string>("180");
 
-  // AI Murabbiy demo: Qiz ("Malikam") yoki O'g'il ("Shag'zodam")
+  // AI Murabbiy demo: Interaktiv savol-javob
   const [demoGender, setDemoGender] = useState<"FEMALE" | "MALE">("FEMALE");
 
   const effectiveMinutes = customMode
@@ -484,7 +484,7 @@ export function LandingExperience() {
                     <div className="flex items-center gap-2.5">
                       <Sparkles className="h-4 w-4 text-gold" />
                       <span className="font-medium text-fg">
-                        AI Murabbiy: «Malikam / Shag'zodam» Socratic ko'mak
+                        AI Murabbiy: Socratic individual ko'mak
                       </span>
                     </div>
                     <span className="font-mono font-bold text-gold">Faol</span>
@@ -805,7 +805,7 @@ export function LandingExperience() {
       </section>
 
       {/* ====================================================================
-          AI MURABBIY ("Malikam" / "Shag'zodam" Socratic Muloqot) (#ai-murabbiy)
+          AI MURABBIY (Socratic Muloqot) (#ai-murabbiy)
           ==================================================================== */}
       <section
         id="ai-murabbiy"
@@ -822,10 +822,7 @@ export function LandingExperience() {
                 Hurmatli, iliq va o'ylashga o'rgatuvchi AI Murabbiy
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-fg-muted sm:text-base">
-                3Talab AI murabbiyi qiz o'quvchilarga{" "}
-                <strong className="text-gold">«Malikam»</strong>, o'g'il o'quvchilarga{" "}
-                <strong className="text-neon">«Shag'zodam»</strong> deb hurmat bilan murojaat
-                qiladi. U tayyor javobni berib qo'ymasdan, sizni kashfiyot qilishga yetaklaydi.
+                3Talab AI murabbiyi har bir o'quvchiga samimiy va hurmat bilan yondashadi. U tayyor javobni berib qo'ymasdan, sizni mustaqil fikrlashga va kashfiyot qilishga yetaklaydi.
               </p>
 
               {/* Murojaat uslubini sinab ko'rish tugmalari */}
@@ -839,7 +836,7 @@ export function LandingExperience() {
                       : "border-border bg-surface text-fg-muted"
                   }`}
                 >
-                  👑 Qiz o'quvchi («Malikam»)
+                  👩 Qiz o'quvchi rejimi
                 </button>
                 <button
                   type="button"
@@ -850,7 +847,7 @@ export function LandingExperience() {
                       : "border-border bg-surface text-fg-muted"
                   }`}
                 >
-                  🛡️ O'g'il o'quvchi («Shag'zodam»)
+                  👨 O'g'il o'quvchi rejimi
                 </button>
               </div>
 
@@ -886,7 +883,7 @@ export function LandingExperience() {
                     </div>
                   </div>
                   <span className="rounded-lg bg-elevated px-2.5 py-1 font-mono text-xs text-fg-muted">
-                    Murojaat: {demoGender === "FEMALE" ? "Malikam" : "Shag'zodam"}
+                    Rejim: {demoGender === "FEMALE" ? "Qiz bola" : "O'g'il bola"}
                   </span>
                 </div>
 
@@ -898,9 +895,7 @@ export function LandingExperience() {
 
                   <div className="max-w-xl rounded-2xl rounded-tl-none border border-neon/40 bg-neon-soft/50 p-4 text-fg">
                     <p className="font-semibold text-neon">
-                      {demoGender === "FEMALE"
-                        ? "Barakalla, zukko Malikam! Savolni o'zingiz tahlil qilganingizning o'zi katta yutuq."
-                        : "Ofarin, bilimdon Shag'zodam! Xatoni sezganingizning o'zi yechimning yarmi demakdir."}
+                      "Barakalla! Savolni mustaqil tahlil qilib, xatoni o'zingiz payqaganingizning o'zi katta yutuq."
                     </p>
                     <p className="mt-2 leading-relaxed text-fg">
                       Keling, tarozi misolida o'ylab ko'ramiz: chap pallada{" "}

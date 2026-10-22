@@ -154,7 +154,7 @@ export default function PlacementResultPage() {
   }
 
   const result = data?.latestResult;
-  const honorific = data?.honorific ?? "Shag'zodam";
+  const honorific = data?.honorific ?? "Aziz o'quvchi";
 
   if (!result) {
     return (

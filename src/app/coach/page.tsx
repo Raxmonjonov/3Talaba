@@ -205,7 +205,7 @@ export default function AICoachPage() {
     setMessages([]);
   };
 
-  const honorific = data?.student.honorific ?? "Malikam";
+  const honorific = data?.student?.name?.split(" ")[0] ?? "Aziz o'quvchi";
   const wordCount = input
     .trim()
     .split(/\s+/)

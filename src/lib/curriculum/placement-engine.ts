@@ -457,7 +457,7 @@ export function evaluatePlacementTest(params: {
   writingExperience?: "NONE" | "PARAGRAPHS" | "FULL_ESSAYS";
   honorific?: string;
 }): EvaluatedPlacementSummary {
-  const honorific = params.honorific ?? "Shag'zodam";
+  const honorific = params.honorific ?? "Aziz o'quvchi";
 
   const subjectStats: Record<
     string,

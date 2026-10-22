@@ -2,7 +2,7 @@
  * 3Talab — Gamifikatsiya va Progress Hisoblash Dvigateli (Bosqich 6)
  *
  * Quyidagilarni hisoblaydi:
- * 1) XP asosida Daraja (Level), keyingi darajagacha qolgan XP va unvon (Malikam / Shag'zodam).
+ * 1) XP asosida Daraja (Level), keyingi darajagacha qolgan XP va daraja unvoni.
  * 2) Maqsadli Universitet, SAT (1600) va IELTS (9.0) ballgacha qancha qolgani (Goal Distance).
  * 3) Haftalik (7 kun) va Oylik (6 oy) o'sish grafiklari ma'lumotlari.
  * 4) Fanlar va mavzular bo'yicha o'zlashtirish ko'rsatkichlari (Subject Mastery).
@@ -60,23 +60,16 @@ export interface LeaderboardEntry {
   isCurrentUser: boolean;
 }
 
-const LEVEL_TITLES_FEMALE = [
-  "Ilk Qadam Malikasi",
-  "Izlanuvchan Malikam",
-  "Zukko Bilimdon Malikam",
-  "Akademik Yulduz Malikam",
-  "Olimpiada Nomzodi Malikam",
-  "Xalqaro Grant Sovrindori Malikam",
+const LEVEL_TITLES = [
+  "Ilk Qadam",
+  "Izlanuvchan Bilimdon",
+  "Zukko Yetakchi",
+  "Akademik Yulduz",
+  "Olimpiada Nomzodi",
+  "Xalqaro Grant Sovrindori",
 ];
 
-const LEVEL_TITLES_MALE = [
-  "Ilk Qadam Shag'zodasi",
-  "Izlanuvchan Shag'zodam",
-  "Zukko Bilimdon Shag'zodam",
-  "Akademik Yetakchi Shag'zodam",
-  "Olimpiada Nomzodi Shag'zodam",
-  "Xalqaro Grant Sovrindori Shag'zodam",
-];
+
 
 export function calculateLevelInfo(
   xpTotal: number,
@@ -91,7 +84,7 @@ export function calculateLevelInfo(
   const progressPct = Math.min(100, Math.round((xpIntoLevel / step) * 100));
   const xpToNextLevel = Math.max(0, nextLevelXp - safeXp);
 
-  const titles = gender === "FEMALE" ? LEVEL_TITLES_FEMALE : LEVEL_TITLES_MALE;
+  const titles = LEVEL_TITLES;
   const titleUz = titles[Math.min(level - 1, titles.length - 1)] ?? titles[0]!;
 
   return {
@@ -203,12 +196,12 @@ export function buildLeaderboard(params: {
   xpTotal: number;
   streakDays: number;
 }): LeaderboardEntry[] {
-  const honorific = params.gender === "FEMALE" ? "Malikam" : "Shag'zodam";
+  const honorific = params.userName?.split(" ")[0] || "Aziz o'quvchi";
 
   const peers: Omit<LeaderboardEntry, "rank">[] = [
     {
       name: "Sevinch Abdullayeva",
-      honorific: "Malikam",
+      honorific: "O'quvchi",
       region: "Toshkent sh.",
       targetUniversity: "MIT / Stanford",
       xpTotal: 1420,
@@ -217,7 +210,7 @@ export function buildLeaderboard(params: {
     },
     {
       name: "Javohir Mirzayev",
-      honorific: "Shag'zodam",
+      honorific: "O'quvchi",
       region: "Samarqand",
       targetUniversity: "KAIST / NUS",
       xpTotal: 1180,
@@ -226,7 +219,7 @@ export function buildLeaderboard(params: {
     },
     {
       name: "Mohinur Karimova",
-      honorific: "Malikam",
+      honorific: "O'quvchi",
       region: "Buxoro",
       targetUniversity: "Oxford / UCL",
       xpTotal: 890,
@@ -235,7 +228,7 @@ export function buildLeaderboard(params: {
     },
     {
       name: "Asadbek Yo'ldoshev",
-      honorific: "Shag'zodam",
+      honorific: "O'quvchi",
       region: "Farg'ona",
       targetUniversity: "TU Munich",
       xpTotal: 640,

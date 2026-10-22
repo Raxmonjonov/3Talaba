@@ -75,6 +75,9 @@ export type LoginInput = z.infer<typeof loginSchema>;
 /**
  * O'quvchi jinsiga qarab hurmatli va iliq murojaat so'zini qaytaradi.
  */
-export function getHonorificTitle(gender?: string | null): string {
-  return gender === "FEMALE" ? "Malikam" : "Shag'zodam";
+export function getHonorificTitle(gender?: string | null, name?: string | null): string {
+  if (name && name.trim()) {
+    return name.trim().split(' ')[0];
+  }
+  return "Aziz o'quvchi";
 }

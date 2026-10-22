@@ -37,7 +37,7 @@ export default function PlacementTestPage() {
   const { reduceMotion } = useUIPreferences();
   const questionCardRef = useRef<HTMLDivElement | null>(null);
 
-  const [honorific, setHonorific] = useState<string>("Shag'zodam");
+  const [honorific, setHonorific] = useState<string>("Aziz o'quvchi");
   const [currentDifficulty, setCurrentDifficulty] = useState<1 | 2 | 3 | 4>(2);
   const [questionIndex, setQuestionIndex] = useState<number>(0);
   const [answeredIds, setAnsweredIds] = useState<string[]>([]);
