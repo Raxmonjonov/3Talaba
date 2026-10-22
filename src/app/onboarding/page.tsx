@@ -246,7 +246,7 @@ export default function OnboardingPage() {
               <span>SHAXSIY SINFXONA VA TANISHUV</span>
             </span>
             <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-3xl">
-              Xush kelibsiz, <span className="text-gold">{honorific}</span> ({displayName})!
+              Xush kelibsiz, <span className="text-gold">{displayName}</span>!
             </h1>
             <p className="mt-1 text-xs text-fg-muted sm:text-sm">
               12 oylik shaxsiy yo&apos;l xaritangizni aniq tuzishimiz uchun 4 ta qisqa savolga

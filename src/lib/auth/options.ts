@@ -45,7 +45,7 @@ const providers: NextAuthOptions["providers"] = [
         email: user.email,
         role: user.role,
         gender,
-        honorific: getHonorificTitle(gender),
+        honorific: user.name?.split(" ")[0] || "O'quvchi",
         onboardingDone: Boolean(user.profile?.onboardingDone),
         placementDone: Boolean(user.profile?.placementDone),
       };
@@ -114,7 +114,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role ?? "STUDENT";
         token.gender = user.gender ?? "MALE";
-        token.honorific = user.honorific ?? getHonorificTitle(user.gender);
+        token.honorific = user.name?.split(" ")[0] || "O'quvchi";
         token.onboardingDone = Boolean(user.onboardingDone);
         token.placementDone = Boolean(user.placementDone);
       }
@@ -128,7 +128,7 @@ export const authOptions: NextAuthOptions = {
         }
         if (session.gender === "FEMALE" || session.gender === "MALE") {
           token.gender = session.gender;
-          token.honorific = getHonorificTitle(session.gender);
+          token.honorific = (session.name || token.name || "").split(" ")[0] || "O'quvchi";
         }
       }
 

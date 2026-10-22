@@ -147,9 +147,7 @@ export function Navbar() {
                 className="inline-flex items-center gap-2 rounded-xl border border-neon/40 bg-neon-soft px-3.5 py-2 text-xs font-semibold text-neon transition-all hover:bg-neon hover:text-white"
               >
                 <UserCheck className="h-4 w-4" />
-                <span>
-                  {session.user.honorific}: {session.user.name}
-                </span>
+                <span>{session.user.name}</span>
               </Link>
               <button
                 type="button"
@@ -245,7 +243,7 @@ export function Navbar() {
                     className="btn-neon flex items-center justify-center gap-1.5 py-2.5 text-center text-sm"
                   >
                     <Compass className="h-4 w-4" />
-                    <span>Kabinet ({session.user.honorific})</span>
+                    <span>Kabinet</span>
                   </Link>
                   <button
                     type="button"
