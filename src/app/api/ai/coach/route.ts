@@ -16,7 +16,7 @@ import {
 const coachPostSchema = z.object({
   message: z.string().min(2, "Xabar matni juda qisqa").max(4000),
   mode: z
-    .enum(["SOCRATIC_TUTOR", "ERROR_EXPLAINER", "WRITING_REVIEW", "MOTIVATION"])
+    .enum(["SOCRATIC_TUTOR", "FAST_SOLUTION", "STEP_BY_STEP", "TEST_ANALYZER", "ERROR_EXPLAINER", "WRITING_REVIEW", "MOTIVATION"])
     .default("SOCRATIC_TUTOR"),
   sessionId: z.string().optional(),
   lessonSlug: z.string().optional(),

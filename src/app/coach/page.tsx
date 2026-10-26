@@ -14,6 +14,9 @@ import {
   ShieldCheck,
   Sparkles,
   Trophy,
+  Zap,
+  ListOrdered,
+  Search,
 } from "lucide-react";
 import type { AICoachMetadata, AICoachMode } from "@/lib/ai";
 
@@ -57,15 +60,27 @@ const MODE_TABS: Array<{
 }> = [
   {
     id: "SOCRATIC_TUTOR",
-    label: "Socratic Ustoz",
-    desc: "Javobni darrov bermasdan, o'ylashga yo'naltiradi",
+    label: "Socratic Izlanish",
+    desc: "Tayyor javob bermasdan, to'g'ri fikrlashga yo'naltiradi",
     icon: Brain,
   },
   {
-    id: "ERROR_EXPLAINER",
-    label: "Xatoni Tushuntirish",
-    desc: "Xatoni o'sish imkoniyati sifatida qadamma-qadam tahlil qiladi",
-    icon: HelpCircle,
+    id: "FAST_SOLUTION",
+    label: "Tezkor Yechim (Shortcut)",
+    desc: "SAT va IELTSda vaqtni 3 barobar tejaydigan lifehack usullar",
+    icon: Zap,
+  },
+  {
+    id: "STEP_BY_STEP",
+    label: "Qadamma-qadam Tahlil",
+    desc: "Har bir amal va formulani noldan batafsil tushuntiradi",
+    icon: ListOrdered,
+  },
+  {
+    id: "TEST_ANALYZER",
+    label: "Test & Xatolar Diagnostikasi",
+    desc: "Chalg'ituvchi variantlarni aniqlash va xatolar ildizini topish",
+    icon: Search,
   },
   {
     id: "WRITING_REVIEW",
@@ -84,7 +99,7 @@ const MODE_TABS: Array<{
 const QUICK_PROMPTS: Record<AICoachMode, Array<{ label: string; text: string }>> = {
   SOCRATIC_TUTOR: [
     {
-      label: "📐 SAT Math: 6x + 10 = 34 siri",
+      label: "📐 SAT Math: 6x + 10 = 34 mantiqiy siri",
       text: "Ustoz, 6x + 10 = 34 tenglamadan 3x + 5 ni x ni topmasdan qanday tez hisoblayman?",
     },
     {
@@ -92,14 +107,40 @@ const QUICK_PROMPTS: Record<AICoachMode, Array<{ label: string; text: string }>>
       text: "SAT Reading & Writingda However va Moreover bog'lovchilarini qanday farqlayman?",
     },
   ],
-  ERROR_EXPLAINER: [
+  FAST_SOLUTION: [
     {
-      label: "🔍 True / False / Not Given xatosi",
-      text: "IELTS Readingda FALSE bilan NOT GIVEN ni adashtirib xato qildim, qanday ajratsam bo'ladi?",
+      label: "⚡ SAT 5-soniya ifoda topish usuli",
+      text: "Agar 4a - 6 = 18 bo'lsa, 2a - 3 ning qiymatini 5 soniyada qanday topish mumkin?",
     },
     {
-      label: "📉 Foiz masalasida tuzoqqa tushdim",
-      text: "Narx avval 20% oshib, keyin 20% tushsa nega 0% o'zgarish bo'lmaydi? Xatoyimni tushuntiring.",
+      label: "⚡ IELTS Reading: Scanning va Skimming",
+      text: "IELTS Reading matnida kalit so'zlarni 10 soniyada topishning eng tez usulini ko'rsating.",
+    },
+  ],
+  STEP_BY_STEP: [
+    {
+      label: "📘 Chiziqli tenglamalarni noldan yechish",
+      text: "Kvadrat tenglamani diskriminant orqali yechish bosqichlarini noldan tushuntirib bering.",
+    },
+    {
+      label: "📘 Complex Sentences tuzish qoidasi",
+      text: "Ingliz tilida murakkab qo'shma gaplarni bog'lovchilar yordamida tuzish qoidalarini birma-bir ko'rib chiqaylik.",
+    },
+  ],
+  TEST_ANALYZER: [
+    {
+      label: "🔍 Chalg'ituvchi variant (Distractor) tahlili",
+      text: "SAT testida ikkita yaqin variant orasida qolib ketsam, noto'g'risini qanday ajratib olaman?",
+    },
+    {
+      label: "🔍 IELTS True / False / Not Given",
+      text: "IELTS Readingda FALSE bilan NOT GIVEN ni bir-biridan qanday aniq ajratib olish mumkin?",
+    },
+  ],
+  ERROR_EXPLAINER: [
+    {
+      label: "🔍 Xatoni tahlil qilish",
+      text: "Matematika darsida foiz hisoblashda adashibman, xatoyimni ko'rsatib bera olasizmi?",
     },
   ],
   WRITING_REVIEW: [

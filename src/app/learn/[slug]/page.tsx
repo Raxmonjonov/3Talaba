@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { ConfettiBurst } from "@/components/anime/ConfettiBurst";
 import { LessonCoachWidget } from "@/components/ai/LessonCoachWidget";
-import { VoiceTutor } from "@/components/voice/VoiceTutor";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 
 interface LessonExample {
@@ -266,8 +265,7 @@ export default function LessonRunnerPage({
           </div>
         </div>
 
-        <div className="mt-5"><VoiceTutor lessonTitle={lesson.titleUz} summaryUz={lesson.summaryUz} theoryText={lesson.theoryMarkdown.slice(0, 500)} honorific={honorific} lessonSlug={lesson.slug} /></div>
-
+        
         {/* 4 bosqichli dars navigatsiyasi: Nazariya -> Misollar -> Mashqlar -> Tahlil */}
         <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {phasesList.map((item) => {
