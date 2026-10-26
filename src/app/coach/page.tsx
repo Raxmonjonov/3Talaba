@@ -19,6 +19,7 @@ import {
   Search,
 } from "lucide-react";
 import type { AICoachMetadata, AICoachMode } from "@/lib/ai";
+import { TypewriterText, ThinkingBubble } from "@/components/ai/TypewriterText";
 
 interface ChatMsgItem {
   id: string;
@@ -164,6 +165,7 @@ export default function AICoachPage() {
   const [messages, setMessages] = useState<ChatMsgItem[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [latestAssistantId, setLatestAssistantId] = useState<string | null>(null);
   const [xpTotal, setXpTotal] = useState(50);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -468,7 +470,11 @@ export default function AICoachPage() {
                           </div>
                         )}
 
-                        <div className="whitespace-pre-line">{msg.content}</div>
+                        {!isUser && msg.id === latestAssistantId ? (
+                          <TypewriterText content={msg.content} speedMs={16} />
+                        ) : (
+                          <div className="whitespace-pre-line">{msg.content}</div>
+                        )}
 
                         {/* IELTS / SAT Writing Mezon Kartasi */}
                         {rubric && (
@@ -533,6 +539,11 @@ export default function AICoachPage() {
                     </div>
                   );
                 })
+              )}
+              {sending && (
+                <div className="flex items-start">
+                  <ThinkingBubble modeLabel="AI Murabbiy tahlil qilmoqda…" />
+                </div>
               )}
               <div ref={chatEndRef} />
             </div>

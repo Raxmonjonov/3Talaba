@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Brain, ExternalLink, MessageCircle, Send, Sparkles, X } from "lucide-react";
+import { TypewriterText, ThinkingBubble } from "./TypewriterText";
 
 interface LessonCoachWidgetProps {
   lessonSlug: string;
@@ -136,7 +137,13 @@ export function LessonCoachWidget({
             </button>
           </div>
 
-          {reply && (
+          {loading && (
+            <div className="flex items-start">
+              <ThinkingBubble modeLabel="AI Ustoz dars bo'yicha tahlil qilmoqda…" />
+            </div>
+          )}
+
+          {reply && !loading && (
             <div
               id="lesson-ai-coach-reply"
               className="rounded-xl border border-neon/40 bg-canvas p-4 text-xs leading-relaxed text-fg sm:text-sm"
@@ -144,7 +151,7 @@ export function LessonCoachWidget({
               <div className="mb-1.5 font-bold text-neon">
                 🤖 AI Ustoz ({honorificUsed}):
               </div>
-              <div className="whitespace-pre-line">{reply}</div>
+              <TypewriterText content={reply} speedMs={16} />
             </div>
           )}
 
