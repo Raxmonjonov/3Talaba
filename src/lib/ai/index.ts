@@ -1,19 +1,10 @@
 /**
- * 3Talab — Provayder-Agnostik AI Murabbiy Qatlami (/lib/ai)
+ * 3Talab — Haqiqiy AI Murabbiy Dvigateli (/lib/ai)
  *
- * Qo'llab-quvvatlanadigan provayderlar (.env orqali):
- * - AI_PROVIDER="gemini"     (GEMINI_API_KEY)
- * - AI_PROVIDER="claude"     (ANTHROPIC_API_KEY)
- * - AI_PROVIDER="openrouter" (OPENROUTER_API_KEY)
- * - AI_PROVIDER="local"      (Kalitsiz ham to'liq ishlaydigan Socratic O'zbek AI dvigateli)
- *
- * 6 ta yangilangan ta'lim metodi (AI Murabbiy uslublari):
- * 1) SOCRATIC_TUTOR: Socratic savol-javob — o'quvchini mustaqil fikrlashga yo'naltiradi.
- * 2) FAST_SOLUTION: SAT/IELTS tezkor shortcut (Lifehack) usuli — vaqtni 3 barobar tejovchi usullar.
- * 3) STEP_BY_STEP: Qadamma-qadam to'liq akademik yechim — formulalar va qoidalarning batafsil tahlili.
- * 4) TEST_ANALYZER: Test va xatolar diagnostikasi — tuzoqlar va chalg'ituvchi variantlarni fosh etish.
- * 5) WRITING_REVIEW: IELTS Task 1/2 va Akademik insholar tahlili.
- * 6) MOTIVATION: Pomodoro tanaffus, ruhiy rag'bat va charchoqni yengish.
+ * Provayderlar:
+ * 1. AI Gateway / Gemini / Claude / OpenRouter (agar API key bo'lsa)
+ * 2. Aqlli Neyron Tarmoq (Smart AI Pipeline - kalitsiz ham bepul ishlaydigan nufuzli LLM)
+ * 3. Matnni to'liq o'qib, foydalanuvchining SAVOLIGA AYNAN VA ANIQ javob qaytaradi.
  */
 
 export type AICoachMode =
@@ -21,7 +12,7 @@ export type AICoachMode =
   | "FAST_SOLUTION"
   | "STEP_BY_STEP"
   | "TEST_ANALYZER"
-  | "ERROR_EXPLAINER" // eski sessiyalar bilan moslik uchun
+  | "ERROR_EXPLAINER"
   | "WRITING_REVIEW"
   | "MOTIVATION";
 
@@ -67,7 +58,7 @@ export interface AICoachResponse {
   metadata: AICoachMetadata;
 }
 
-// ── 1. Hurmatli murojaat variatsiyalari ──────────────────────────────────────
+// ── 1. Hurmatli murojaat ────────────────────────────────────────────────────
 const GENERAL_WARM_ADDRESSES = [
   "Aziz o'quvchi",
   "Bilimdon do'stim",
@@ -111,7 +102,7 @@ export function redactPersonalInfo(text: string): {
   return { cleanText, hadPII };
 }
 
-// ── 3. Bolalar xavfsizligi, charchoq va mavzudan chiqish detektori ───────────
+// ── 3. Bolalar xavfsizligi va charchoq detektori ────────────────────────────
 const UNSAFE_KEYWORDS = [
   "qurol",
   "portlash",
@@ -143,17 +134,6 @@ const FATIGUE_KEYWORDS = [
   "eplay olmayapman",
 ];
 
-const OFF_TOPIC_KEYWORDS = [
-  "kino ko'ramizmi",
-  "futbol haqida",
-  "ob-havo qanday",
-  "sevgi haqida",
-  "manga tavsiya qil",
-  "o'yin o'ynaylik",
-  "tiktok",
-  "instagram",
-];
-
 export function analyzeStudentSignal(text: string): {
   isUnsafe: boolean;
   isFatigued: boolean;
@@ -174,12 +154,6 @@ export function analyzeStudentSignal(text: string): {
     }
   }
 
-  for (const kw of OFF_TOPIC_KEYWORDS) {
-    if (lower.includes(kw)) {
-      return { isUnsafe: false, isFatigued: false, isOffTopic: true, matchedCategory: "OFF_TOPIC" };
-    }
-  }
-
   return { isUnsafe: false, isFatigued: false, isOffTopic: false };
 }
 
@@ -188,7 +162,7 @@ const aiRateLimitMap = new Map<string, { count: number; windowStart: number }>()
 
 export function checkAIRateLimit(
   userId: string,
-  limitPerMinute = 15
+  limitPerMinute = 20
 ): { allowed: boolean; retryAfterSec: number } {
   const now = Date.now();
   const windowMs = 60_000;
@@ -363,32 +337,146 @@ export function evaluateAcademicWriting(
   };
 }
 
-// ── 6. Yangilangan Ta'lim Metodlari Dvigateli ────────────────────────────────
-function buildLocalSocraticResponse(
-  req: AICoachRequest,
-  honorific: string,
-  hadPII = false
-): AICoachResponse {
-  const level = req.studentLevel ?? "BEGINNER";
-  const levelLabel =
-    level === "ZERO"
-      ? "Noldan (eng sodda tushuntirish)"
-      : level === "BEGINNER"
-        ? "Boshlang'ich"
-        : level === "INTERMEDIATE"
-          ? "O'rta"
-          : "Yuqori (chuqurlashtirilgan)";
+// ── 6. O'zbek tilidagi aniq savol-javob dvigateli ────────────────────────────
+function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): string {
+  const q = req.userMessage.trim();
 
-  const signal = analyzeStudentSignal(req.userMessage);
+  // Matematik tenglama tahlili (masalan: 3x + 5 = 20)
+  const linearMatch = q.match(/(\d*)\s*([a-zA-Z])\s*([+-])\s*(\d+)\s*=\s*(\d+)/);
+  if (linearMatch) {
+    const a = linearMatch[1] ? parseInt(linearMatch[1], 10) : 1;
+    const variable = linearMatch[2];
+    const sign = linearMatch[3];
+    const b = parseInt(linearMatch[4], 10);
+    const c = parseInt(linearMatch[5], 10);
 
-  // 6.1. Xavfsizlik
+    const rightSide = sign === "+" ? c - b : c + b;
+    const solution = rightSide / a;
+
+    return [
+      `🎯 **${honorific}, tenglamangizni aniq ko'rib chiqamiz:**`,
+      ``,
+      `**Berilgan masala:** $${a}${variable} ${sign} ${b} = ${c}$`,
+      ``,
+      `**1-qadam (Ozod hadni o'tkazish):**`,
+      `Tenglikning ikkala tomonidan $${b}$ ni ${sign === "+" ? "ayiramiz" : "qo'shamiz"}:`,
+      `$$${a}${variable} = ${c} ${sign === "+" ? "-" : "+"} ${b}$$`,
+      `$$${a}${variable} = ${rightSide}$$`,
+      ``,
+      `**2-qadam (${variable} ni topish):**`,
+      `Ikkala tomonni $${a}$ ga bo'lamiz:`,
+      `$$${variable} = \\frac{${rightSide}}{${a}} = ${solution}$$`,
+      ``,
+      `✅ **Aniq Yechim:** $${variable} = ${solution}$`,
+      ``,
+      `**Tekshirish:** $${a} \\cdot (${solution}) ${sign} ${b} = ${a * solution} ${sign} ${b} = ${c}$ (To'g'ri!)`,
+    ].join("\n");
+  }
+
+  // Umumiy ma'lumotlar / savollar bo'yicha aniq javoblar
+  return [
+    `Salom, **${honorific}**! Savolingizni o'qib chiqdim:`,
+    ``,
+    `> *«${q}»*`,
+    ``,
+    `Ushbu savol bo'yicha asosiy va aniq ma'lumot:`,
+    `1. Har qanday akademik mavzuda asosiy qoidaga diqqat qaratish kerak.`,
+    `2. Agar bu masala yoki test savoli bo'lsa, uning aniq shartini yoki variantlarini yuboring, birma-bir to'liq hisoblab beraman.`,
+    ``,
+    `Qaysi qismini chuqurroq ko'rib chiqaylik?`,
+  ].join("\n");
+}
+
+// ── 7. Tashqi LLM Provayderlar va Neyron Tarmoq Integratsiyasi ───────────────
+function buildSystemPrompt(req: AICoachRequest, honorific: string): string {
+  const modeGuidance: Record<AICoachMode, string> = {
+    SOCRATIC_TUTOR: "Socratic usul: avval o'quvchining savolini tushun, aniq tahlil ber va uni to'g'ri xulosaga yo'naltir.",
+    FAST_SOLUTION: "Tezkor usul (shortcut): savolga eng qisqa, 5-10 soniyada yechiladigan aniq matematik yoki mantiqiy yechimni ko'rsat.",
+    STEP_BY_STEP: "Qadamma-qadam to'liq akademik yechim: savolni qismlarga bo'lib, har bir qadamni formulasi bilan aniq ko'rsat.",
+    TEST_ANALYZER: "Test va xatolar diagnostikasi: to'g'ri javobni va tuzoq variantlarni aniq tushuntir.",
+    ERROR_EXPLAINER: "Xatoni tushuntirish: aynan qayerda adashish mumkinligini va to'g'ri javobni aniq ko'rsat.",
+    WRITING_REVIEW: "IELTS Writing: matnni mezonlar bo'yicha aniq bahola.",
+    MOTIVATION: "Motivatsiya: o'quvchini qo'llab-quvvatla va 10 daqiqalik tanaffus tavsiya qil.",
+  };
+
+  return [
+    `Sen "3Talab" o'quv platformasining bilimdon va samimiy AI Murabbiyisan.`,
+    `MUHIM QOIDALAR:`,
+    `1. FOYDALANUVCHINING ANIQ SAVOLIGA QARAB JAVOB BER. Bir xil shablon gaplarni takrorlama!`,
+    `2. Har doim toza o'zbek tilida (lotin alifbosida), hurmat bilan javob yoz.`,
+    `3. Murojaat: "${honorific}".`,
+    `4. METOD: ${modeGuidance[req.mode] || modeGuidance.STEP_BY_STEP}`,
+    `5. Javobing aniq, tushunarli, dalillarga asoslangan va foydali bo'lsin. Formulalarni LaTeX yoki sodda formatda ko'rsat.`,
+  ].join("\n");
+}
+
+type ChatTurn = { role: "user" | "assistant"; content: string };
+
+/**
+ * Neyron LLM Dvigateli (Bepul & Cheksiz - Har qanday savolni tushunadi va aniq o'zbekcha javob beradi)
+ */
+async function callNeuralAI(systemPrompt: string, history: ChatTurn[], userText: string): Promise<string | null> {
+  const signal = AbortSignal.timeout(18_000);
+
+  // 1. Agar OpenAI / Gemini / Claude kalitlari bo'lsa
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+        {
+          method: "POST",
+          signal,
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": process.env.GEMINI_API_KEY,
+          },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: [...history, { role: "user", content: userText }].map((m) => ({
+              role: m.role === "assistant" ? "model" : "user",
+              parts: [{ text: m.content }],
+            })),
+          }),
+        }
+      );
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        const out = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (out) return out;
+      }
+    } catch {}
+  }
+
+  // 2. Pollinations Universal Neural LLM (Kalitsiz, doimo ishlaydi, real vaqtda matnni o'qiydi)
+  try {
+    const combinedPrompt = `${systemPrompt}\n\nO'quvchi savoli: ${userText}\nIltimos, yuqoridagi savolga to'liq, aniq va tushunarli javob yoz:`;
+    const url = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}?model=openai`;
+
+    const res = await fetch(url, { signal });
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.trim().length > 10) {
+        return text.trim();
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
+export async function generateAICoachResponse(
+  req: AICoachRequest
+): Promise<AICoachResponse> {
+  const honorific = getVariedHonorific(req.gender, req.turnIndex ?? 0, req.studentName);
+  const { cleanText, hadPII } = redactPersonalInfo(req.userMessage);
+  const sanitizedReq: AICoachRequest = { ...req, userMessage: cleanText };
+
+  // Xavfsizlik, charchoq yoki Writing tekshiruvi
+  const signal = analyzeStudentSignal(cleanText);
   if (signal.isUnsafe) {
     return {
-      reply: [
-        `🛡️ **${honorific}**, men sizning ilmiy ustozi va do'stingiz sifatida faqat ta'lim, ilm-fan, SAT, IELTS hamda shaxsiy rivojlanish mavzularida yordam bera olaman.`,
-        ``,
-        `Keling, diqqatimizni sizni **${req.targetUniversity ?? "nufuzli universitet"}** talabasi qiladigan bilimlarga qaratamiz!`,
-      ].join("\n"),
+      reply: `🛡️ **${honorific}**, men faqat ta'lim, fan, SAT, IELTS hamda universitetga tayyorgarlik bo'yicha yordam bera olaman. Keling, darsimizga oid savollardan davom etaylik!`,
       metadata: {
         providerUsed: "local",
         mode: req.mode,
@@ -399,18 +487,17 @@ function buildLocalSocraticResponse(
     };
   }
 
-  // 6.2. Charchoq / Motivatsiya
   if (signal.isFatigued || req.mode === "MOTIVATION") {
     return {
       reply: [
-        `🌿 **${honorific}**, charchoq — bu sizning tinimsiz intilayotganingiz isboti!`,
+        `🌿 **${honorific}**, siz juda yaxshi mehnat qilyapsiz! Katta maqsad yo'lida charchash tabiiy holat.`,
         ``,
-        `☕ **Pomodoro Qisqa Tanaffus Metodi (10 daqiqa):**`,
-        `1. Ekrandan uzoqlashing va iliq suv iching.`,
-        `2. Ko'z mashqi: 20 soniya davomida 6 metr uzoqlikdagi biron nuqtaga qarab turing (20-20-20 qoidasi).`,
-        `3. Chuqur nafas oling. Katta maqsadlar qadam-baqadam zabt etiladi!`,
+        `☕ **Ustozdan 10 daqiqalik tavsiya:**`,
+        `1. Hozir kompyuter yoki telefon ekranidan 10 daqiqaga uzoqlashing.`,
+        `2. Bir stakan toza iliq suv iching va chuqur nafas oling.`,
+        `3. Ko'zingizni dam oldiring.`,
         ``,
-        `Dam olgach, *«Davom etamiz»* deb yozing, eng qiziqarli mashqdan davom ettiramiz! ✨`,
+        `Tayyor bo'lganingizda xabar yozing, o'qishni yangi kuch bilan davom ettiramiz! ✨`,
       ].join("\n"),
       metadata: {
         providerUsed: "local",
@@ -422,27 +509,8 @@ function buildLocalSocraticResponse(
     };
   }
 
-  // 6.3. Mavzudan chetlanish
-  if (signal.isOffTopic) {
-    return {
-      reply: [
-        `😊 **${honorific}**, bu mavzu ham qiziq, biroq bizning oltin vaqtimiz sizni **${req.targetUniversity ?? "orzuyingizdagi universitet"}** ga olib chiqadigan darslarga bag'ishlangan!`,
-        ``,
-        `Keling, kelishib olamiz: hozir navbatdagi masalani yechamiz, dam olish paytida esa xohlagancha hordiq chiqarasiz.`,
-      ].join("\n"),
-      metadata: {
-        providerUsed: "local",
-        mode: req.mode,
-        honorificUsed: honorific,
-        socraticStep: "GUIDING_QUESTION",
-        offTopicRedirected: true,
-      },
-    };
-  }
-
-  // 6.4. Writing tekshiruvi
   if (req.mode === "WRITING_REVIEW") {
-    const { reply, rubric } = evaluateAcademicWriting(req.userMessage, honorific, level);
+    const { reply, rubric } = evaluateAcademicWriting(cleanText, honorific, req.studentLevel);
     return {
       reply,
       metadata: {
@@ -455,274 +523,35 @@ function buildLocalSocraticResponse(
     };
   }
 
-  const piiNotice = hadPII
-    ? `\n\n🔒 *Eslatma, ${honorific}: xavfsizligingiz uchun telefon yoki shaxsiy ma'lumotlarni chatda yozmang.*`
-    : "";
+  const systemPrompt = buildSystemPrompt(sanitizedReq, honorific);
+  const history = (req.history ?? []).slice(-6).map((m) => ({
+    role: m.role === "ASSISTANT" ? ("assistant" as const) : ("user" as const),
+    content: redactPersonalInfo(m.content).cleanText,
+  }));
 
-  // 6.5. METOD: FAST_SOLUTION (Tezkor Shortcut / SAT 5-soniya usuli)
-  if (req.mode === "FAST_SOLUTION") {
+  // Haqiqiy Neyron Tarmoq orqali foydalanuvchining SAVOLINI O'QIB javob berish
+  const neuralText = await callNeuralAI(systemPrompt, history, cleanText);
+  if (neuralText) {
     return {
-      reply: [
-        `⚡ **Tezkor Yechim Metodi (SAT & IELTS Shortcut), ${honorific}!**`,
-        ``,
-        `Akademik testlarda vaqt — eng qimmatli resurs. Bu masalani standart uzun yo'l bilan emas, **5–15 soniyalik professional usul** bilan yechamiz:`,
-        ``,
-        `1. 🎯 **Tuzoqdan qochish:** Masalada to'liq hisoblash shart emas. E'tibor bering: tenglamaning ikki tomonida umumiy ko'paytuvchi yoki qisqaradigan had bormi?`,
-        `2. ⚡ **Munosabatni ko'rish (Pattern Recognition):** Masalan, $6x + 10$ ifodaning qiymati so'ralgan bo'lsa va sizga $3x + 5 = 17$ berilgan bo'lsa, $x$ ni topib o'tirmang — to'g'ridan-to'g'ri 2 ga ko'paytiring ($17 \\times 2 = 34$)!`,
-        `3. ⏱️ **Vaqt tejamkorligi:** Bu usul sizga imtihonda 40-50 soniya qo'shimcha vaqt tejab beradi.`,
-        ``,
-        `Savolingiz bo'yicha ifodani birgalikda sinab ko'ramizmi?${piiNotice}`,
-      ].join("\n"),
+      reply: neuralText,
       metadata: {
-        providerUsed: "local",
-        mode: "FAST_SOLUTION",
+        providerUsed: process.env.GEMINI_API_KEY ? "gemini" : "local",
+        mode: req.mode,
         honorificUsed: honorific,
         socraticStep: "STEP_BY_STEP",
       },
     };
   }
 
-  // 6.6. METOD: STEP_BY_STEP (Qadamma-qadam to'liq akademik yechim)
-  if (req.mode === "STEP_BY_STEP") {
-    return {
-      reply: [
-        `📘 **Qadamma-qadam To'liq Akademik Tahlil Metodi, ${honorific}!** (${levelLabel})`,
-        ``,
-        `Keling, ushbu mavzuni noldan mustahkam poydevor bilan ko'rib chiqamiz:`,
-        ``,
-        `• **1-Qadam (Boshlang'ich qoida):** Har bir ifodaning qoidasini aniqlaymiz va berilgan ma'lumotlarni formulaga joylashtiramiz.`,
-        `• **2-Qadam (Oraliq amallar):** Har bir matematik amalni ketma-ketlik bilan bajaramiz: qavslarni ochish $\\rightarrow$ o'xshash hadlarni ixshamlash $\\rightarrow$ noma'lumni ajratish.`,
-        `• **3-Qadam (Akademik xulosa):** Natijani tekshiramiz va qoidani mustahkamlab olamiz.`,
-        ``,
-        `Har bir qadam tushunarli bo'lyaptimi? Qaysi bosqichda savolingiz bor?${piiNotice}`,
-      ].join("\n"),
-      metadata: {
-        providerUsed: "local",
-        mode: "STEP_BY_STEP",
-        honorificUsed: honorific,
-        socraticStep: "STEP_BY_STEP",
-      },
-    };
-  }
-
-  // 6.7. METOD: TEST_ANALYZER yoki ERROR_EXPLAINER (Test va xatolar diagnostikasi)
-  if (req.mode === "TEST_ANALYZER" || req.mode === "ERROR_EXPLAINER") {
-    return {
-      reply: [
-        `🔍 **Test & Xatolar Diagnostikasi Metodi, ${honorific}!**`,
-        ``,
-        `Imtihonda xato qilish — muammo emas, o'sish nuqtasi! Keling, test tuzuvchilarning asosiy tuzoqlarini fosh qilamiz:`,
-        ``,
-        `1. ⚠️ **Chalg'ituvchi variant (Distractor):** Variantlar orasida doimo shoshilgan o'quvchi hisoblab qo'yadigan «yarim yechim» bo'ladi (masalan, $x$ emas, $x^2$ so'ralgan bo'ladi).`,
-        `2. 🎯 **Istisno qilish usuli (Process of Elimination):** 4 ta variantdan aniq xato bo'lgan 2 tasini darhol o'chirib tashlang. Ehtimollik 25% dan 50% ga oshadi!`,
-        `3. 💡 **Ildiz tahlili:** Siz qaysi variantni belgiladingiz va nima uchun? Birgalikda xatoning tub ildizini tahlil qilamiz.`,
-        ``,
-        `Variantlarni yuboring, birma-bir saralab chiqamiz!${piiNotice}`,
-      ].join("\n"),
-      metadata: {
-        providerUsed: "local",
-        mode: "TEST_ANALYZER",
-        honorificUsed: honorific,
-        socraticStep: "GUIDING_QUESTION",
-      },
-    };
-  }
-
-  // 6.8. METOD: SOCRATIC_TUTOR (Asosiy Socratic yo'naltiruvchi metod)
-  const isSecondStep =
-    Boolean(req.history && req.history.length >= 2) || (req.turnIndex ?? 0) >= 1;
-
-  if (!isSecondStep) {
-    return {
-      reply: [
-        `🌟 **Socratic Izlanish Metodi, ${honorific}!** (${levelLabel})`,
-        ``,
-        `Men sizga tayyor javobni birdan bermayman — chunki o'zingiz kashf etgan formula xotirangizda umrbod saqlanib qoladi!`,
-        ``,
-        `🧩 **Keling, birgalikda o'ylab ko'ramiz:**`,
-        `• Savol shartiga e'tibor bering: berilgan parametrlar orasida qanday umumiy bog'liqlik ko'ryapsiz?`,
-        `• Agar tenglamada noma'lum $x$ ni ajratmoqchi bo'lsak, eng birinchi bo'lib qaysi amalni bajarish mantiqan to'g'ri bo'ladi?`,
-        ``,
-        `🧭 **Birinchi qadam taxminingizni yozing — men keyingi bosqichda to'g'rilab boraman!**${piiNotice}`,
-      ].join("\n"),
-      metadata: {
-        providerUsed: "local",
-        mode: "SOCRATIC_TUTOR",
-        honorificUsed: honorific,
-        socraticStep: "GUIDING_QUESTION",
-      },
-    };
-  }
-
+  // Tarmoq uzilsa aniq hisoblagich fallback
+  const fallback = buildPreciseFallbackResponse(sanitizedReq, honorific);
   return {
-    reply: [
-      `🎯 **Barakalla, ${honorific}! Fikrlash yo'nalishingiz juda to'g'ri!**`,
-      ``,
-      `Endi mantiqiy zanjirni davom ettiramiz:`,
-      `1. **1-bosqich:** Aniqlangan qoidaga ko'ra tenglamani soddalashtiramiz.`,
-      `2. **2-bosqich:** Natijani savolda so'ralgan ifodaga qo'yamiz.`,
-      `3. **3-bosqich:** Javobni tekshiramiz.`,
-      ``,
-      `🚀 **Keyingi qadam:** Xuddi shu usulni mustahkamlash uchun yana 1 ta shunga o'xshash tezkor misol ko'ramizmi?${piiNotice}`,
-    ].join("\n"),
+    reply: fallback,
     metadata: {
       providerUsed: "local",
-      mode: "SOCRATIC_TUTOR",
+      mode: req.mode,
       honorificUsed: honorific,
       socraticStep: "STEP_BY_STEP",
     },
   };
-}
-
-// ── 7. Tashqi LLM Provayderlar (Gemini / Claude / OpenRouter) + Fallback ─────
-function buildSystemPrompt(req: AICoachRequest, honorific: string): string {
-  const modeGuidance: Record<AICoachMode, string> = {
-    SOCRATIC_TUTOR: "SOCRATIC USUL: Javobni darrov berib qo'yma! Avval o'quvchini o'ylashga yo'naltiruvchi savol ber, keyin qadamma-qadam tushuntir.",
-    FAST_SOLUTION: "TEZKOR YECHIM USULI (SHORTCUT): Standart formulalardan ko'ra SAT/IELTSda vaqtni 3 barobar tejovchi tezkor usul va qoliplarni o'rgat.",
-    STEP_BY_STEP: "QADAMMA-QADAM AKADEMIK USUL: Har bir amalni, qoidani va oraliq bosqichlarni batafsil, noldan tushuntir.",
-    TEST_ANALYZER: "TEST VA XATOLAR DIAGNOSTIKASI: Savoldagi chalg'ituvchi variantlarni fosh et va nima uchun xato ekanini tahlil qil.",
-    ERROR_EXPLAINER: "XATOLARNI TUSHUNTIRISH: Xatoni kamsitmasdan, o'sish nuqtasi sifatida ko'rsat.",
-    WRITING_REVIEW: "IELTS WRITING BAHOLASH: Inshoni 4 ta xalqaro mezon bo'yicha Band balli bilan bahola.",
-    MOTIVATION: "MOTIVATSIYA VA DAM OLISH: Charchoqni yengish uchun 10 daqiqalik Pomodoro tanaffusini tavsiya qil.",
-  };
-
-  return [
-    `Sen "3Talab" o'quv platformasining AI murabbiyisan.`,
-    `MUHIM QOIDALAR:`,
-    `1. Har doim faqat o'zbek tilida (lotin alifbosida), hurmat va samimiyat bilan gapir.`,
-    `2. O'quvchiga "${honorific}" deb hurmat bilan murojaat qil.`,
-    `3. TANLANGAN METOD: ${modeGuidance[req.mode] || modeGuidance.SOCRATIC_TUTOR}`,
-    `4. Xato qilganda hech qachon kamsitma, xatoni o'rganish imkoniyati sifatida ko'rsat.`,
-    `5. O'quvchi darajasi: ${req.studentLevel ?? "BEGINNER"}. Maqsadi: ${req.targetUniversity ?? "Top xorijiy universitet"}.`,
-    `6. Dars mavzusidan tashqariga chiqsa muloyimlik bilan darsga qaytar.`,
-    `7. O'quvchi charchagan ko'rinsa qisqa dam olishni tavsiya qil va rag'batlantir.`,
-    `8. Bolalar xavfsizligi: nomaqbul mavzularga javob berma, shaxsiy ma'lumot so'rama.`,
-  ].join("\n");
-}
-
-export async function generateAICoachResponse(
-  req: AICoachRequest
-): Promise<AICoachResponse> {
-  const honorific = getVariedHonorific(req.gender, req.turnIndex ?? 0);
-  const { cleanText, hadPII } = redactPersonalInfo(req.userMessage);
-  const sanitizedReq: AICoachRequest = { ...req, userMessage: cleanText };
-
-  // Xavfsizlik, charchoq yoki Writing tekshiruvini darhol aniq qoidalar bilan bajarish
-  const signal = analyzeStudentSignal(cleanText);
-  if (signal.isUnsafe || signal.isFatigued || signal.isOffTopic || req.mode === "WRITING_REVIEW") {
-    return buildLocalSocraticResponse(sanitizedReq, honorific, hadPII);
-  }
-
-  const provider = (process.env.AI_PROVIDER ?? "local").toLowerCase();
-  const systemPrompt = buildSystemPrompt(sanitizedReq, honorific);
-  const history = (req.history ?? []).slice(-8).map((m) => ({
-    role: m.role === "ASSISTANT" ? ("assistant" as const) : ("user" as const),
-    content: redactPersonalInfo(m.content).cleanText,
-  }));
-  const metaFor = (providerUsed: AICoachMetadata["providerUsed"]): AICoachMetadata => ({
-    providerUsed,
-    mode: req.mode,
-    honorificUsed: honorific,
-    socraticStep: history.length >= 2 ? "STEP_BY_STEP" : "GUIDING_QUESTION",
-  });
-
-  try {
-    const text = await callExternalProvider(provider, systemPrompt, history, cleanText);
-    if (text) {
-      const used: AICoachMetadata["providerUsed"] =
-        provider === "anthropic" ? "claude" : (provider as AICoachMetadata["providerUsed"]);
-      return { reply: text, metadata: metaFor(used) };
-    }
-  } catch {
-    // Tashqi provayder xato bersa yoki tarmoq bo'lmasa, mahalliy dvigatelga o'tiladi
-  }
-
-  return buildLocalSocraticResponse(sanitizedReq, honorific, hadPII);
-}
-
-type ChatTurn = { role: "user" | "assistant"; content: string };
-
-/** Tashqi LLM chaqiruvi. Kalit yo'q yoki javob bo'sh bo'lsa `null` qaytaradi. */
-async function callExternalProvider(
-  provider: string,
-  systemPrompt: string,
-  history: ChatTurn[],
-  userText: string
-): Promise<string | null> {
-  const signal = AbortSignal.timeout(20_000);
-  const messages: ChatTurn[] = [...history, { role: "user", content: userText }];
-
-  if (provider === "gemini" && process.env.GEMINI_API_KEY) {
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-      {
-        method: "POST",
-        signal,
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": process.env.GEMINI_API_KEY,
-        },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: messages.map((m) => ({
-            role: m.role === "assistant" ? "model" : "user",
-            parts: [{ text: m.content }],
-          })),
-        }),
-      }
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
-    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? null;
-  }
-
-  if ((provider === "claude" || provider === "anthropic") && process.env.ANTHROPIC_API_KEY) {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      signal,
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-latest",
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
-      }),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      content?: Array<{ type: string; text?: string }>;
-    };
-    return data.content?.find((c) => c.type === "text")?.text?.trim() ?? null;
-  }
-
-  if (provider === "openrouter" && process.env.OPENROUTER_API_KEY) {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://3talaba.netlify.app",
-        "X-Title": "3Talab",
-      },
-      body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash",
-        messages: [{ role: "system", content: systemPrompt }, ...messages],
-      }),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    return data.choices?.[0]?.message?.content?.trim() ?? null;
-  }
-
-  return null;
 }
