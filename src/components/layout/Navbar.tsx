@@ -15,7 +15,6 @@ import {
   LogOut,
   UserCheck,
   GraduationCap,
-  Download,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 

@@ -17,7 +17,6 @@ import {
   PenTool,
   ShieldCheck,
   Flame,
-  Download,
   Sliders,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
@@ -328,13 +327,6 @@ export function LandingExperience() {
                   <Clock className="h-4 w-4 text-gold" />
                   <span>Kunlik vaqt rejasini ko'rish</span>
                 </a>
-                <Link
-                  href="/download"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-neon/50 bg-neon-soft px-5 py-4 text-sm font-bold text-neon transition-all hover:bg-neon hover:text-canvas shadow-sm"
-                >
-                  <Download className="h-4 w-4" />
-                  <span>Desktop (.exe / Mac / Linux)</span>
-                </Link>
               </div>
 
               {/* Ishonch ko'rsatkichlari */}
