@@ -33,7 +33,7 @@ export function Navbar() {
           aria-label="3Talab Bosh sahifa"
         >
           <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-neon/40 bg-neon-soft shadow-neon transition-transform duration-200 group-hover:scale-105">
-            <GraduationCap className="h-5 w-5 text-neon" />
+            <img src="/images/black-gold-logo.png" alt="3Talab O'quv Platformasi" className="h-10 w-10 rounded-xl object-contain" />
             <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-slate-950">
               3
             </span>
@@ -69,6 +69,12 @@ export function Navbar() {
                 className="text-sm font-medium text-fg-muted transition-colors hover:text-neon"
               >
                 Savollar Banki
+              </Link>
+              <Link
+                href="/math"
+                className="text-sm font-medium text-fg-muted transition-colors hover:text-neon"
+              >
+                Algebra &amp; Geometriya
               </Link>
               <Link
                 href="/coach"
@@ -224,6 +230,15 @@ export function Navbar() {
             >
               AI Murabbiy
             </a>
+            {session?.user && (
+              <Link
+                href="/math"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-lg px-2 py-1.5 text-sm font-semibold text-neon"
+              >
+                Algebra &amp; Geometriya (Chuqur)
+              </Link>
+            )}
             <button
               type="button"
               onClick={toggleReduceMotion}

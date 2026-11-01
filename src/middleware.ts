@@ -8,6 +8,7 @@ export const config = {
     "/dashboard/:path*",
     "/learn/:path*",
     "/practice/:path*",
+    "/math/:path*",
     "/coach/:path*",
     "/progress/:path*",
     "/admin/:path*",

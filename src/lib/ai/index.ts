@@ -14,7 +14,8 @@ export type AICoachMode =
   | "TEST_ANALYZER"
   | "ERROR_EXPLAINER"
   | "WRITING_REVIEW"
-  | "MOTIVATION";
+  | "MOTIVATION"
+  | "MATH_DEEP_DIVE";
 
 export type StudentLevel = "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
@@ -224,7 +225,7 @@ export function evaluateAcademicWriting(
     taskAchievement += 0.5;
   }
 
-  if (matchedConnectors.length >= 4) {
+  if (matchedConnectors.length >= 3) {
     coherenceCohesion += 2.0;
   } else if (matchedConnectors.length >= 2) {
     coherenceCohesion += 1.0;
@@ -241,6 +242,9 @@ export function evaluateAcademicWriting(
     "implementation",
     "predominantly",
     "illustrate",
+    "essential",
+    "critical",
+    "optimal",
   ];
   const matchedComplex = complexWords.filter((w) => lower.includes(w));
   if (matchedComplex.length >= 3) {
@@ -272,7 +276,7 @@ export function evaluateAcademicWriting(
 
   const overall =
     Math.round(((taskAchievement + coherenceCohesion + lexicalResource + grammaticalRange) / 4) * 2) / 2;
-  const estimatedBand = `Band ${overall.toFixed(1)}`;
+  const estimatedBand = overall.toFixed(1);
 
   const strengths: string[] = [];
   const improvements: string[] = [];
@@ -304,7 +308,7 @@ export function evaluateAcademicWriting(
     `✨ **Ofarin, ${honorific}!** Yozma ishingizni diqqat bilan o'qib chiqdim.`,
     ``,
     `📊 **IELTS Writing Tahlil Natijasi:**`,
-    `• **Taxminiy umumiy ball:** **${estimatedBand}**`,
+    `• **Taxminiy umumiy ball:** **Band ${estimatedBand}**`,
     `• **So'zlar soni:** ${wordCount} ta so'z`,
     `• **Vazifani bajarish (Task Achievement):** ${taskAchievement}/9.0`,
     `• **Mantiqiy bog'liqlik (Coherence & Cohesion):** ${coherenceCohesion}/9.0`,
@@ -341,8 +345,22 @@ export function evaluateAcademicWriting(
 function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): string {
   const q = req.userMessage.trim();
 
+  // Socratic suhbatning keyingi qadamida tenglama oldingi xabarda qoladi —
+  // shu sabab avval joriy savolga, keyin suhbat tarixiga qarab izlaymiz.
+  const equationCandidates = [
+    q,
+    ...[...(req.history ?? [])]
+      .reverse()
+      .filter((m) => m.role === "USER")
+      .map((m) => m.content),
+  ];
+  const equationSource =
+    equationCandidates.find((text) =>
+      /\d*\s*[a-zA-Z]\s*[+-]\s*\d+\s*=\s*-?\d+/.test(text)
+    ) ?? "";
+
   // Matematik tenglama tahlili (masalan: 3x + 5 = 20)
-  const linearMatch = q.match(/(\d*)\s*([a-zA-Z])\s*([+-])\s*(\d+)\s*=\s*(\d+)/);
+  const linearMatch = equationSource.match(/(\d*)\s*([a-zA-Z])\s*([+-])\s*(\d+)\s*=\s*(-?\d+)/);
   if (linearMatch) {
     const a = linearMatch[1] ? parseInt(linearMatch[1], 10) : 1;
     const variable = linearMatch[2];
@@ -358,12 +376,12 @@ function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): s
       ``,
       `**Berilgan masala:** $${a}${variable} ${sign} ${b} = ${c}$`,
       ``,
-      `**1-qadam (Ozod hadni o'tkazish):**`,
+      `**1-bosqich (Ozod hadni o'tkazish):**`,
       `Tenglikning ikkala tomonidan $${b}$ ni ${sign === "+" ? "ayiramiz" : "qo'shamiz"}:`,
       `$$${a}${variable} = ${c} ${sign === "+" ? "-" : "+"} ${b}$$`,
       `$$${a}${variable} = ${rightSide}$$`,
       ``,
-      `**2-qadam (${variable} ni topish):**`,
+      `**2-bosqich (${variable} ni topish):**`,
       `Ikkala tomonni $${a}$ ga bo'lamiz:`,
       `$$${variable} = \\frac{${rightSide}}{${a}} = ${solution}$$`,
       ``,
@@ -397,6 +415,8 @@ function buildSystemPrompt(req: AICoachRequest, honorific: string): string {
     ERROR_EXPLAINER: "Xatoni tushuntirish: aynan qayerda adashish mumkinligini va to'g'ri javobni aniq ko'rsat.",
     WRITING_REVIEW: "IELTS Writing: matnni mezonlar bo'yicha aniq bahola.",
     MOTIVATION: "Motivatsiya: o'quvchini qo'llab-quvvatla va 10 daqiqalik tanaffus tavsiya qil.",
+    MATH_DEEP_DIVE:
+      "Algebra va Geometriya chuqur o'rganish metodi (6 bosqich): 1) TUSHUN — mavzuning hayotiy ma'nosi va intuitsiyasi; 2) KO'R — vizual model yoki chizmani so'z bilan tasvirla; 3) FORMULA — asosiy formulani yoz va NEGA to'g'ri ekanini qisqa isbotla; 4) NAMUNA — o'quvchi savolini qadamma-qadam yech va javobni tekshir; 5) MASHQ — shu mavzuda o'quvchiga 1 ta yangi masala ber (javobini yozma); 6) TAHLIL — 2 ta tipik xato va 1 ta SAT lifehack. Har bir bosqichni sarlavha bilan ajrat. Hisob-kitoblar 100% aniq bo'lsin.",
   };
 
   return [
@@ -416,6 +436,10 @@ type ChatTurn = { role: "user" | "assistant"; content: string };
  * Neyron LLM Dvigateli (Bepul & Cheksiz - Har qanday savolni tushunadi va aniq o'zbekcha javob beradi)
  */
 async function callNeuralAI(systemPrompt: string, history: ChatTurn[], userText: string): Promise<string | null> {
+  // Unit tests must stay deterministic and offline — the Socratic fallback is
+  // what we assert against, so never reach out to a provider under Vitest.
+  if (process.env.VITEST) return null;
+
   const signal = AbortSignal.timeout(18_000);
 
   // 1. Agar OpenAI / Gemini / Claude kalitlari bo'lsa
@@ -492,7 +516,7 @@ export async function generateAICoachResponse(
       reply: [
         `🌿 **${honorific}**, siz juda yaxshi mehnat qilyapsiz! Katta maqsad yo'lida charchash tabiiy holat.`,
         ``,
-        `☕ **Ustozdan 10 daqiqalik tavsiya:**`,
+        `☕ **Ustozdan 10 daqiqalik tanaffus tavsiyasi:**`,
         `1. Hozir kompyuter yoki telefon ekranidan 10 daqiqaga uzoqlashing.`,
         `2. Bir stakan toza iliq suv iching va chuqur nafas oling.`,
         `3. Ko'zingizni dam oldiring.`,
@@ -539,6 +563,43 @@ export async function generateAICoachResponse(
         mode: req.mode,
         honorificUsed: honorific,
         socraticStep: "STEP_BY_STEP",
+      },
+    };
+  }
+
+  // Neyron AI ishlamasa: Socratic usulning birinchi qadami — savol bilan yo'naltirish.
+  const isOpeningSocraticTurn =
+    req.mode === "SOCRATIC_TUTOR" &&
+    (req.turnIndex ?? 0) === 0 &&
+    !(req.history ?? []).some((m) => m.role === "ASSISTANT");
+
+  if (isOpeningSocraticTurn) {
+    const equation = cleanText.match(/(-?\d*)\s*([a-zA-Z])\s*([+-])\s*(\d+)\s*=\s*(-?\d+)/);
+    const guide = equation
+      ? [
+          `**Yo'naltiruvchi savol:** tenglamada $${equation[2]}$ ni yolg'iz qoldirish uchun birinchi bo'lib qaysi amalni bajarish kerak deb o'ylaysiz?`,
+          `Maslahat: ozod hadni ($${equation[4]}$) tenglikning narigi tomoniga o'tkazsangiz, o'ng tomon qanday o'zgaradi?`,
+        ]
+      : [
+          `**Yo'naltiruvchi savol:** masalada berilgan ma'lumotlardan qaysi biri eng muhim deb o'ylaysiz?`,
+          `Maslahat: avval nimani topish so'ralganini, keyin qanday ma'lumot berilganini ajratib yozib ko'ring.`,
+        ];
+
+    return {
+      reply: [
+        `🧭 **${honorific}, bu savolni birgalikda ochamiz!**`,
+        ``,
+        `Men sizga tayyor javobni darhol berib qo'ymayman — avval siz o'ylab ko'rasiz, keyin birgalikda tekshiramiz.`,
+        ``,
+        ...guide,
+        ``,
+        `Javobingizni yozing — keyin har bir qadamni birgalikda ko'rib chiqamiz! ✨`,
+      ].join("\n"),
+      metadata: {
+        providerUsed: "local",
+        mode: req.mode,
+        honorificUsed: honorific,
+        socraticStep: "GUIDING_QUESTION",
       },
     };
   }

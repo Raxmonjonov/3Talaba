@@ -12,11 +12,11 @@ describe("Stage 6: Gamification & Progress Engine", () => {
     expect(f1.level).toBe(1);
     expect(f1.progressPct).toBe(25);
     expect(f1.xpToNextLevel).toBe(150);
-    expect(f1.titleUz).toContain("Malika");
+    expect(f1.titleUz).toBe("Ilk Qadam");
 
     const m3 = calculateLevelInfo(450, "MALE");
     expect(m3.level).toBe(3);
-    expect(m3.titleUz).toContain("Shag'zoda");
+    expect(m3.titleUz).toBe("Zukko Yetakchi");
   });
 
   it("calculates distance to target SAT and IELTS scores", () => {

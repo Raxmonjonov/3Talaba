@@ -17,6 +17,7 @@ import {
   Zap,
   ListOrdered,
   Search,
+  Sigma,
 } from "lucide-react";
 import type { AICoachMetadata, AICoachMode } from "@/lib/ai";
 import { TypewriterText, ThinkingBubble } from "@/components/ai/TypewriterText";
@@ -84,6 +85,12 @@ const MODE_TABS: Array<{
     icon: Search,
   },
   {
+    id: "MATH_DEEP_DIVE",
+    label: "Algebra & Geometriya (Chuqur)",
+    desc: "6 bosqich: Tushun → Ko'r → Formula → Namuna → Mashq → Tahlil",
+    icon: Sigma,
+  },
+  {
     id: "WRITING_REVIEW",
     label: "Writing Tekshiruvi",
     desc: "IELTS Task 1/2 va Akademik insholarni Band mezonida baholaydi",
@@ -144,6 +151,20 @@ const QUICK_PROMPTS: Record<AICoachMode, Array<{ label: string; text: string }>>
       text: "Matematika darsida foiz hisoblashda adashibman, xatoyimni ko'rsatib bera olasizmi?",
     },
   ],
+  MATH_DEEP_DIVE: [
+    {
+      label: "📐 Kvadrat tenglamani chuqur o'rganish",
+      text: "x² − 7x + 12 = 0 tenglamani 6 bosqichli metod bilan chuqur tushuntirib bering: nega diskriminant formulasi to'g'ri va Viyet teoremasi qayerdan keladi?",
+    },
+    {
+      label: "📏 Pifagor teoremasi isboti va qo'llanishi",
+      text: "Pifagor teoremasini isboti bilan tushuntiring va katetlari 9 va 12 bo'lgan uchburchak gipotenuzasini toping.",
+    },
+    {
+      label: "⭕ Aylana: sektor va yoy",
+      text: "Radiusi 10 bo'lgan aylanada 72° li sektor yuzi va yoy uzunligini chuqur tushuntirib hisoblang.",
+    },
+  ],
   WRITING_REVIEW: [
     {
       label: "✍️ Namunaviy IELTS Writing Task 2 tekshirish",
@@ -177,7 +198,8 @@ export default function AICoachPage() {
         const payload = (await res.json()) as CoachPayload;
         setData(payload);
         setXpTotal(payload.student.xpTotal);
-        if (payload.activeSession) {
+        const openedFromLink = new URLSearchParams(window.location.search).has("mode");
+        if (payload.activeSession && !openedFromLink) {
           setSessionId(payload.activeSession.id);
           setMode((payload.activeSession.mode as AICoachMode) ?? "SOCRATIC_TUTOR");
           setMessages(payload.activeSession.messages);
@@ -185,6 +207,19 @@ export default function AICoachPage() {
       }
     }
     loadInitial();
+  }, []);
+
+  // /math sahifasidan kelgan havola: ?mode=MATH_DEEP_DIVE&q=...
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlMode = params.get("mode");
+    const urlQuestion = params.get("q");
+    if (urlMode && MODE_TABS.some((t) => t.id === urlMode)) {
+      setMode(urlMode as AICoachMode);
+      setSessionId(undefined);
+      setMessages([]);
+    }
+    if (urlQuestion) setInput(urlQuestion);
   }, []);
 
   useEffect(() => {

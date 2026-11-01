@@ -8,19 +8,17 @@ import {
 } from "@/lib/ai";
 
 describe("Stage 5: Provider-Agnostic Socratic AI Coach (/lib/ai)", () => {
-  it("rotates warm honorifics for FEMALE ('Malikam') and MALE ('Shag'zodam')", () => {
+  it("rotates warm honorifics and prefers the student's first name", () => {
     const f0 = getVariedHonorific("FEMALE", 0);
     const f1 = getVariedHonorific("FEMALE", 1);
     const m0 = getVariedHonorific("MALE", 0);
-    const m1 = getVariedHonorific("MALE", 1);
 
-    expect(f0).toContain("Malikam");
-    expect(f1).toContain("Malikam");
+    expect(f0.length).toBeGreaterThan(0);
     expect(f0).not.toBe(f1);
+    expect(m0).toBe(f0);
 
-    expect(m0).toContain("Shag'zodam");
-    expect(m1).toContain("Shag'zodam");
-    expect(m0).not.toBe(m1);
+    expect(getVariedHonorific("FEMALE", 0, "Madina Karimova")).toBe("Madina");
+    expect(getVariedHonorific("MALE", 0, "Ali Valiyev")).toBe("Ali");
   });
 
   it("applies Socratic method: guides first with a question, then explains step-by-step", async () => {
@@ -28,19 +26,22 @@ describe("Stage 5: Provider-Agnostic Socratic AI Coach (/lib/ai)", () => {
       userMessage: "6x + 10 = 34 tenglamadan 3x + 5 ni qanday topaman?",
       mode: "SOCRATIC_TUTOR",
       gender: "FEMALE",
+      studentName: "Madina",
       studentLevel: "BEGINNER",
       turnIndex: 0,
       history: [],
     });
 
     expect(firstTurn.metadata.socraticStep).toBe("GUIDING_QUESTION");
-    expect(firstTurn.reply).toContain("Malikam");
+    expect(firstTurn.reply).toContain("Madina");
     expect(firstTurn.reply).toContain("tayyor javobni darhol berib qo'ymayman");
+    expect(firstTurn.reply).not.toContain("Aniq Yechim");
 
     const secondTurn = await generateAICoachResponse({
       userMessage: "Ikkala tomonini 2 ga bo'lamiz!",
       mode: "SOCRATIC_TUTOR",
       gender: "FEMALE",
+      studentName: "Madina",
       studentLevel: "BEGINNER",
       turnIndex: 1,
       history: [

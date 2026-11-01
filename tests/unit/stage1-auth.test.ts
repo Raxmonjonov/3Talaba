@@ -3,10 +3,11 @@ import { registerSchema, loginSchema, getHonorificTitle } from "@/lib/validation
 import { checkRateLimit } from "@/lib/rate-limit";
 
 describe("Bosqich 1: Autentifikatsiya va Murojaat Validatsiyasi", () => {
-  it("Qiz o'quvchiga 'Malikam', o'g'il o'quvchiga 'Shag'zodam' deb murojaat qiladi", () => {
-    expect(getHonorificTitle("FEMALE")).toBe("Malikam");
-    expect(getHonorificTitle("MALE")).toBe("Shag'zodam");
-    expect(getHonorificTitle(undefined)).toBe("Shag'zodam");
+  it("O'quvchi ismi bilan yoki neytral hurmatli murojaat bilan murojaat qiladi", () => {
+    expect(getHonorificTitle("FEMALE", "Madina Karimova")).toBe("Madina");
+    expect(getHonorificTitle("MALE", "Ali Valiyev")).toBe("Ali");
+    expect(getHonorificTitle("FEMALE")).toBe("Aziz o'quvchi");
+    expect(getHonorificTitle(undefined, "   ")).toBe("Aziz o'quvchi");
   });
 
   it("To'g'ri ro'yxatdan o'tish ma'lumotlarini qabul qiladi", () => {
