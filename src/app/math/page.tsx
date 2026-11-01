@@ -30,6 +30,7 @@ import {
   type MathTopic,
 } from "@/lib/curriculum/math-deep-dive";
 import { MathVisualDiagram } from "@/components/math/MathVisualDiagram";
+import { FormulaSheetView, InteractiveSolversView } from "@/components/math/MathTools";
 
 type TopicProgress = { solved: string[]; masteredAt?: number };
 type ProgressMap = Record<string, TopicProgress>;
@@ -47,6 +48,7 @@ function loadLocalProgress(): ProgressMap {
 }
 
 export default function MathDeepDivePage() {
+  const [mainView, setMainView] = useState<"topics" | "formulas" | "solvers">("topics");
   const [branch, setBranch] = useState<MathBranch>("algebra");
   const [activeSlug, setActiveSlug] = useState<string>(MATH_TOPICS[0].slug);
   const [step, setStep] = useState<number>(1);
@@ -201,6 +203,43 @@ export default function MathDeepDivePage() {
           </div>
         </div>
 
+        {/* Asosiy navigatsiya tablari */}
+        <div className="mt-6 flex flex-wrap gap-2.5 border-t border-border pt-5">
+          <button
+            type="button"
+            onClick={() => setMainView("topics")}
+            className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+              mainView === "topics"
+                ? "bg-neon text-slate-950 shadow-neon"
+                : "border border-border bg-surface text-fg-muted hover:text-fg"
+            }`}
+          >
+            📚 6 Bosqichli Laboratoriya (Mavzular)
+          </button>
+          <button
+            type="button"
+            onClick={() => setMainView("formulas")}
+            className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+              mainView === "formulas"
+                ? "bg-neon text-slate-950 shadow-neon"
+                : "border border-border bg-surface text-fg-muted hover:text-fg"
+            }`}
+          >
+            📋 Formulalar Spravochnigi (Cheat Sheet)
+          </button>
+          <button
+            type="button"
+            onClick={() => setMainView("solvers")}
+            className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+              mainView === "solvers"
+                ? "bg-neon text-slate-950 shadow-neon"
+                : "border border-border bg-surface text-fg-muted hover:text-fg"
+            }`}
+          >
+            🧮 Interaktiv Yechuvchi Kalkulyatorlar
+          </button>
+        </div>
+
         {/* Metod bosqichlari */}
         <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
           {DEEP_METHOD_STEPS.map((s, idx) => {
@@ -221,6 +260,19 @@ export default function MathDeepDivePage() {
         </div>
       </div>
 
+      {mainView === "formulas" && (
+        <div className="mt-6 glass-card p-6 sm:p-8">
+          <FormulaSheetView />
+        </div>
+      )}
+
+      {mainView === "solvers" && (
+        <div className="mt-6 glass-card p-6 sm:p-8">
+          <InteractiveSolversView />
+        </div>
+      )}
+
+      {mainView === "topics" && (
       <div className="mt-6 grid gap-6 lg:grid-cols-[290px_1fr]">
         {/* Chap panel: fan va mavzular */}
         <aside className="glass-card h-fit p-4">
@@ -373,6 +425,7 @@ export default function MathDeepDivePage() {
           </div>
         </section>
       </div>
+      )}
     </div>
   );
 }
