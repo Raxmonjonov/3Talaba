@@ -9,9 +9,12 @@ import {
   CheckCircle2,
   HelpCircle,
   Brain,
-  Trophy,
   ArrowRight,
   BookOpen,
+  FileText,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
@@ -39,44 +42,48 @@ interface QuestionsBankResponse {
 
 export default function PracticeBankPage() {
   const { reduceMotion } = useUIPreferences();
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
   const [data, setData] = useState<QuestionsBankResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
   const [currentIdx, setCurrentIdx] = useState<number>(0);
 
-  const [chosenOpt, setChosenOpt] = useState<"A" | "B" | "C" | "D" | null>(null);
+  const [selectedOpt, setSelectedOpt] = useState<"A" | "B" | "C" | "D" | null>(null);
   const [feedback, setFeedback] = useState<"idle" | "correct" | "wrong">("idle");
   const [showHint, setShowHint] = useState<boolean>(false);
-  const [xpTotal, setXpTotal] = useState<number>(150);
-
-  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [answeredCount, setAnsweredCount] = useState<number>(0);
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (selectedSubject !== "all") params.set("subject", selectedSubject);
-    if (selectedDifficulty !== "all") params.set("difficulty", selectedDifficulty);
-
-    fetch(`/api/questions?${params.toString()}`)
+    fetch("/api/questions")
       .then((res) => (res.ok ? res.json() : null))
       .then((payload: QuestionsBankResponse | null) => {
-        if (payload) {
-          setData(payload);
-          setCurrentIdx(0);
-          setChosenOpt(null);
-          setFeedback("idle");
-          if (payload.profile?.xpTotal) setXpTotal(payload.profile.xpTotal);
-        }
+        if (payload) setData(payload);
       })
-      .catch(() => {});
-  }, [selectedSubject, selectedDifficulty]);
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-  const currentQuestion = data?.questions[currentIdx] ?? null;
+  const filteredQuestions = (data?.questions ?? []).filter((q) => {
+    if (selectedSubject !== "all" && q.subjectSlug !== selectedSubject) return false;
+    if (selectedDifficulty !== "all" && q.difficulty !== Number(selectedDifficulty)) {
+      return false;
+    }
+    return true;
+  });
 
-  const handleAnswer = async (optId: "A" | "B" | "C" | "D") => {
+  const currentQuestion: PracticeQuestionDTO | undefined =
+    filteredQuestions[currentIdx] ?? filteredQuestions[0];
+
+  const handleSelectOption = async (optId: "A" | "B" | "C" | "D") => {
     if (!currentQuestion || feedback !== "idle") return;
-    setChosenOpt(optId);
+    setSelectedOpt(optId);
+
     const isRight = optId === currentQuestion.correctAnswer;
     setFeedback(isRight ? "correct" : "wrong");
+    if (isRight) setAnsweredCount((prev) => prev + 1);
 
     if (!reduceMotion && cardRef.current) {
       if (isRight) {
@@ -89,72 +96,110 @@ export default function PracticeBankPage() {
       }
     }
 
-    const res = await fetch("/api/questions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        questionId: currentQuestion.id,
-        givenAnswer: optId,
-        timeSpentSec: 15,
-      }),
-    });
+    try {
+      await fetch("/api/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionId: currentQuestion.id,
+          givenAnswer: optId,
+          timeSpentSec: 15,
+        }),
+      });
+    } catch {}
+  };
 
-    if (res.ok) {
-      const result = (await res.json()) as { xpTotal?: number };
-      if (result.xpTotal) setXpTotal(result.xpTotal);
+  const nextQuestion = () => {
+    setSelectedOpt(null);
+    setFeedback("idle");
+    setShowHint(false);
+    if (currentIdx + 1 < filteredQuestions.length) {
+      setCurrentIdx((prev) => prev + 1);
+    } else {
+      setCurrentIdx(0);
     }
   };
 
-  if (!data) {
+  const prevQuestion = () => {
+    setSelectedOpt(null);
+    setFeedback("idle");
+    setShowHint(false);
+    if (currentIdx > 0) {
+      setCurrentIdx((prev) => prev - 1);
+    }
+  };
+
+  if (loading || !data) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
-        <p className="text-sm text-fg-muted">Savollar banki yuklanmoqda...</p>
+        <div className="flex items-center gap-3 text-slate-300">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+          <span className="text-sm font-semibold">Savollar banki yuklanmoqda...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="glass-card p-6 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      <div className="glass-card p-6 sm:p-10">
+        {/* Yuqori Sarlavha */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
+          <div className="space-y-1">
+            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3.5 py-1 text-xs font-extrabold text-emerald-300">
               <Layers className="h-3.5 w-3.5" />
-              <span>SAVOLLAR BANKI VA MASHQ MAYDONI</span>
+              <span>SAVOLLAR BANKI &amp; AMALIY MASHQLAR</span>
             </span>
-            <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-3xl">
-              {data.honorific}, fan va qiyinlik bo&apos;yicha mashq qiling
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              {data.honorific}, fanlar bo&apos;yicha intensiv mashq
             </h1>
+            <p className="text-xs sm:text-sm text-slate-300">
+              Har bir savol xalqaro standart (Digital SAT, IELTS) formatida tuzilgan.
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-gold/40 bg-gold-soft px-4 py-2 text-center">
-              <span className="flex items-center gap-1.5 font-mono text-lg font-extrabold text-gold">
-                <Trophy className="h-4 w-4" />
-                {xpTotal} XP
+            <div className="glass-pill rounded-2xl px-4 py-2.5 text-center">
+              <span className="block font-mono text-lg font-black text-emerald-400">
+                {answeredCount} / {filteredQuestions.length}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-400">
+                Yechilgan mashqlar
               </span>
             </div>
+
+            <Link
+              href="/history"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-xs font-bold text-white hover:border-emerald-400/50 hover:bg-white/10 transition-colors"
+            >
+              <FileText className="h-4 w-4 text-emerald-400" />
+              <span>Dars Tarixi</span>
+            </Link>
+
             <Link
               href="/learn"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-bold text-fg hover:border-neon"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-xs font-bold text-white hover:border-emerald-400/50 hover:bg-white/10 transition-colors"
             >
-              <BookOpen className="h-4 w-4 text-neon" />
+              <BookOpen className="h-4 w-4 text-amber-300" />
               <span>Darslarga qaytish</span>
             </Link>
           </div>
         </div>
 
         {/* Filtrlar: Fan va Qiyinlik */}
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-fg-muted">
-              <Filter className="h-3.5 w-3.5 text-neon" />
+            <label className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-300">
+              <Filter className="h-3.5 w-3.5 text-emerald-400" />
               <span>Fanni tanlang:</span>
             </label>
             <select
               value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="w-full rounded-xl border border-border bg-canvas px-3.5 py-2.5 text-sm text-fg focus:border-neon focus:outline-none"
+              onChange={(e) => {
+                setSelectedSubject(e.target.value);
+                setCurrentIdx(0);
+              }}
+              className="w-full rounded-2xl border border-white/15 bg-slate-900/90 px-4 py-3 text-xs sm:text-sm font-semibold text-white focus:border-emerald-400 focus:outline-none"
             >
               <option value="all">Barcha fanlar ({data.questions.length} ta savol)</option>
               {data.subjects.map((s) => (
@@ -166,19 +211,22 @@ export default function PracticeBankPage() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-fg-muted">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-300">
               Qiyinlik darajasi:
             </label>
             <select
               value={selectedDifficulty}
-              onChange={(e) => setSelectedDifficulty(e.target.value)}
-              className="w-full rounded-xl border border-border bg-canvas px-3.5 py-2.5 text-sm text-fg focus:border-neon focus:outline-none"
+              onChange={(e) => {
+                setSelectedDifficulty(e.target.value);
+                setCurrentIdx(0);
+              }}
+              className="w-full rounded-2xl border border-white/15 bg-slate-900/90 px-4 py-3 text-xs sm:text-sm font-semibold text-white focus:border-emerald-400 focus:outline-none"
             >
               <option value="all">Barcha darajalar (1..4)</option>
               <option value="1">1-daraja: Noldan (Tayanch)</option>
               <option value="2">2-daraja: Boshlang&apos;ich</option>
-              <option value="3">3-daraja: O&apos;rta</option>
-              <option value="4">4-daraja: Yuqori (Murakkab)</option>
+              <option value="3">3-daraja: O&apos;rta (SAT imtihoni)</option>
+              <option value="4">4-daraja: Yuqori (800 / Band 8.5)</option>
             </select>
           </div>
         </div>
@@ -187,107 +235,136 @@ export default function PracticeBankPage() {
         {currentQuestion ? (
           <div
             ref={cardRef}
-            className="mt-6 rounded-2xl border border-white/10 bg-surface/50 backdrop-blur-xl p-6 sm:p-7 shadow-lg"
+            className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 backdrop-blur-xl"
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="rounded-lg bg-elevated px-3 py-1 text-xs font-bold text-neon">
-                {currentQuestion.subjectNameUz} • {currentQuestion.topicTitleUz} (Savol{" "}
-                {currentIdx + 1} / {data.questions.length})
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowHint(!showHint)}
-                className="inline-flex items-center gap-1 rounded-lg border border-gold/40 bg-gold-soft px-3 py-1 text-xs font-bold text-gold"
-              >
-                <HelpCircle className="h-3.5 w-3.5" />
-                <span>Maslahat (Hint)</span>
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="glass-pill rounded-lg px-3 py-1 font-mono text-xs font-bold text-emerald-300">
+                  {currentQuestion.subjectNameUz}
+                </span>
+                <span className="text-xs text-slate-400 font-semibold">
+                  Mavzu: {currentQuestion.topicTitleUz}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <JarvisVoiceButton
+                  text={`${currentQuestion.promptUz}. Variantlar: ${currentQuestion.options.map(o => o.id + ': ' + o.text).join('. ')}`}
+                  label="Savolni tinglash"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowHint(!showHint)}
+                  className="inline-flex items-center gap-1 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-colors"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  <span>Yordam</span>
+                </button>
+              </div>
             </div>
 
-            {showHint && currentQuestion.hints.length > 0 && (
-              <div className="mt-3 rounded-xl border border-gold/40 bg-gold-soft/20 p-3 text-xs text-gold">
-                💡 {currentQuestion.hints[0]}
-              </div>
-            )}
-
+            {/* Matn / Passage (agar bo'lsa) */}
             {currentQuestion.passageUz && (
-              <div className="mt-4 rounded-xl border border-border bg-surface p-4 font-serif text-sm italic text-fg">
-                &ldquo;{currentQuestion.passageUz}&rdquo;
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-xs sm:text-sm text-slate-300 italic leading-relaxed">
+                {currentQuestion.passageUz}
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-bold text-white sm:text-xl">
-                {currentQuestion.promptUz}
-              </h2>
-              <JarvisVoiceButton
-                text={`${currentQuestion.promptUz}. Variantlar: ${currentQuestion.options.map(o => o.id + ': ' + o.text).join('. ')}`}
-                label="Savolni tinglash"
-              />
-            </div>
+            {/* Savol matni */}
+            <h3 className="mt-4 text-lg sm:text-xl font-bold text-white leading-relaxed">
+              {currentQuestion.promptUz}
+            </h3>
 
-            <div className="mt-5 grid gap-3">
+            {/* Hint paneli */}
+            {showHint && currentQuestion.hints.length > 0 && (
+              <div className="mt-4 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4 text-xs font-semibold text-amber-200">
+                <p>💡 <strong>Yordam:</strong> {currentQuestion.hints[0]}</p>
+              </div>
+            )}
+
+            {/* Variantlar */}
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {currentQuestion.options.map((opt) => {
-                const isRight = opt.id === currentQuestion.correctAnswer;
-                const isSelected = chosenOpt === opt.id;
-                let cls = "border-white/10 bg-canvas/60 text-fg hover:border-neon/60 hover:bg-canvas/90";
+                const isSelected = selectedOpt === opt.id;
+                const isCorrect = opt.id === currentQuestion.correctAnswer;
+
+                let optClass = "border-white/15 bg-white/5 text-white hover:border-emerald-400/50 hover:bg-white/10";
                 if (feedback !== "idle") {
-                  if (isRight) cls = "border-neon bg-neon-soft text-neon font-bold shadow-neon";
-                  else if (isSelected) cls = "border-danger bg-danger/15 text-danger";
+                  if (isCorrect) {
+                    optClass = "border-emerald-400 bg-emerald-500/25 text-emerald-300 font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)]";
+                  } else if (isSelected) {
+                    optClass = "border-red-400 bg-red-500/25 text-red-300 font-bold";
+                  } else {
+                    optClass = "border-white/5 bg-white/[0.02] text-slate-500 opacity-60";
+                  }
                 }
+
                 return (
                   <button
                     key={opt.id}
                     type="button"
                     disabled={feedback !== "idle"}
-                    onClick={() => handleAnswer(opt.id)}
-                    className={`flex items-center justify-between rounded-xl border p-4 text-left text-sm transition-all ${cls}`}
+                    onClick={() => handleSelectOption(opt.id)}
+                    className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${optClass}`}
                   >
-                    <span>
-                      <strong className="mr-2 font-mono">{opt.id}.</strong>
-                      {opt.text}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 font-mono text-sm font-extrabold text-emerald-400">
+                      {opt.id}
                     </span>
-                    {feedback !== "idle" && isRight && (
-                      <CheckCircle2 className="h-5 w-5 text-neon" />
-                    )}
+                    <span className="text-sm font-semibold">{opt.text}</span>
                   </button>
                 );
               })}
             </div>
 
+            {/* Tahlil va Yechim */}
             {feedback !== "idle" && (
-              <div className="mt-5 rounded-xl border border-border bg-elevated p-4">
-                <div className="flex items-start gap-2.5 text-xs sm:text-sm">
-                  <Brain className="mt-0.5 h-5 w-5 shrink-0 text-neon" />
-                  <div>
-                    <p className="font-bold text-neon">Tushuntirish:</p>
-                    <div className="mt-1 flex flex-wrap items-start justify-between gap-2">
-                    <p className="text-slate-200 text-sm leading-relaxed">{currentQuestion.explanationUz}</p>
-                    <JarvisVoiceButton text={currentQuestion.explanationUz} label="Eshitish" />
-                  </div>
-                  </div>
+              <div
+                className={`mt-6 rounded-2xl border p-5 ${
+                  feedback === "correct"
+                    ? "border-emerald-400 bg-emerald-500/15 text-emerald-200"
+                    : "border-amber-400 bg-amber-500/15 text-amber-200"
+                }`}
+              >
+                <div className="flex items-center gap-2 font-bold mb-1">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>{feedback === "correct" ? "To'g'ri javob!" : "Xato javob"}</span>
                 </div>
-                <div className="mt-4 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setChosenOpt(null);
-                      setFeedback("idle");
-                      setShowHint(false);
-                      setCurrentIdx((prev) => (prev + 1) % data.questions.length);
-                    }}
-                    className="btn-neon inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold"
-                  >
-                    <span>Keyingi savol</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-200">
+                  {currentQuestion.explanationUz}
+                </p>
               </div>
             )}
+
+            {/* Navigatsiya: Oldingi / Keyingi savol */}
+            <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+              <button
+                type="button"
+                onClick={prevQuestion}
+                disabled={currentIdx === 0}
+                className="flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-xs font-bold text-slate-300 hover:text-white disabled:opacity-40"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span>Oldingi savol</span>
+              </button>
+
+              <span className="font-mono text-xs font-bold text-slate-400">
+                {currentIdx + 1} / {filteredQuestions.length}
+              </span>
+
+              <button
+                type="button"
+                onClick={nextQuestion}
+                className="btn-neon flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold"
+              >
+                <span>Keyingi savol</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="mt-6 rounded-2xl border border-border bg-canvas p-8 text-center text-sm text-fg-muted">
-            Ushbu filtr bo&apos;yicha savollar topilmadi.
+          <div className="mt-8 rounded-2xl border border-white/10 p-8 text-center text-slate-400">
+            Tanlangan fan va darajada savollar topilmadi. Filtrni o&apos;zgartiring.
           </div>
         )}
       </div>
