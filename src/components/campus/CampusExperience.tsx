@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
   ArrowRight,
-  Award,
   BookOpen,
   Brain,
   CheckCircle2,
@@ -15,19 +14,14 @@ import {
   Flame,
   Globe2,
   GraduationCap,
-  HelpCircle,
   Layers,
-  Lightbulb,
-  ListOrdered,
   Play,
-  Search,
-  Shapes,
   Sigma,
   Sparkles,
   Trophy,
-  Users,
   Zap,
 } from "lucide-react";
+import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 
 interface QuickQuizQuestion {
   id: string;
@@ -50,7 +44,7 @@ const SAMPLE_QUIZ_QUESTIONS: QuickQuizQuestion[] = [
       { id: "D", text: "45" },
     ],
     correct: "B",
-    explanation: "3x = 15 ⇒ x = 5. Demak, 6x + 5 = 6(5) + 5 = 35. (Yoki 6x = 2·3x = 30 ⇒ 30 + 5 = 35).",
+    explanation: "3x = 15 ⇒ x = 5. Demak, 6x + 5 = 6(5) + 5 = 35.",
   },
   {
     id: "q-2",
@@ -63,7 +57,7 @@ const SAMPLE_QUIZ_QUESTIONS: QuickQuizQuestion[] = [
       { id: "D", text: "18" },
     ],
     correct: "B",
-    explanation: "3-4-5 Pifagor uchligining 3 barobari: 3·3 = 9, 4·3 = 12, 5·3 = 15. c = 15.",
+    explanation: "3-4-5 Pifagor uchligining 3 barobari: 3·3 = 9, 4·3 = 12, 5·3 = 15.",
   },
   {
     id: "q-3",
@@ -76,7 +70,7 @@ const SAMPLE_QUIZ_QUESTIONS: QuickQuizQuestion[] = [
       { id: "D", text: "Moreover" },
     ],
     correct: "C",
-    explanation: "However (ammo, biroq) ziddiyatni ifodalaydi. Furthermore va Moreover esa fikrni kuchaytiradi.",
+    explanation: "However (ammo, biroq) ziddiyatni ifodalaydi. Furthermore esa fikrni kuchaytiradi.",
   },
 ];
 
@@ -100,7 +94,7 @@ export function CampusExperience() {
     }
   };
 
-  const handleNextQuiz = () => {
+  const nextQuiz = () => {
     setChosenOption(null);
     setQuizAnswered(false);
     setActiveQuizIdx((prev) => (prev + 1) % SAMPLE_QUIZ_QUESTIONS.length);
@@ -109,54 +103,50 @@ export function CampusExperience() {
   const studentName = session?.user?.name?.split(" ")[0] || "O'quvchi";
 
   return (
-    <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-12">
+    <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-10">
       {/* ====================================================================
-          1. O'QUVCHI BOSHQARUV PANELI (Campus Header & Progress Status)
+          1. O'QUVCHI BOSHQARUV PANELI (Campus Header & Progress)
           ==================================================================== */}
-      <section className="glass-card p-6 sm:p-8 relative overflow-hidden">
-        {/* Shishasimon ichki aura */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-neon/10 blur-3xl pointer-events-none" />
-        <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
-
-        <div className="relative flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6">
+      <section className="glass-card p-6 sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-neon animate-pulse" />
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-neon">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">
                 Jonli O&apos;quv Muhiti • 3Talab Campus
               </span>
             </div>
-            <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-4xl tracking-tight">
-              Xush kelibsiz, <span className="text-gold">{studentName}</span>!
+            <h1 className="mt-2 text-2xl font-extrabold text-white sm:text-4xl tracking-tight">
+              Xush kelibsiz, <span className="text-amber-300">{studentName}</span>!
             </h1>
-            <p className="mt-1.5 text-sm text-fg-muted max-w-2xl">
-              12 oylik xalqaro universitetlarga tayyorgarlik tizimi. Bugungi darslaringiz va amaliy mashqlaringiz tayyor.
+            <p className="mt-1 text-sm text-slate-300">
+              12 oylik xalqaro universitetlarga tayyorgarlik tizimi. Bugungi darslaringiz tayyor.
             </p>
           </div>
 
-          {/* O'quvchi ko'rsatkichlari (Glass Pills) */}
+          {/* O'quvchi ko'rsatkichlari */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="glass-pill rounded-2xl px-4 py-2.5 text-center flex items-center gap-2.5">
-              <Flame className="h-5 w-5 text-amber-500 fill-amber-500/20" />
+              <Flame className="h-5 w-5 text-amber-400 fill-amber-400/20" />
               <div className="text-left">
-                <span className="block font-mono text-xs font-bold text-fg">5 Kun</span>
-                <span className="block text-[10px] text-fg-muted">Uzluksiz Streak</span>
+                <span className="block font-mono text-xs font-extrabold text-white">5 Kun</span>
+                <span className="block text-[10px] text-slate-400">Uzluksiz Streak</span>
               </div>
             </div>
 
             <div className="glass-pill rounded-2xl px-4 py-2.5 text-center flex items-center gap-2.5">
-              <Zap className="h-5 w-5 text-neon" />
+              <Zap className="h-5 w-5 text-emerald-400" />
               <div className="text-left">
-                <span className="block font-mono text-xs font-bold text-neon">+{quizScore + 150} XP</span>
-                <span className="block text-[10px] text-fg-muted">Ballar</span>
+                <span className="block font-mono text-xs font-extrabold text-emerald-400">+{quizScore + 150} XP</span>
+                <span className="block text-[10px] text-slate-400">Ballar</span>
               </div>
             </div>
 
             <div className="glass-pill rounded-2xl px-4 py-2.5 text-center flex items-center gap-2.5">
-              <Trophy className="h-5 w-5 text-gold" />
+              <Trophy className="h-5 w-5 text-amber-300" />
               <div className="text-left">
-                <span className="block font-mono text-xs font-bold text-gold">2-Daraja</span>
-                <span className="block text-[10px] text-fg-muted">Zukko Yetakchi</span>
+                <span className="block font-mono text-xs font-extrabold text-amber-300">2-Daraja</span>
+                <span className="block text-[10px] text-slate-400">Zukko Yetakchi</span>
               </div>
             </div>
           </div>
@@ -165,24 +155,24 @@ export function CampusExperience() {
         {/* Faol Darsni Davom Ettirish Bloki (Continue Learning Hero Card) */}
         <div className="mt-6 grid gap-4 lg:grid-cols-12 items-center">
           <div className="lg:col-span-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-neon/40 bg-neon-soft text-neon shadow-neon">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
               <Sigma className="h-7 w-7" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="rounded-md bg-neon-soft px-2 py-0.5 text-[10px] font-bold text-neon">
-                  TAVSIYA ETILGAN DARSLIK
+                <span className="rounded-md bg-emerald-500/15 border border-emerald-400/30 px-2 py-0.5 text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
+                  Faol Darslik
                 </span>
-                <span className="text-xs text-fg-muted">15 moduldan 4 tasi tugallangan</span>
+                <span className="text-xs text-slate-400">15 moduldan 4 tasi tugallangan</span>
               </div>
-              <h3 className="mt-1 text-base font-bold text-fg sm:text-lg">
-                Algebra & Geometriya: 6 Bosqichli Chuqur Metod
+              <h3 className="mt-1 text-base font-bold text-white sm:text-lg">
+                Algebra &amp; Geometriya: 6 Bosqichli Chuqur Metod
               </h3>
               <div className="mt-2 flex items-center gap-3">
                 <div className="h-2 flex-1 max-w-md overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full rounded-full bg-gradient-to-r from-neon to-accent-neon-bright w-[32%]" />
+                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-amber-300 w-[32%]" />
                 </div>
-                <span className="font-mono text-xs font-bold text-neon">32%</span>
+                <span className="font-mono text-xs font-bold text-emerald-400">32%</span>
               </div>
             </div>
           </div>
@@ -197,34 +187,32 @@ export function CampusExperience() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/learn"
-              className="glass-pill inline-flex items-center gap-1.5 px-4 py-3 text-xs font-bold text-fg hover:text-neon"
+              href="/history"
+              className="glass-pill inline-flex items-center gap-1.5 px-4 py-3 text-xs font-bold text-slate-200 hover:text-emerald-400"
             >
-              <span>Barcha Darslar</span>
+              <BookOpen className="h-4 w-4" />
+              <span>Dars Tarixi</span>
             </Link>
           </div>
         </div>
       </section>
 
       {/* ====================================================================
-          2. ASOSIY FANLAR AKADEMIYASI (Subjects Glass Grid)
+          2. ASOSIY FANLAR VA O'QUV MODULLARI (Clean Visual Course Cards)
           ==================================================================== */}
-      <section className="space-y-6">
+      <section className="space-y-5">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-neon">
-              O&apos;QUV YO&apos;NALISHLARI
+            <span className="font-mono text-xs font-bold uppercase tracking-widest text-emerald-400">
+              Akademik Dastur
             </span>
-            <h2 className="mt-1 text-2xl font-extrabold text-fg sm:text-3xl tracking-tight">
+            <h2 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl tracking-tight">
               Asosiy Fanlar va Chuqur Tayyorgarlik Modullari
             </h2>
-            <p className="mt-1 text-xs text-fg-muted sm:text-sm">
-              Har bir fan noldan xalqaro imtihonlar (SAT, IELTS) va top universitetlar darajasigacha tuzilgan.
-            </p>
           </div>
           <Link
             href="/roadmap"
-            className="text-xs font-bold text-gold hover:text-gold-bright inline-flex items-center gap-1"
+            className="text-xs font-bold text-amber-300 hover:text-amber-200 inline-flex items-center gap-1"
           >
             <span>12 Oylik Xaritani ko&apos;rish</span>
             <ArrowRight className="h-3.5 w-3.5" />
@@ -239,22 +227,26 @@ export function CampusExperience() {
           >
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neon/40 bg-neon-soft text-neon group-hover:scale-105 transition-transform">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 group-hover:scale-105 transition-transform">
                   <Sigma className="h-6 w-6" />
                 </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-[11px] font-bold text-neon">
+                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-emerald-300">
                   15 ta Modul
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-fg group-hover:text-neon transition-colors">
-                Algebra & Geometriya (Chuqur)
+              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
+                Algebra &amp; Geometriya (Chuqur)
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-fg-muted line-clamp-3">
-                6 bosqichli metod: Tushun, Ko&apos;r (SVG), Formula isboti, Namuna, SAT testlari va Xatolar tahlili.
-                Formulalar spravochnigi va interaktiv kalkulyatorlar.
-              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  SAT &amp; Olimpiada
+                </span>
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Formulalar &amp; Isbotlar
+                </span>
+              </div>
             </div>
-            <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-neon">
+            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-emerald-400">
               <span>Laboratoriyaga kirish</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -267,22 +259,26 @@ export function CampusExperience() {
           >
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/40 bg-gold-soft text-gold group-hover:scale-105 transition-transform">
-                  <Shapes className="h-6 w-6" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/20 text-amber-300 group-hover:scale-105 transition-transform">
+                  <Layers className="h-6 w-6" />
                 </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-[11px] font-bold text-gold">
+                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-amber-300">
                   800 Ballgacha
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-fg group-hover:text-gold transition-colors">
+              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
                 SAT Matematika (Digital SAT)
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-fg-muted line-clamp-3">
-                Chiziqli va kvadratik tenglamalar, funksiyalar grafiklari, eksponensial o&apos;sish va ma&apos;lumotlar tahlili
-                bo&apos;yicha minglab original savollar banki.
-              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Tenglamalar &amp; Funksiyalar
+                </span>
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Savollar Banki
+                </span>
+              </div>
             </div>
-            <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-gold">
+            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300">
               <span>Savollar bankiga o&apos;tish</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -295,22 +291,26 @@ export function CampusExperience() {
           >
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neon/40 bg-neon-soft text-neon group-hover:scale-105 transition-transform">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 group-hover:scale-105 transition-transform">
                   <BookOpen className="h-6 w-6" />
                 </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-[11px] font-bold text-neon">
-                  R&W Moduli
+                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-emerald-300">
+                  R&amp;W Moduli
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-fg group-hover:text-neon transition-colors">
-                SAT Reading & Writing
+              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
+                SAT Reading &amp; Writing
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-fg-muted line-clamp-3">
-                Ilmiy, tarixiy va adabiy matnlarni tezkor skanerlash, mantiqiy xulosalar chiqarish va grammatik qoliplarni
-                oson o&apos;zlashtirish.
-              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Akademik Matnlar
+                </span>
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Grammatika
+                </span>
+              </div>
             </div>
-            <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-neon">
+            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-emerald-400">
               <span>Mashqlarni boshlash</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -323,51 +323,59 @@ export function CampusExperience() {
           >
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/40 bg-gold-soft text-gold group-hover:scale-105 transition-transform">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/20 text-amber-300 group-hover:scale-105 transition-transform">
                   <Globe2 className="h-6 w-6" />
                 </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-[11px] font-bold text-gold">
+                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-amber-300">
                   Band 7.5 – 8.5
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-fg group-hover:text-gold transition-colors">
+              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
                 IELTS Academic (4 Ko&apos;nikma)
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-fg-muted line-clamp-3">
-                Listening va Reading tuzoqlari (True/False/Not Given), Writing Task 1/2 mezonlari va Speaking uchun professional
-                akademik strukturalar.
-              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Listening &amp; Reading
+                </span>
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Writing Task 1/2
+                </span>
+              </div>
             </div>
-            <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-gold">
+            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300">
               <span>IELTS darslariga o&apos;tish</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
-          {/* 5. Akademik Yozuv & Admission */}
+          {/* 5. Dars Tarixi & Matnlar */}
           <Link
-            href="/coach?mode=WRITING_REVIEW"
+            href="/history"
             className="glass-card glass-card-interactive p-6 flex flex-col justify-between group"
           >
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neon/40 bg-neon-soft text-neon group-hover:scale-105 transition-transform">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 group-hover:scale-105 transition-transform">
                   <FileText className="h-6 w-6" />
                 </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-[11px] font-bold text-neon">
-                  Grant & Stipendiya
+                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-emerald-300">
+                  Audio &amp; Matn
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-fg group-hover:text-neon transition-colors">
-                Akademik Insho & Grantlar
+              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
+                Dars Tarixi &amp; Konspektlar
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-fg-muted line-clamp-3">
-                Xalqaro top universitetlar qabul komissiyasi uchun Personal Statement, Motivational Letter va insholarni AI orqali
-                Band mezonlarida tekshirish.
-              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  To&apos;liq Dars Matnlari
+                </span>
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  JARVIS Ovozida
+                </span>
+              </div>
             </div>
-            <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-neon">
-              <span>Writing tekshiruviga kirish</span>
+            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-emerald-400">
+              <span>Arxivni ochish</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
@@ -375,26 +383,31 @@ export function CampusExperience() {
           {/* 6. Shaxsiy AI Murabbiy */}
           <Link
             href="/coach"
-            className="glass-card glass-card-interactive p-6 flex flex-col justify-between group border-gold/40"
+            className="glass-card glass-card-interactive p-6 flex flex-col justify-between group border-amber-400/40"
           >
             <div>
               <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/50 bg-gold-soft text-gold group-hover:scale-105 transition-transform">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/20 text-amber-300 group-hover:scale-105 transition-transform">
                   <Brain className="h-6 w-6" />
                 </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-[11px] font-bold text-gold">
-                  24/7 Socratic AI
+                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-amber-300">
+                  24/7 JARVIS AI
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-fg group-hover:text-gold transition-colors">
-                Shaxsiy AI Murabbiy
+              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
+                AI Ovozli Murabbiy
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-fg-muted line-clamp-3">
-                Savolni o&apos;qib, tayyor javob bermasdan to&apos;g&apos;ri yechimga yo&apos;naltiradi. 6 xil metod: Socratic, Fast Shortcut, Step-by-Step va Math Deep Dive.
-              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Sokratik Muloqot
+                </span>
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                  Ovozli Javob (STT/TTS)
+                </span>
+              </div>
             </div>
-            <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-gold">
-              <span>AI Murabbiy bilan muloqot</span>
+            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300">
+              <span>Murabbiy bilan suhbat</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
@@ -402,25 +415,31 @@ export function CampusExperience() {
       </section>
 
       {/* ====================================================================
-          3. JONLI AMALIYOT ARENASI (Live Interactive Practice Arena)
+          3. JONLI AMALIYOT ARENASI (Live Practice Sprint)
           ==================================================================== */}
       <section className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-neon flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-neon" /> JONLI MASHQ SPRINTI (+15 XP)
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <Zap className="h-4 w-4 text-emerald-400" /> JONLI MASHQ SPRINTI (+15 XP)
             </span>
-            <h2 className="mt-1 text-xl font-extrabold text-fg sm:text-2xl">
-              Bilimingizni darhol sinab ko&apos;ring: {currentQuiz.subject}
+            <h2 className="mt-1 text-xl font-extrabold text-white sm:text-2xl">
+              {currentQuiz.subject}: Bilimingizni sinab ko&apos;ring
             </h2>
           </div>
-          <span className="glass-pill rounded-xl px-3 py-1 font-mono text-xs font-bold text-gold">
-            Savol {activeQuizIdx + 1} / {SAMPLE_QUIZ_QUESTIONS.length}
-          </span>
+          <div className="flex items-center gap-2">
+            <JarvisVoiceButton
+              text={`${currentQuiz.prompt}. Variantlar: ${currentQuiz.options.map(o => o.id + ': ' + o.text).join('. ')}`}
+              label="Savolni tinglash"
+            />
+            <span className="glass-pill rounded-xl px-3 py-1.5 font-mono text-xs font-bold text-amber-300">
+              Savol {activeQuizIdx + 1} / {SAMPLE_QUIZ_QUESTIONS.length}
+            </span>
+          </div>
         </div>
 
         <div className="mt-6 space-y-4">
-          <p className="text-base font-bold text-fg sm:text-lg">
+          <p className="text-lg font-bold text-white sm:text-xl">
             {currentQuiz.prompt}
           </p>
 
@@ -429,12 +448,14 @@ export function CampusExperience() {
               const isChosen = chosenOption === opt.id;
               const isCorrect = opt.id === currentQuiz.correct;
 
-              let btnClass = "border-white/10 bg-white/5 text-fg hover:border-neon/50";
+              let btnClass = "border-white/15 bg-white/5 text-white hover:border-emerald-400/50 hover:bg-white/10";
               if (quizAnswered) {
                 if (isCorrect) {
-                  btnClass = "border-neon bg-neon-soft text-neon font-bold shadow-neon";
+                  btnClass = "border-emerald-400 bg-emerald-500/20 text-emerald-300 font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)]";
                 } else if (isChosen) {
-                  btnClass = "border-danger bg-danger/20 text-danger";
+                  btnClass = "border-red-400 bg-red-500/20 text-red-300";
+                } else {
+                  btnClass = "border-white/5 bg-white/[0.02] text-slate-400 opacity-60";
                 }
               }
 
@@ -446,141 +467,31 @@ export function CampusExperience() {
                   onClick={() => handleChoose(opt.id)}
                   className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${btnClass}`}
                 >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-elevated font-mono text-xs font-extrabold text-neon">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 font-mono text-xs font-extrabold text-emerald-400">
                     {opt.id}
                   </span>
-                  <span className="text-sm font-medium">{opt.text}</span>
+                  <span className="text-base font-semibold">{opt.text}</span>
                 </button>
               );
             })}
           </div>
 
           {quizAnswered && (
-            <div className="mt-4 rounded-xl border border-neon/50 bg-neon-soft/40 p-4 animate-fadeIn">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-neon shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-bold text-neon">
-                    {chosenOption === currentQuiz.correct ? "Ofarin! To'g'ri javob (+15 XP)" : "Yechim tushuntirishi:"}
-                  </p>
-                  <p className="mt-1 text-xs sm:text-sm text-fg leading-relaxed">
-                    {currentQuiz.explanation}
-                  </p>
-                </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur-xl">
+              <div className="text-sm">
+                <span className="font-bold text-emerald-400">Tushuntirish: </span>
+                <span className="text-slate-200">{currentQuiz.explanation}</span>
               </div>
-              <div className="mt-3 flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleNextQuiz}
-                  className="btn-neon px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5"
-                >
-                  <span>Keyingi savol</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={nextQuiz}
+                className="btn-neon inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold"
+              >
+                <span>Keyingi savol</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* ====================================================================
-          4. TEZKOR AI MURABBIY SAVOL MAYDONI (Instant Socratic Ask Bar)
-          ==================================================================== */}
-      <section className="glass-card p-6 sm:p-8 text-center relative overflow-hidden">
-        <div className="mx-auto max-w-2xl space-y-3">
-          <span className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-bold text-gold">
-            <Sparkles className="h-3.5 w-3.5" /> AI MURABBIY KUTMOQDA
-          </span>
-          <h2 className="text-xl font-extrabold text-fg sm:text-3xl">
-            Tushunmagan misol yoki mavzungiz bormi?
-          </h2>
-          <p className="text-xs sm:text-sm text-fg-muted">
-            Istalgan tenglama, test savoli yoki ingliz tili qoidasini yozing. Murabbiy uni o&apos;qib, qadamma-qadam tushuntirib beradi.
-          </p>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (aiQuestion.trim()) {
-                window.location.href = `/coach?q=${encodeURIComponent(aiQuestion.trim())}`;
-              }
-            }}
-            className="mt-5 flex flex-col sm:flex-row items-center gap-2.5 max-w-xl mx-auto"
-          >
-            <div className="relative w-full">
-              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-fg-muted" />
-              <input
-                type="text"
-                value={aiQuestion}
-                onChange={(e) => setAiQuestion(e.target.value)}
-                placeholder="Misol: 4x² - 16 = 0 ni qanday yechaman? yoki IELTS Reading usuli..."
-                className="w-full rounded-2xl border border-white/10 bg-canvas/80 py-3 pl-10 pr-4 text-sm text-fg placeholder:text-fg-muted focus:border-neon focus:outline-none"
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn-neon px-6 py-3 text-xs sm:text-sm font-bold whitespace-nowrap w-full sm:w-auto"
-            >
-              Murabbiydan so&apos;rash
-            </button>
-          </form>
-        </div>
-      </section>
-
-      {/* ====================================================================
-          5. 12 OYLIK O'QUV XARITASI (Roadmap Milestones)
-          ==================================================================== */}
-      <section className="glass-card p-6 sm:p-8 space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
-          <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-gold">
-              STRATEGIK O&apos;QUV REJASI
-            </span>
-            <h2 className="mt-1 text-xl font-extrabold text-fg sm:text-2xl">
-              12 Oyda Top Universitetga Tayyorgarlik Yo&apos;lagi
-            </h2>
-          </div>
-          <Link
-            href="/roadmap"
-            className="btn-gold px-4 py-2 text-xs font-bold inline-flex items-center gap-1.5"
-          >
-            <Compass className="h-4 w-4" />
-            <span>To&apos;liq Xaritani Ochish</span>
-          </Link>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-white/10 bg-surface/50 p-4">
-            <span className="font-mono text-xs font-bold text-neon">1-3 OY</span>
-            <h4 className="mt-1 text-sm font-bold text-fg">1. Fundamental Poydevor</h4>
-            <p className="mt-1 text-xs text-fg-muted">
-              Algebraik asoslar, matematika poydevori, grammatika va akademik so&apos;z boyligi.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-surface/50 p-4">
-            <span className="font-mono text-xs font-bold text-gold">4-6 OY</span>
-            <h4 className="mt-1 text-sm font-bold text-fg">2. Asosiy Ko&apos;nikmalar</h4>
-            <p className="mt-1 text-xs text-fg-muted">
-              SAT Math chuqur teoremalari, IELTS 4 ko&apos;nikmasi va Socratic usulda xatolar tahlili.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-surface/50 p-4">
-            <span className="font-mono text-xs font-bold text-neon">7-9 OY</span>
-            <h4 className="mt-1 text-sm font-bold text-fg">3. Yuqori Ball va Mock Testlar</h4>
-            <p className="mt-1 text-xs text-fg-muted">
-              Digital SAT to&apos;liq simulyatsiyalari, vaqt strategiyasi va Band 8.0+ writing qoliplari.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-surface/50 p-4">
-            <span className="font-mono text-xs font-bold text-gold">10-12 OY</span>
-            <h4 className="mt-1 text-sm font-bold text-fg">4. Grantlar & Qabul</h4>
-            <p className="mt-1 text-xs text-fg-muted">
-              Personal statement tahriri, xalqaro universitetlar portfeli va grant arizalari.
-            </p>
-          </div>
         </div>
       </section>
     </div>
