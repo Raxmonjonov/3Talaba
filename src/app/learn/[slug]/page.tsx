@@ -20,6 +20,7 @@ import {
 import { ConfettiBurst } from "@/components/anime/ConfettiBurst";
 import { LessonCoachWidget } from "@/components/ai/LessonCoachWidget";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
+import { JarvisLessonTeacher } from "@/components/voice/JarvisLessonTeacher";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 
 interface LessonExample {
@@ -229,8 +230,8 @@ export default function LessonRunnerPage({
   };
 
   const phasesList: Array<{ id: LessonPhase; label: string; stepNum: string }> = [
-    { id: "THEORY", label: "1. Qisqa Nazariya", stepNum: "01" },
-    { id: "EXAMPLES", label: "2. Hayotiy Misollar", stepNum: "02" },
+    { id: "THEORY", label: "1. JARVIS AI Darslik", stepNum: "01" },
+    { id: "EXAMPLES", label: "2. Jonli Misollar", stepNum: "02" },
     { id: "EXERCISES", label: `3. Mashqlar (${lesson.questions.length})`, stepNum: "03" },
     { id: "ANALYSIS", label: "4. Tahlil & Ertangi Vazifa", stepNum: "04" },
   ];
@@ -293,38 +294,18 @@ export default function LessonRunnerPage({
         </div>
 
         {/* ====================================================================
-            1-BOSQICH: QISQA NAZARIYA
+            1-BOSQICH: JARVIS AI OVOZLI MURABBIY BILAN INTERAKTIV DARSLIK
             ==================================================================== */}
         {phase === "THEORY" && (
-          <div
-            ref={stageCardRef}
-            className="mt-6 rounded-2xl border border-border bg-canvas/90 p-6 sm:p-8"
-          >
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neon">
-              <BookOpen className="h-4 w-4" />
-              <span>Qisqa va Aniq Nazariya • Tinch O&apos;qish Rejimi</span>
-            </div>
-
-            <p className="mt-2 rounded-xl border border-border bg-elevated/60 p-3.5 text-xs text-fg-muted sm:text-sm">
-              💡 <strong>{honorific}</strong>, ushbu qoidalarni shoshilmasdan o&apos;qib chiqing.
-              Har bir formula keyingi qadamdagi hayotiy misollarda qo&apos;llaniladi.
-            </p>
-
-            <div className="mt-6 space-y-4 whitespace-pre-line text-sm leading-relaxed text-fg sm:text-base">
-              {lesson.theoryMarkdown}
-            </div>
-
-            <div className="mt-8 flex justify-end border-t border-border pt-5">
-              <button
-                type="button"
-                id="to-examples-btn"
-                onClick={() => setPhase("EXAMPLES")}
-                className="btn-neon inline-flex items-center gap-2 px-6 py-3 text-xs font-bold sm:text-sm"
-              >
-                <span>2-qadam: Hayotiy Misollarni Ko&apos;rish</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
+          <div ref={stageCardRef} className="mt-6">
+            <JarvisLessonTeacher
+              lessonTitle={lesson.titleUz}
+              lessonSummary={lesson.summaryUz}
+              theoryMarkdown={lesson.theoryMarkdown}
+              honorific={honorific}
+              lessonSlug={lesson.slug}
+              onProceedToExamples={() => setPhase("EXAMPLES")}
+            />
           </div>
         )}
 
@@ -346,7 +327,10 @@ export default function LessonRunnerPage({
                 key={idx}
                 className="rounded-2xl border border-border bg-surface p-5 space-y-3"
               >
-                <h3 className="text-base font-extrabold text-neon">{ex.title}</h3>
+                <div className="flex items-center justify-between">
+     <h3 className="text-base font-extrabold text-emerald-400">{ex.title}</h3>
+     <JarvisVoiceButton text={ex.problem + ". " + ex.stepByStepSolution.join(". ") + ". Xulosa: " + ex.takeaway} label="Misolni tinglash" />
+   </div>
                 <p className="rounded-xl border border-border bg-canvas p-3.5 text-sm font-semibold text-fg">
                   📌 Masala: {ex.problem}
                 </p>
