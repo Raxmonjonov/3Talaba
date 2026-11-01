@@ -96,7 +96,7 @@ export default function LearnCatalogPage() {
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>TINCH SINFXONA • DARS VA MASHQLAR TIZIMI</span>
+              <span>AKADEMIK KURSLAR • DARS VA AMALIYOT</span>
             </span>
             <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-4xl">
               <span className="text-gold">{honorific}</span>, bugungi darsga tayyormisiz?
@@ -191,10 +191,10 @@ export default function LearnCatalogPage() {
                   return (
                     <div
                       key={lesson.id}
-                      className={`flex flex-col justify-between rounded-2xl border p-5 transition-all ${
+                      className={`flex flex-col justify-between rounded-2xl border p-5 transition-all backdrop-blur-md ${
                         isDone
                           ? "border-neon/60 bg-neon-soft/15"
-                          : "border-border bg-canvas/80 hover:border-neon/40"
+                          : "border-white/10 bg-surface/60 hover:border-neon/40 hover:bg-surface/80"
                       }`}
                     >
                       <div>

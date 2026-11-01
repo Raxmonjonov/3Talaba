@@ -451,7 +451,7 @@ export default function AICoachPage() {
           </div>
 
           {/* O'ng panel: Asosiy Socratic Suhbat va Writing Tahlil Maydoni */}
-          <div className="flex flex-col justify-between rounded-2xl border border-border bg-canvas/90 p-4 sm:p-6 lg:col-span-8">
+          <div className="flex flex-col justify-between rounded-2xl border border-white/10 bg-surface/50 backdrop-blur-xl p-4 sm:p-6 shadow-xl lg:col-span-8">
             <div
               id="coach-messages-list"
               className="max-h-[520px] min-h-[360px] space-y-4 overflow-y-auto pr-1"
@@ -485,7 +485,7 @@ export default function AICoachPage() {
                         className={`max-w-[90%] rounded-2xl p-4 text-xs leading-relaxed sm:text-sm ${
                           isUser
                             ? "bg-neon text-canvas font-semibold"
-                            : "border border-border bg-surface text-fg"
+                            : "border border-white/10 bg-surface/80 backdrop-blur-md text-fg shadow-sm"
                         }`}
                       >
                         {!isUser && msg.metadata?.honorificUsed && (

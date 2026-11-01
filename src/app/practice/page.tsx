@@ -186,7 +186,7 @@ export default function PracticeBankPage() {
         {currentQuestion ? (
           <div
             ref={cardRef}
-            className="mt-6 rounded-2xl border border-border bg-canvas/90 p-6"
+            className="mt-6 rounded-2xl border border-white/10 bg-surface/50 backdrop-blur-xl p-6 sm:p-7 shadow-lg"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="rounded-lg bg-elevated px-3 py-1 text-xs font-bold text-neon">
@@ -223,7 +223,7 @@ export default function PracticeBankPage() {
               {currentQuestion.options.map((opt) => {
                 const isRight = opt.id === currentQuestion.correctAnswer;
                 const isSelected = chosenOpt === opt.id;
-                let cls = "border-border bg-surface text-fg hover:border-neon/50";
+                let cls = "border-white/10 bg-canvas/60 text-fg hover:border-neon/60 hover:bg-canvas/90";
                 if (feedback !== "idle") {
                   if (isRight) cls = "border-neon bg-neon-soft text-neon font-bold shadow-neon";
                   else if (isSelected) cls = "border-danger bg-danger/15 text-danger";
