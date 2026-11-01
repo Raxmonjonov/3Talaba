@@ -195,6 +195,73 @@ export function MathVisualDiagram({ type }: { type: MathVisual }) {
         </svg>
       );
 
+    case "percent":
+      return (
+        <svg viewBox="0 0 300 200" className={common} role="img" aria-label="Foiz va proporsiya">
+          <rect x="30" y="50" width="240" height="40" rx="8" fill="none" stroke={grid} strokeWidth="2" opacity="0.4" />
+          <rect x="30" y="50" width="180" height="40" rx="8" fill={neon} fillOpacity="0.4" stroke={neon} strokeWidth="2" />
+          <line x1="210" y1="40" x2="210" y2="100" stroke={gold} strokeWidth="3" />
+          <text x="120" y="75" textAnchor="middle" fontSize="15" fontWeight="700" fill={neon}>75% (3/4 qism)</text>
+          <text x="240" y="75" textAnchor="middle" fontSize="13" fill="currentColor" opacity="0.7">25%</text>
+          <path d="M30 130 C 80 110, 160 160, 270 120" fill="none" stroke={gold} strokeWidth="3" strokeDasharray="4" />
+          <text x="150" y="170" textAnchor="middle" fontSize="13" fill="currentColor">O'sish: Asosiy miqdor × (1 + r%)</text>
+        </svg>
+      );
+
+    case "logarithm":
+      return (
+        <svg viewBox="0 0 300 200" className={common} role="img" aria-label="Logarifm va ko'rsatkichli funksiya">
+          <line x1="20" y1="170" x2="280" y2="170" stroke={grid} opacity="0.6" />
+          <line x1="50" y1="20" x2="50" y2="190" stroke={grid} opacity="0.6" />
+          <line x1="40" y1="180" x2="240" y2="30" stroke={grid} strokeDasharray="3" opacity="0.4" />
+          {/* y = 2^x */}
+          <path d="M50 160 Q 140 155 180 30" fill="none" stroke={gold} strokeWidth="3" />
+          {/* y = log2(x) */}
+          <path d="M60 190 Q 65 140 260 70" fill="none" stroke={neon} strokeWidth="3" />
+          <text x="175" y="25" fontSize="12" fontWeight="700" fill={gold}>y = aˣ</text>
+          <text x="250" y="65" fontSize="12" fontWeight="700" fill={neon}>y = logₐ(x)</text>
+          <text x="150" y="195" textAnchor="middle" fontSize="11" fill="currentColor" opacity="0.8">y = x simmetriya o'qi bo'yicha teskari funksiyalar</text>
+        </svg>
+      );
+
+    case "vector":
+      return (
+        <svg viewBox="0 0 300 200" className={common} role="img" aria-label="Koordinata tekisligida vektorlar">
+          <line x1="30" y1="170" x2="280" y2="170" stroke={grid} opacity="0.5" />
+          <line x1="50" y1="20" x2="50" y2="185" stroke={grid} opacity="0.5" />
+          <defs>
+            <marker id="arrow-neon" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,1 L7,4 L0,7 Z" fill="var(--accent-neon)" />
+            </marker>
+            <marker id="arrow-gold" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,1 L7,4 L0,7 Z" fill="var(--accent-gold)" />
+            </marker>
+          </defs>
+          {/* Vector u: (50, 170) -> (170, 130) */}
+          <line x1="50" y1="170" x2="165" y2="132" stroke={neon} strokeWidth="3" markerEnd="url(#arrow-neon)" />
+          {/* Vector v: (170, 130) -> (240, 50) */}
+          <line x1="170" y1="130" x2="235" y2="55" stroke={neon} strokeWidth="3" markerEnd="url(#arrow-neon)" />
+          {/* Sum vector u+v: (50, 170) -> (240, 50) */}
+          <line x1="50" y1="170" x2="235" y2="53" stroke={gold} strokeWidth="3" strokeDasharray="5" markerEnd="url(#arrow-gold)" />
+          <text x="100" y="145" fontSize="13" fontWeight="700" fill={neon}>u⃗ = (4; 2)</text>
+          <text x="215" y="105" fontSize="13" fontWeight="700" fill={neon}>v⃗ = (3; 4)</text>
+          <text x="120" y="90" fontSize="14" fontWeight="700" fill={gold}>u⃗ + v⃗ = (7; 6)</text>
+        </svg>
+      );
+
+    case "probability":
+      return (
+        <svg viewBox="0 0 300 200" className={common} role="img" aria-label="Ehtimollik va Venn diagrammasi">
+          <rect x="25" y="25" width="250" height="150" rx="10" fill="none" stroke={grid} strokeWidth="2" opacity="0.3" />
+          <circle cx="115" cy="100" r="55" fill={neon} fillOpacity="0.25" stroke={neon} strokeWidth="2.5" />
+          <circle cx="185" cy="100" r="55" fill={gold} fillOpacity="0.25" stroke={gold} strokeWidth="2.5" />
+          <text x="85" y="105" fontSize="15" fontWeight="700" fill={neon}>P(A)</text>
+          <text x="210" y="105" fontSize="15" fontWeight="700" fill={gold}>P(B)</text>
+          <text x="150" y="105" textAnchor="middle" fontSize="13" fontWeight="700" fill="currentColor">P(A∩B)</text>
+          <text x="150" y="165" textAnchor="middle" fontSize="12" fill="currentColor" opacity="0.9">P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</text>
+        </svg>
+      );
+
     default:
       return null;
   }

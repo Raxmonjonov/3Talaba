@@ -23,7 +23,11 @@ export type MathVisual =
   | "area"
   | "circle"
   | "solid"
-  | "trig";
+  | "trig"
+  | "percent"
+  | "logarithm"
+  | "vector"
+  | "probability";
 
 export interface MathPracticeProblem {
   id: string;
@@ -33,6 +37,9 @@ export interface MathPracticeProblem {
   answer: number;
   hintUz: string;
   solutionUz: string;
+  /** SAT uslubidagi variantli tanlov (agar mavjud bo'lsa) */
+  options?: Array<{ id: "A" | "B" | "C" | "D"; text: string }>;
+  correctOption?: "A" | "B" | "C" | "D";
 }
 
 export interface MathTopic {
@@ -816,6 +823,627 @@ export const MATH_TOPICS: MathTopic[] = [
     ],
     satTipUz: "SAT sevimli savoli: sin(x) = cos(y) bo'lsa, x + y = 90°. Hech narsa hisoblamang!",
   },
+{
+  "slug": "foizlar-va-proporsiya",
+  "branch": "algebra",
+  "titleUz": "Foizlar, proporsiya va o'sish",
+  "summaryUz": "O'sish/kamayish, aralashmalar, murakkab foiz va SAT proporsiya masalalari",
+  "visual": "percent",
+  "intuitionUz": [
+    "Foiz — har yuztadan qanchasi degani (1% = 1/100 = 0,01).",
+    "Agar narx 20% ga oshsa, yangi narx avvalgisining 120% i (1,2 barobari) bo'ladi.",
+    "Ketma-ket 20% oshib, 20% tushsa, asl narxga qaytmaydi: 1,2 · 0,8 = 0,96 (4% ga kamayadi)."
+  ],
+  "visualCaptionUz": "O'sish va kamayish: yangi qiymat = boshlang'ich · (1 ± r%). Proporsiyada esa a/b = c/d xochsimon ko'paytiriladi.",
+  "formulas": [
+    {
+      "nameUz": "O'zgarish foizi",
+      "formula": "Δ% = ((Yangi − Boshlang'ich) / Boshlang'ich) · 100%",
+      "whyUz": "O'zgarish miqdori doimo eng boshlang'ich qiymatga nisbatan olinadi."
+    },
+    {
+      "nameUz": "Murakkab o'sish (SAT)",
+      "formula": "A = P · (1 + r)ᵗ",
+      "whyUz": "Har yili yangi hosil bo'lgan miqdorga yana r foiz qo'shilib ko'paytiriladi."
+    },
+    {
+      "nameUz": "To'g'ri va teskari proporsiya",
+      "formula": "y = kx (to'g'ri),   xy = k (teskari)",
+      "whyUz": "To'g'ri proporsiyada nisbat o'zgarmas, teskari proporsiyada esa ko'paytma o'zgarmas qoladi."
+    }
+  ],
+  "workedExample": {
+    "problemUz": "Mahsulot narxi $50 edi. Avval 20% ga oshirildi, so'ngra 10% chegirma berildi. Yakuniy narxni toping.",
+    "steps": [
+      "20% oshirilgach: 50 · 1,20 = $60.",
+      "10% chegirmadan so'ng: 60 · 0,90 = $54.",
+      "Tekshiramiz: umumiy o'zgarish (54 − 50)/50 · 100% = +8% (20 − 10 = 10% emas!)."
+    ],
+    "answerUz": "$54"
+  },
+  "practice": [
+    {
+      "id": "pct-1",
+      "level": 1,
+      "promptUz": "80 sonining 25% ini toping.",
+      "answer": 20,
+      "hintUz": "25% bu to'rtdan bir (1/4) qism demakdir.",
+      "solutionUz": "80 · 0,25 = 20.",
+      "options": [
+        {
+          "id": "A",
+          "text": "15"
+        },
+        {
+          "id": "B",
+          "text": "20"
+        },
+        {
+          "id": "C",
+          "text": "25"
+        },
+        {
+          "id": "D",
+          "text": "30"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "pct-2",
+      "level": 2,
+      "promptUz": "Aksiyada narx 120 ming so'mdan 150 ming so'mga ko'tarildi. Narx necha foizga oshgan?",
+      "answer": 25,
+      "hintUz": "O'zgarishni (30 ming) boshlang'ich narxga (120 ming) bo'ling.",
+      "solutionUz": "(150 − 120) / 120 · 100% = 25%.",
+      "options": [
+        {
+          "id": "A",
+          "text": "20%"
+        },
+        {
+          "id": "B",
+          "text": "25%"
+        },
+        {
+          "id": "C",
+          "text": "30%"
+        },
+        {
+          "id": "D",
+          "text": "33.3%"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "pct-3",
+      "level": 3,
+      "promptUz": "Yillik 10% murakkab foiz stavkasida qo'yilgan $200 omonat 2 yildan keyin necha dollar bo'ladi?",
+      "answer": 242,
+      "hintUz": "A = 200 · (1 + 0,10)².",
+      "solutionUz": "200 · 1,21 = $242.",
+      "options": [
+        {
+          "id": "A",
+          "text": "$220"
+        },
+        {
+          "id": "B",
+          "text": "$240"
+        },
+        {
+          "id": "C",
+          "text": "$242"
+        },
+        {
+          "id": "D",
+          "text": "$250"
+        }
+      ],
+      "correctOption": "C"
+    },
+    {
+      "id": "pct-4",
+      "level": 3,
+      "promptUz": "3 ta ishchi bir ishni 12 soatda bajarsa, 9 ta bir xil tezlikdagi ishchi bu ishni necha soatda tugatadi?",
+      "answer": 4,
+      "hintUz": "Teskari proporsiya: ishchilar soni ko'paysa, vaqt qisqaradi (3 · 12 = 9 · t).",
+      "solutionUz": "3 · 12 / 9 = 4 soat.",
+      "options": [
+        {
+          "id": "A",
+          "text": "2 soat"
+        },
+        {
+          "id": "B",
+          "text": "4 soat"
+        },
+        {
+          "id": "C",
+          "text": "6 soat"
+        },
+        {
+          "id": "D",
+          "text": "8 soat"
+        }
+      ],
+      "correctOption": "B"
+    }
+  ],
+  "commonMistakesUz": [
+    "Ketma-ket foizlarni to'g'ridan-to'g'ri qo'shish yoki ayirish (+20% va −20% nol bo'lmaydi).",
+    "O'zgarish foizini hisoblashda yakuniy narxga bo'lib yuborish (doimo boshlang'ichga bo'linadi).",
+    "Murakkab foizda darajani oddiy ko'paytirish bilan almashtirish."
+  ],
+  "satTipUz": "SAT Math: x foizga oshirish = 1 + x/100 ga ko'paytirish; x foizga kamaytirish = 1 − x/100 ga ko'paytirish."
+},
+{
+  "slug": "logarifmlar",
+  "branch": "algebra",
+  "titleUz": "Logarifmlar va ko'rsatkichli tenglamalar",
+  "summaryUz": "log_a(b) = c, logarifm xossalari, asos almashtirish va ko'rsatkichli tenglamalar",
+  "visual": "logarithm",
+  "intuitionUz": [
+    "Logarifm — 'a ning qaysi darajasi b ga teng?' degan savolga javob beradi.",
+    "Masalan: log₂(8) = 3, chunki 2 ning 3-darajasi 8 ga teng.",
+    "Ko'paytirishni qo'shishga, darajani oddiy ko'paytirishga aylantiradi — ulkan sonlar bilan ishlashning eng qulay kaliti."
+  ],
+  "visualCaptionUz": "y = aˣ va y = log_a(x) bir-biriga teskari funksiyalar bo'lib, y = x to'g'ri chizig'iga nisbatan simmetrikdir.",
+  "formulas": [
+    {
+      "nameUz": "Asosiy ta'rif",
+      "formula": "logₐ(b) = c  ⇔  aᶜ = b  (a > 0, a ≠ 1, b > 0)",
+      "whyUz": "Darajaga teskari amal sifatida aniqlangan."
+    },
+    {
+      "nameUz": "Ko'paytma va bo'linma",
+      "formula": "logₐ(xy) = logₐ(x) + logₐ(y),   logₐ(x/y) = logₐ(x) − logₐ(y)",
+      "whyUz": "aᵐ · aⁿ = aᵐ⁺ⁿ daraja xossasidan to'g'ridan-to'g'ri kelib chiqadi."
+    },
+    {
+      "nameUz": "Darajani tushirish",
+      "formula": "logₐ(xᵏ) = k · logₐ(x)",
+      "whyUz": "k ta bir xil had ko'paytmasining logarifmi ularning yig'indisiga teng."
+    }
+  ],
+  "workedExample": {
+    "problemUz": "log₂(x) + log₂(x − 2) = 3 tenglamani yeching.",
+    "steps": [
+      "Ko'paytma xossasi: log₂(x(x − 2)) = 3.",
+      "Ta'rif bo'yicha darajaga o'tamiz: x(x − 2) = 2³ = 8.",
+      "Kvadrat tenglama: x² − 2x − 8 = 0 ⇒ (x − 4)(x + 2) = 0.",
+      "Aniqlanish sohasi: x > 2 bo'lishi kerak. Shuning uchun x = −2 yaroqsiz, faqat x = 4."
+    ],
+    "answerUz": "x = 4"
+  },
+  "practice": [
+    {
+      "id": "log-1",
+      "level": 1,
+      "promptUz": "log₃(81) nechiga teng?",
+      "answer": 4,
+      "hintUz": "3 ning nechanchi darajasi 81 bo'ladi? (3 · 3 · 3 · 3 = ?)",
+      "solutionUz": "3⁴ = 81, shuning uchun log₃(81) = 4.",
+      "options": [
+        {
+          "id": "A",
+          "text": "3"
+        },
+        {
+          "id": "B",
+          "text": "4"
+        },
+        {
+          "id": "C",
+          "text": "9"
+        },
+        {
+          "id": "D",
+          "text": "27"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "log-2",
+      "level": 2,
+      "promptUz": "log₂(32) − log₂(4) ifodani hisoblang.",
+      "answer": 3,
+      "hintUz": "Bo'linma xossasi: log₂(32 / 4) = log₂(8).",
+      "solutionUz": "log₂(8) = 3.",
+      "options": [
+        {
+          "id": "A",
+          "text": "2"
+        },
+        {
+          "id": "B",
+          "text": "3"
+        },
+        {
+          "id": "C",
+          "text": "4"
+        },
+        {
+          "id": "D",
+          "text": "8"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "log-3",
+      "level": 3,
+      "promptUz": "2^(x+1) = 64 bo'lsa, x nechiga teng?",
+      "answer": 5,
+      "hintUz": "64 ni 2 ning darajasiga aylantiring: 64 = 2⁶.",
+      "solutionUz": "x + 1 = 6 ⇒ x = 5.",
+      "options": [
+        {
+          "id": "A",
+          "text": "4"
+        },
+        {
+          "id": "B",
+          "text": "5"
+        },
+        {
+          "id": "C",
+          "text": "6"
+        },
+        {
+          "id": "D",
+          "text": "7"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "log-4",
+      "level": 3,
+      "promptUz": "log₅(2x − 1) = 2 bo'lsa, x nechiga teng?",
+      "answer": 13,
+      "hintUz": "2x − 1 = 5² = 25.",
+      "solutionUz": "2x = 26 ⇒ x = 13.",
+      "options": [
+        {
+          "id": "A",
+          "text": "10"
+        },
+        {
+          "id": "B",
+          "text": "12"
+        },
+        {
+          "id": "C",
+          "text": "13"
+        },
+        {
+          "id": "D",
+          "text": "14"
+        }
+      ],
+      "correctOption": "C"
+    }
+  ],
+  "commonMistakesUz": [
+    "log(a + b) = log(a) + log(b) deb adashish (faqat ko'paytma uchun qo'shiladi).",
+    "Aniqlanish sohasini (x > 0) tekshirmasdan manfiy ildizni javobga olish.",
+    "Asosni va ifodani aralashtirib yuborish."
+  ],
+  "satTipUz": "SAT Math da ko'rsatkichli tenglama kelsa, har ikki tomonni bir xil tub asosga (2, 3, 5) keltiring."
+},
+{
+  "slug": "vektorlar-koordinatalar",
+  "branch": "geometry",
+  "titleUz": "Vektorlar va koordinatalar geometriyasi",
+  "summaryUz": "Vektorlar qo'shish, skalyar ko'paytma, perpendikulyarlik va masofalar",
+  "visual": "vector",
+  "intuitionUz": [
+    "Vektor — yo'nalishga va uzunlikka ega bo'lgan yo'naltirilgan kesma.",
+    "Ikki vektorni qo'shish — birinchi harakat ortidan ikkinchi harakatni bajarish demakdir.",
+    "Skalyar ko'paytma 0 ga teng bo'lsa, vektorlar o'zaro to'g'ri burchak (90°) hosil qiladi."
+  ],
+  "visualCaptionUz": "u⃗ = (4; 2) va v⃗ = (3; 4) vektorlarining yig'indisi koordinatalari qo'shilib u⃗ + v⃗ = (7; 6) bo'ladi.",
+  "formulas": [
+    {
+      "nameUz": "Vektor uzunligi",
+      "formula": "|v⃗| = √(x² + y²)",
+      "whyUz": "Koordinata boshidan vektor uchigacha bo'lgan gipotenuza — Pifagor teoremasi."
+    },
+    {
+      "nameUz": "Skalyar ko'paytma",
+      "formula": "u⃗ · v⃗ = x₁x₂ + y₁y₂ = |u⃗||v⃗|cos(θ)",
+      "whyUz": "Bir vektorning ikkinchisi ustidagi proyeksiyasi ko'paytmasidan kelib chiqadi."
+    },
+    {
+      "nameUz": "Perpendikulyarlik sharti",
+      "formula": "u⃗ ⊥ v⃗  ⇔  x₁x₂ + y₁y₂ = 0",
+      "whyUz": "cos(90°) = 0 bo'lgani sababli skalyar ko'paytma nolga aylanadi."
+    }
+  ],
+  "workedExample": {
+    "problemUz": "u⃗ = (3; 4) va v⃗ = (4; −3) vektorlarning skalyar ko'paytmasini va ular orasidagi burchakni toping.",
+    "steps": [
+      "Skalyar ko'paytma: u⃗ · v⃗ = 3 · 4 + 4 · (−3) = 12 − 12 = 0.",
+      "u⃗ · v⃗ = 0 bo'lgani uchun cos(θ) = 0.",
+      "Demak, vektorlar orasidagi burchak θ = 90° (perpendikulyar)."
+    ],
+    "answerUz": "Skalyar ko'paytma 0, burchak 90°"
+  },
+  "practice": [
+    {
+      "id": "vec-1",
+      "level": 1,
+      "promptUz": "u⃗ = (6; 8) vektorining uzunligini (|u⃗|) toping.",
+      "answer": 10,
+      "hintUz": "|u⃗| = √(6² + 8²).",
+      "solutionUz": "√(36 + 64) = √100 = 10.",
+      "options": [
+        {
+          "id": "A",
+          "text": "8"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        },
+        {
+          "id": "C",
+          "text": "12"
+        },
+        {
+          "id": "D",
+          "text": "14"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "vec-2",
+      "level": 2,
+      "promptUz": "A(2; 5) va B(6; 11) nuqtalar orasidagi kesma o'rtasining x koordinatasini toping.",
+      "answer": 4,
+      "hintUz": "x₀ = (x₁ + x₂) / 2.",
+      "solutionUz": "(2 + 6) / 2 = 4.",
+      "options": [
+        {
+          "id": "A",
+          "text": "3"
+        },
+        {
+          "id": "B",
+          "text": "4"
+        },
+        {
+          "id": "C",
+          "text": "5"
+        },
+        {
+          "id": "D",
+          "text": "8"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "vec-3",
+      "level": 3,
+      "promptUz": "u⃗ = (2; k) va v⃗ = (6; −3) vektorlar perpendikulyar bo'lsa, k nechiga teng?",
+      "answer": 4,
+      "hintUz": "x₁x₂ + y₁y₂ = 0 ⇒ 2 · 6 + k · (−3) = 0.",
+      "solutionUz": "12 − 3k = 0 ⇒ 3k = 12 ⇒ k = 4.",
+      "options": [
+        {
+          "id": "A",
+          "text": "2"
+        },
+        {
+          "id": "B",
+          "text": "3"
+        },
+        {
+          "id": "C",
+          "text": "4"
+        },
+        {
+          "id": "D",
+          "text": "6"
+        }
+      ],
+      "correctOption": "C"
+    },
+    {
+      "id": "vec-4",
+      "level": 3,
+      "promptUz": "u⃗ = (2; 3) va v⃗ = (4; 1) bo'lsa, 2u⃗ + v⃗ vektorining koordinatalari yig'indisini toping.",
+      "answer": 15,
+      "hintUz": "2u⃗ = (4; 6). 2u⃗ + v⃗ = (4+4; 6+1) = (8; 7). Yig'indi: 8 + 7.",
+      "solutionUz": "8 + 7 = 15.",
+      "options": [
+        {
+          "id": "A",
+          "text": "13"
+        },
+        {
+          "id": "B",
+          "text": "14"
+        },
+        {
+          "id": "C",
+          "text": "15"
+        },
+        {
+          "id": "D",
+          "text": "17"
+        }
+      ],
+      "correctOption": "C"
+    }
+  ],
+  "commonMistakesUz": [
+    "Vektor uzunligini topishda kvadratlarni qo'shish o'rniga koordinatalarni shunchaki qo'shish.",
+    "Skalyar ko'paytmani vektor bilan adashtirish (skalyar ko'paytma son chiqadi, vektor emas).",
+    "Perpendikulyarlik shartida manfiy ishorani hisobga olmaslik."
+  ],
+  "satTipUz": "Ikki to'g'ri chiziq perpendikulyar bo'lsa, ularning burchak koeffitsiyentlari k₁ · k₂ = −1 bo'ladi."
+},
+{
+  "slug": "ehtimollik-kombinatorika",
+  "branch": "algebra",
+  "titleUz": "Ehtimollar nazariyasi va kombinatorika",
+  "summaryUz": "Klassik ehtimollik, mustaqil hodisalar, faktorial, guruhlashlar va SAT data analysis",
+  "visual": "probability",
+  "intuitionUz": [
+    "Ehtimollik — hodisaning yuz berish imkoniyati (0 dan 1 gacha son).",
+    "Klassik qoida: siz kutgan (qulay) holatlar sonini jami barcha teng imkoniyatli holatlarga bo'lasiz.",
+    "Mustaqil hodisalar ketma-ket ro'y bersa, ularning ehtimolliklari ko'paytiriladi."
+  ],
+  "visualCaptionUz": "Venn diagrammasi: P(A ∪ B) = P(A) + P(B) − P(A ∩ B). Bir vaqtda ro'y berish qismi ikki marta hisoblanmasligi uchun ayiriladi.",
+  "formulas": [
+    {
+      "nameUz": "Klassik ehtimollik",
+      "formula": "P(A) = m / n",
+      "whyUz": "m — qulay holatlar soni, n — barcha teng imkoniyatli jami holatlar soni."
+    },
+    {
+      "nameUz": "Mustaqil hodisalar",
+      "formula": "P(A va B) = P(A) · P(B)",
+      "whyUz": "Biri ikkinchisiga ta'sir qilmagani sababli imkoniyatlar kombinatsiyasi ko'payadi."
+    },
+    {
+      "nameUz": "Guruhlashlar soni (Combinations)",
+      "formula": "Cₙᵏ = n! / (k!(n − k)!)",
+      "whyUz": "n ta elementdan k tasini tartibsiz tanlab olish usullari soni."
+    }
+  ],
+  "workedExample": {
+    "problemUz": "Qutida 4 ta qizil va 6 ta ko'k shar bor. Tavakkaliga olingan 1 ta sharning ko'k bo'lish ehtimolini toping.",
+    "steps": [
+      "Jami sharlar soni: 4 + 6 = 10 ta.",
+      "Qulay sharlar soni (ko'k): 6 ta.",
+      "Ehtimollik: P = 6 / 10 = 0,6 (yoki 3/5, 60%)."
+    ],
+    "answerUz": "P = 0,6 (3/5)"
+  },
+  "practice": [
+    {
+      "id": "prb-1",
+      "level": 1,
+      "promptUz": "Oddiy o'yin soqqasi (1..6) tashlanganda toq son tushish ehtimolini o'nli kasrda yozing.",
+      "answer": 0.5,
+      "hintUz": "Toq sonlar: 1, 3, 5 (3 ta). Jami sonlar: 6 ta.",
+      "solutionUz": "3 / 6 = 0,5 (1/2).",
+      "options": [
+        {
+          "id": "A",
+          "text": "0.25"
+        },
+        {
+          "id": "B",
+          "text": "0.33"
+        },
+        {
+          "id": "C",
+          "text": "0.5"
+        },
+        {
+          "id": "D",
+          "text": "0.6"
+        }
+      ],
+      "correctOption": "C"
+    },
+    {
+      "id": "prb-2",
+      "level": 2,
+      "promptUz": "5 kishidan iborat guruhdan 2 kishilik qo'mita tuzishning necha xil usuli bor? (C₅²)",
+      "answer": 10,
+      "hintUz": "C₅² = (5 · 4) / (2 · 1).",
+      "solutionUz": "20 / 2 = 10.",
+      "options": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        },
+        {
+          "id": "C",
+          "text": "15"
+        },
+        {
+          "id": "D",
+          "text": "20"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "prb-3",
+      "level": 3,
+      "promptUz": "Tanga 2 marta tashlandi. Ikkala safar ham gerb tushish ehtimolini o'nli kasrda toping.",
+      "answer": 0.25,
+      "hintUz": "Har safar gerb tushish ehtimoli 1/2. P = 1/2 · 1/2.",
+      "solutionUz": "0,5 · 0,5 = 0,25 (1/4).",
+      "options": [
+        {
+          "id": "A",
+          "text": "0.1"
+        },
+        {
+          "id": "B",
+          "text": "0.25"
+        },
+        {
+          "id": "C",
+          "text": "0.5"
+        },
+        {
+          "id": "D",
+          "text": "0.75"
+        }
+      ],
+      "correctOption": "B"
+    },
+    {
+      "id": "prb-4",
+      "level": 3,
+      "promptUz": "Sinfdagi 30 o'quvchidan 18 nafari ingliz, 15 nafari nemis, 7 nafari ikkala tilni biladi. Tavakkal olingan o'quvchining hech bo'lmaganda bir tilni bilish ehtimolini toping (o'nli kasr).",
+      "answer": 0.867,
+      "hintUz": "P(A ∪ B) = (18 + 15 − 7) / 30 = 26 / 30 ≈ 0.867 (yoki 13/15).",
+      "solutionUz": "26 / 30 = 13/15 ≈ 0,867.",
+      "options": [
+        {
+          "id": "A",
+          "text": "0.65"
+        },
+        {
+          "id": "B",
+          "text": "0.75"
+        },
+        {
+          "id": "C",
+          "text": "0.867"
+        },
+        {
+          "id": "D",
+          "text": "1.0"
+        }
+      ],
+      "correctOption": "C"
+    }
+  ],
+  "commonMistakesUz": [
+    "Ikkita mustaqil hodisa ehtimolini ko'paytirish o'rniga qo'shish.",
+    "Guruhlashlarda (kombinatsiyalar) tartib muhim emasligini unutib, o'rinlashtirish formulasini ishlatish.",
+    "Ehtimollik 1 dan (100% dan) katta bo'lishi mumkin deb hisoblash."
+  ],
+  "satTipUz": "SAT jadvalli savollarda: 'Given that...' (sharti bilan) deyilgan ustun/qatorni maxrajga oling — umumiy sonni emas!"
+}
 ];
 
 export function getMathTopic(slug: string): MathTopic | undefined {
@@ -843,4 +1471,15 @@ export function checkMathAnswer(raw: string, expected: number): boolean {
   const value = parseStudentNumber(raw);
   if (value === null) return false;
   return Math.abs(value - expected) < 1e-6;
+}
+
+export function checkMathProblemAnswer(
+  raw: string,
+  problem: MathPracticeProblem
+): boolean {
+  const trimmed = raw.trim();
+  if (problem.correctOption && trimmed.toUpperCase() === problem.correctOption.toUpperCase()) {
+    return true;
+  }
+  return checkMathAnswer(trimmed, problem.answer);
 }

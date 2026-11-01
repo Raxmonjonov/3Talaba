@@ -19,12 +19,13 @@ import {
   Sparkles,
   Trophy,
   XCircle,
+  Zap,
 } from "lucide-react";
 import {
   DEEP_METHOD_STEPS,
   MATH_TOPICS,
   REVIEW_SCHEDULE_DAYS,
-  checkMathAnswer,
+  checkMathProblemAnswer,
   type MathBranch,
   type MathTopic,
 } from "@/lib/curriculum/math-deep-dive";
@@ -36,7 +37,7 @@ type ProgressMap = Record<string, TopicProgress>;
 const STORAGE_KEY = "3talab-math-deep-progress";
 const STEP_ICONS = [Lightbulb, Eye, Sigma, ListOrdered, PenLine, Brain];
 
-function loadProgress(): ProgressMap {
+function loadLocalProgress(): ProgressMap {
   if (typeof window === "undefined") return {};
   try {
     return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "{}") as ProgressMap;
@@ -50,9 +51,47 @@ export default function MathDeepDivePage() {
   const [activeSlug, setActiveSlug] = useState<string>(MATH_TOPICS[0].slug);
   const [step, setStep] = useState<number>(1);
   const [progress, setProgress] = useState<ProgressMap>({});
+  const [xpTotal, setXpTotal] = useState<number>(0);
+  const [lastXpGain, setLastXpGain] = useState<number | null>(null);
 
+  // 1. Dastlabki yuklash: LocalStorage + Server sinxronizatsiyasi
   useEffect(() => {
-    setProgress(loadProgress());
+    const local = loadLocalProgress();
+    setProgress(local);
+
+    fetch("/api/math/progress")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.authenticated) {
+          if (typeof data.xpTotal === "number") {
+            setXpTotal(data.xpTotal);
+          }
+          // Server va LocalStorage ma'lumotlarini birlashtirish (merge)
+          if (data.progress) {
+            setProgress((prev) => {
+              const merged: ProgressMap = { ...prev };
+              for (const [slug, item] of Object.entries(data.progress as ProgressMap)) {
+                if (!merged[slug]) {
+                  merged[slug] = item;
+                } else {
+                  const combinedSolved = Array.from(
+                    new Set([...merged[slug].solved, ...(item.solved || [])])
+                  );
+                  merged[slug] = {
+                    solved: combinedSolved,
+                    masteredAt: merged[slug].masteredAt || item.masteredAt,
+                  };
+                }
+              }
+              try {
+                window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+              } catch {}
+              return merged;
+            });
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const saveProgress = (next: ProgressMap) => {
@@ -79,39 +118,86 @@ export default function MathDeepDivePage() {
     setStep(1);
   };
 
-  const markSolved = (problemId: string) => {
+  const markSolved = async (problemId: string) => {
     const current = progress[topic.slug] ?? { solved: [] };
     if (current.solved.includes(problemId)) return;
+
     const solved = [...current.solved, problemId];
-    const masteredAt =
-      solved.length >= topic.practice.length ? current.masteredAt ?? Date.now() : current.masteredAt;
-    saveProgress({ ...progress, [topic.slug]: { solved, masteredAt } });
+    const isMasteredNow = solved.length >= topic.practice.length;
+    const masteredAt = isMasteredNow ? current.masteredAt ?? Date.now() : current.masteredAt;
+
+    const nextProgress = { ...progress, [topic.slug]: { solved, masteredAt } };
+    saveProgress(nextProgress);
+
+    // Serverga yuborish va haqiqiy XP olish
+    try {
+      const res = await fetch("/api/math/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topicSlug: topic.slug,
+          problemId,
+          isMastered: isMasteredNow,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.xpTotal) {
+          setXpTotal(data.xpTotal);
+        }
+        if (data.xpGained) {
+          setLastXpGain(data.xpGained);
+          setTimeout(() => setLastXpGain(null), 4000);
+        }
+      }
+    } catch {}
   };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* XP Bildirishnomasi (Toast) */}
+      {lastXpGain && (
+        <div className="fixed right-6 top-20 z-50 flex items-center gap-2 rounded-2xl border border-neon bg-elevated/95 px-5 py-3 shadow-neon backdrop-blur-md animate-bounce">
+          <Zap className="h-5 w-5 text-neon" />
+          <span className="font-mono text-sm font-extrabold text-neon">
+            +{lastXpGain} XP Qo&apos;shildi!
+          </span>
+        </div>
+      )}
+
       {/* Sarlavha */}
       <div className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
               <FlaskConical className="h-3.5 w-3.5" />
-              <span>MATEMATIKA LABORATORIYASI</span>
+              <span>MATEMATIKA LABORATORIYASI (ALGEBRA & GEOMETRIYA)</span>
             </span>
             <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-3xl">
-              Algebra va Geometriya — chuqur o&apos;rganish
+              Algebra va Geometriya — chuqur o&apos;rganish akademiyasi
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-fg-muted">
               Har bir mavzu 6 bosqichli metod asosida o&apos;rganiladi: avval tushunasiz, keyin ko&apos;rasiz,
               formulani isbotlaysiz, namunani tahlil qilasiz, mustaqil yechasiz va xatolaringizni tahlil qilasiz.
             </p>
           </div>
-          <div className="rounded-xl border border-gold/40 bg-gold-soft px-4 py-3 text-center">
-            <span className="flex items-center justify-center gap-1.5 font-mono text-lg font-extrabold text-gold">
-              <Trophy className="h-4 w-4" />
-              {masteredCount} / {MATH_TOPICS.length}
-            </span>
-            <span className="text-[11px] font-semibold text-gold">o&apos;zlashtirilgan mavzu</span>
+          <div className="flex items-center gap-3">
+            {xpTotal > 0 && (
+              <div className="rounded-xl border border-neon/40 bg-neon-soft px-4 py-3 text-center">
+                <span className="flex items-center justify-center gap-1.5 font-mono text-lg font-extrabold text-neon">
+                  <Zap className="h-4 w-4" />
+                  {xpTotal} XP
+                </span>
+                <span className="text-[11px] font-semibold text-neon">Umumiy Ball</span>
+              </div>
+            )}
+            <div className="rounded-xl border border-gold/40 bg-gold-soft px-4 py-3 text-center">
+              <span className="flex items-center justify-center gap-1.5 font-mono text-lg font-extrabold text-gold">
+                <Trophy className="h-4 w-4" />
+                {masteredCount} / {MATH_TOPICS.length}
+              </span>
+              <span className="text-[11px] font-semibold text-gold">o&apos;zlashtirilgan mavzu</span>
+            </div>
           </div>
         </div>
 
@@ -135,7 +221,7 @@ export default function MathDeepDivePage() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[290px_1fr]">
         {/* Chap panel: fan va mavzular */}
         <aside className="glass-card h-fit p-4">
           <div className="grid grid-cols-2 gap-2">
@@ -143,21 +229,25 @@ export default function MathDeepDivePage() {
               type="button"
               onClick={() => selectBranch("algebra")}
               className={`flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors ${
-                branch === "algebra" ? "border-neon bg-neon-soft text-neon" : "border-border bg-surface text-fg-muted hover:text-fg"
+                branch === "algebra"
+                  ? "border-neon bg-neon-soft text-neon"
+                  : "border-border bg-surface text-fg-muted hover:text-fg"
               }`}
             >
               <Sigma className="h-4 w-4" />
-              Algebra
+              Algebra ({MATH_TOPICS.filter((t) => t.branch === "algebra").length})
             </button>
             <button
               type="button"
               onClick={() => selectBranch("geometry")}
               className={`flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors ${
-                branch === "geometry" ? "border-neon bg-neon-soft text-neon" : "border-border bg-surface text-fg-muted hover:text-fg"
+                branch === "geometry"
+                  ? "border-neon bg-neon-soft text-neon"
+                  : "border-border bg-surface text-fg-muted hover:text-fg"
               }`}
             >
               <Shapes className="h-4 w-4" />
-              Geometriya
+              Geometriya ({MATH_TOPICS.filter((t) => t.branch === "geometry").length})
             </button>
           </div>
 
@@ -181,12 +271,17 @@ export default function MathDeepDivePage() {
                       </span>
                       {p?.masteredAt ? <CheckCircle2 className="h-4 w-4 shrink-0 text-neon" /> : null}
                     </div>
-                    <p className="mt-1 text-[11px] text-fg-muted">{t.summaryUz}</p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-elevated">
-                      <div
-                        className="h-full rounded-full bg-neon transition-all"
-                        style={{ width: `${(solved / t.practice.length) * 100}%` }}
-                      />
+                    <p className="mt-1 line-clamp-1 text-[11px] text-fg-muted">{t.summaryUz}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-elevated">
+                        <div
+                          className="h-full rounded-full bg-neon transition-all"
+                          style={{ width: `${Math.min(100, (solved / t.practice.length) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="font-mono text-[10px] text-fg-muted">
+                        {solved}/{t.practice.length}
+                      </span>
                     </div>
                   </button>
                 </li>
@@ -229,7 +324,7 @@ export default function MathDeepDivePage() {
                   onClick={() => setStep(s.id)}
                   className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ${
                     active
-                      ? "border-neon bg-neon text-slate-950"
+                      ? "border-neon bg-neon text-slate-950 font-extrabold"
                       : step > s.id
                         ? "border-neon/40 bg-neon-soft text-neon"
                         : "border-border bg-surface text-fg-muted hover:text-fg"
@@ -405,11 +500,11 @@ function StepContent({
       return (
         <div>
           <h3 className="flex items-center gap-2 text-base font-bold text-neon">
-            <PenLine className="h-5 w-5" /> 5-bosqich: Mashq — o&apos;zingiz yeching
+            <PenLine className="h-5 w-5" /> 5-bosqich: Mashq — SAT va olimpiada formati
           </h3>
           <p className="mt-1 text-xs text-fg-muted">
-            Javobni son ko&apos;rinishida kiriting (masalan: 7, −3, 0,5 yoki 1/2). Barcha mashqlar yechilsa, mavzu
-            o&apos;zlashtirilgan deb belgilanadi.
+            Variantli savollarda to&apos;g&apos;ri javobni tanlang, ochiq savollarda esa sonni kiriting. Har bir to&apos;g&apos;ri
+            yechim uchun <strong>+15 XP</strong> beriladi!
           </p>
           <div className="mt-4 space-y-4">
             {topic.practice.map((p, i) => (
@@ -417,8 +512,14 @@ function StepContent({
             ))}
           </div>
           {masteredAt ? (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-gold/40 bg-gold-soft p-3.5 text-sm font-bold text-gold">
-              <Trophy className="h-5 w-5" /> Ajoyib! Ushbu mavzu o&apos;zlashtirildi. 6-bosqichda xatolar tahlilini ko&apos;ring.
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-gold/40 bg-gold-soft/40 p-4 text-sm font-bold text-gold">
+              <Trophy className="h-6 w-6 text-gold shrink-0" />
+              <div>
+                <p className="text-base">Ajoyib natija! Ushbu mavzuni to&apos;liq egalladingiz (+50 XP)!</p>
+                <p className="text-xs font-normal text-fg-muted mt-0.5">
+                  Endi 6-bosqichda tipik xatolar tahlili va takrorlash rejasini ko&apos;rib chiqing.
+                </p>
+              </div>
             </div>
           ) : null}
         </div>
@@ -482,13 +583,16 @@ function PracticeCard({
   onSolved: (id: string) => void;
 }) {
   const [value, setValue] = useState("");
+  const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | "D" | null>(null);
   const [status, setStatus] = useState<"idle" | "correct" | "wrong">(solved ? "correct" : "idle");
   const [showHint, setShowHint] = useState(false);
   const [attempts, setAttempts] = useState(0);
 
-  const check = () => {
-    if (!value.trim()) return;
-    if (checkMathAnswer(value, problem.answer)) {
+  const check = (overrideInput?: string) => {
+    const toCheck = overrideInput ?? (selectedOption || value);
+    if (!toCheck || !toCheck.trim()) return;
+
+    if (checkMathProblemAnswer(toCheck, problem)) {
       setStatus("correct");
       onSolved(problem.id);
     } else {
@@ -497,17 +601,28 @@ function PracticeCard({
     }
   };
 
+  const handleSelectOption = (optId: "A" | "B" | "C" | "D") => {
+    if (status === "correct") return;
+    setSelectedOption(optId);
+    check(optId);
+  };
+
   const levelLabel = problem.level === 1 ? "Oson" : problem.level === 2 ? "O'rta" : "Qiyin";
 
   return (
     <div
-      className={`rounded-xl border p-4 ${
-        status === "correct" ? "border-neon bg-neon-soft/40" : status === "wrong" ? "border-danger/60 bg-surface" : "border-border bg-surface"
+      className={`rounded-2xl border p-5 transition-all ${
+        status === "correct"
+          ? "border-neon bg-neon-soft/30 shadow-neon"
+          : status === "wrong"
+            ? "border-danger/60 bg-surface"
+            : "border-border bg-surface hover:border-border-strong"
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-bold text-fg-muted">
           {index + 1}-masala · <span className="text-gold">{levelLabel}</span>
+          {problem.options && <span className="ml-2 text-neon font-mono">(SAT Multiple Choice)</span>}
         </span>
         <button
           type="button"
@@ -517,39 +632,78 @@ function PracticeCard({
           <HelpCircle className="h-3.5 w-3.5" /> Maslahat
         </button>
       </div>
-      <p className="mt-2 text-sm font-semibold text-fg">{problem.promptUz}</p>
-      {showHint && <p className="mt-2 rounded-lg bg-gold-soft/30 p-2.5 text-xs text-gold">💡 {problem.hintUz}</p>}
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <input
-          type="text"
-          inputMode="decimal"
-          value={value}
-          disabled={status === "correct"}
-          onChange={(e) => {
-            setValue(e.target.value);
-            if (status === "wrong") setStatus("idle");
-          }}
-          onKeyDown={(e) => e.key === "Enter" && check()}
-          placeholder="Javobingiz"
-          aria-label={`${index + 1}-masala javobi`}
-          className="w-40 rounded-xl border border-border bg-canvas px-3 py-2 font-mono text-sm text-fg focus:border-neon focus:outline-none disabled:opacity-60"
-        />
-        {status !== "correct" && (
-          <button type="button" onClick={check} className="btn-neon px-4 py-2 text-xs font-bold">
-            Tekshirish
-          </button>
-        )}
-      </div>
+      <p className="mt-3 text-sm font-semibold text-fg sm:text-base">{problem.promptUz}</p>
+      {showHint && <p className="mt-2 rounded-xl bg-gold-soft/30 p-3 text-xs text-gold">💡 {problem.hintUz}</p>}
+
+      {/* Agar variantli (A, B, C, D) bo'lsa */}
+      {problem.options && problem.options.length > 0 ? (
+        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          {problem.options.map((opt) => {
+            const isSelected = selectedOption === opt.id;
+            const isRight = problem.correctOption === opt.id;
+            let btnClass = "border-border bg-canvas/80 text-fg hover:border-neon";
+
+            if (status === "correct") {
+              if (isRight) btnClass = "border-neon bg-neon-soft text-neon font-bold shadow-neon";
+            } else if (status === "wrong" && isSelected) {
+              btnClass = "border-danger bg-danger/15 text-danger font-semibold";
+            }
+
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                disabled={status === "correct"}
+                onClick={() => handleSelectOption(opt.id)}
+                className={`flex items-center gap-3 rounded-xl border p-3.5 text-left text-sm transition-all ${btnClass}`}
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-elevated font-mono text-xs font-extrabold text-neon">
+                  {opt.id}
+                </span>
+                <span className="flex-1 font-medium">{opt.text}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        /* Ochiq sonli kiritish (Grid-in) */
+        <div className="mt-4 flex flex-wrap gap-2.5">
+          <input
+            type="text"
+            inputMode="decimal"
+            value={value}
+            disabled={status === "correct"}
+            onChange={(e) => {
+              setValue(e.target.value);
+              if (status === "wrong") setStatus("idle");
+            }}
+            onKeyDown={(e) => e.key === "Enter" && check()}
+            placeholder="Javobingiz (masalan: 25)"
+            aria-label={`${index + 1}-masala javobi`}
+            className="w-48 rounded-xl border border-border bg-canvas px-3.5 py-2.5 font-mono text-sm text-fg focus:border-neon focus:outline-none disabled:opacity-60"
+          />
+          {status !== "correct" && (
+            <button type="button" onClick={() => check()} className="btn-neon px-5 py-2.5 text-xs font-bold">
+              Tekshirish (+15 XP)
+            </button>
+          )}
+        </div>
+      )}
 
       {status === "correct" && (
-        <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-neon">
-          <CheckCircle2 className="h-4 w-4" /> To&apos;g&apos;ri! {problem.solutionUz}
-        </p>
+        <div className="mt-4 rounded-xl border border-neon bg-neon-soft/50 p-3.5 text-sm font-bold text-neon">
+          <p className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4" /> To&apos;g&apos;ri! +15 XP hisobingizga qo&apos;shildi.
+          </p>
+          <p className="mt-1 text-xs font-normal text-fg">{problem.solutionUz}</p>
+        </div>
       )}
+
       {status === "wrong" && (
         <p className="mt-3 text-sm text-danger">
-          ❌ Hali to&apos;g&apos;ri emas. {attempts >= 2 ? `Yechim: ${problem.solutionUz}` : "Maslahatni ko'ring va qayta urinib ko'ring."}
+          ❌ Hali to&apos;g&apos;ri emas.{" "}
+          {attempts >= 2 ? `Yechim: ${problem.solutionUz}` : "Maslahatni ko'ring va qayta urinib ko'ring."}
         </p>
       )}
     </div>
