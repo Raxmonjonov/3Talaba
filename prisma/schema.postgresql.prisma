@@ -8,10 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==============================================================================
-// 1. FOYDALANUVCHI VA PROFIL (Autentifikatsiya, Onboarding va Sozlamalar)
-// ==============================================================================
-
 model User {
   id                String   @id @default(cuid())
   name              String
@@ -19,7 +15,7 @@ model User {
   phone             String?
   passwordHash      String?
   image             String?
-  role              String   @default("STUDENT")
+  role              String   @default("STUDENT") // "STUDENT" | "ADMIN" | "GUARDIAN"
   guardianShareCode String   @unique @default(cuid())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -42,31 +38,35 @@ model Profile {
   id                 String   @id @default(cuid())
   userId             String   @unique
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gender             String   @default("MALE")
+  gender             String   @default("MALE") // "FEMALE" (Qiz) | "MALE" (O'g'il)
   age                Int      @default(16)
   grade              String   @default("10-sinf")
   region             String   @default("Toshkent sh.")
-  targetUniversity   String?
-  targetCountry      String?
+  targetUniversity   String?  // Masalan: "MIT, Harvard, Westminster, NU"
+  targetCountry      String?  // Masalan: "AQSh, Buyuk Britaniya, O'zbekiston"
   targetSatScore     Int?     @default(1450)
   targetIeltsScore   Float?   @default(7.5)
-  selfAssessedLevel  String   @default("BEGINNER")
-  currentLevel       String   @default("ZERO")
-  strongSubjectsJson String   @default("[]")
-  weakSubjectsJson   String   @default("[]")
-  learningStyle      String   @default("VISUAL_PRACTICE")
-  preferredStudyTime String   @default("EVENING")
-  dailyGoalMinutes   Int      @default(60)
+  selfAssessedLevel  String   @default("BEGINNER") // "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
+  currentLevel       String   @default("ZERO")     // Placement testdan keyingi haqiqiy daraja
+  strongSubjectsJson String   @default("[]")       // JSON array of subject slugs
+  weakSubjectsJson   String   @default("[]")       // JSON array of subject slugs
+  learningStyle      String   @default("VISUAL_PRACTICE") // "VISUAL_PRACTICE" | "SOCRATIC_CHAT" | "DEEP_THEORY" | "POMODORO_SPRINT"
+  preferredStudyTime String   @default("EVENING")  // "MORNING" | "AFTERNOON" | "EVENING" | "NIGHT"
+  dailyGoalMinutes   Int      @default(60)         // Standart <= 120 daq yoki qo'lda kiritilgan > 120 daq
   onboardingDone     Boolean  @default(false)
   placementDone      Boolean  @default(false)
   reduceMotion       Boolean  @default(false)
-  theme              String   @default("dark")
+  theme              String   @default("dark")     // "dark" | "light"
   reminderEnabled    Boolean  @default(true)
   reminderTime       String   @default("19:00")
   xpTotal            Int      @default(0)
   levelNumber        Int      @default(1)
   updatedAt          DateTime @updatedAt
 }
+
+// ==============================================================================
+// 2. FANLAR, MAVZULAR, DARSLAR VA SAVOLLAR BANKI
+// ==============================================================================
 
 model Subject {
   id            String   @id @default(cuid())
@@ -91,7 +91,7 @@ model Topic {
   slug          String   @unique
   titleUz       String
   descriptionUz String
-  level         String   @default("BEGINNER")
+  level         String   @default("BEGINNER") // "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
   estHours      Int      @default(4)
   order         Int      @default(0)
 
@@ -111,7 +111,7 @@ model Lesson {
   titleUz        String
   summaryUz      String
   theoryMarkdown String
-  examplesJson   String   @default("[]")
+  examplesJson   String   @default("[]") // JSON array of { title, problem, stepByStepSolution, takeaway }
   estMinutes     Int      @default(30)
   xpReward       Int      @default(50)
   order          Int      @default(0)
@@ -133,14 +133,14 @@ model Question {
   topic         Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   lessonId      String?
   lesson        Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  type          String   @default("MCQ")
-  difficulty    Int      @default(1)
+  type          String   @default("MCQ") // "MCQ" | "NUMERIC" | "WRITING"
+  difficulty    Int      @default(1)     // 1: Noldan, 2: Boshlang'ich, 3: O'rta, 4: Yuqori
   promptUz      String
   passageUz     String?
-  optionsJson   String   @default("[]")
+  optionsJson   String   @default("[]")  // JSON array of { id: "A"|"B"|"C"|"D", text: string }
   correctAnswer String
   explanationUz String
-  hintsJson     String   @default("[]")
+  hintsJson     String   @default("[]")  // JSON array of Socratic hints
   isPlacement   Boolean  @default(false)
   createdAt     DateTime @default(now())
 
@@ -169,15 +169,19 @@ model Attempt {
   @@index([questionId])
 }
 
+// ==============================================================================
+// 3. SARALASH TESTI (PLACEMENT) VA 12 OYLIK YO'L XARITASI (ROADMAP)
+// ==============================================================================
+
 model PlacementResult {
   id                    String   @id @default(cuid())
   userId                String
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  overallLevel          String
+  overallLevel          String   // "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
   scorePercent          Int      @default(0)
   estimatedSat          Int      @default(950)
   estimatedIelts        Float    @default(5.0)
-  subjectScoresJson     String   @default("{}")
+  subjectScoresJson     String   @default("{}") // JSON: { "sat-math": { pct, level }, ... }
   strengthsJson         String   @default("[]")
   weaknessesJson        String   @default("[]")
   writingSpeakingAdvice String   @default("")
@@ -208,16 +212,16 @@ model RoadmapItem {
   id              String    @id @default(cuid())
   roadmapId       String
   roadmap         Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
-  monthNumber     Int
-  weekNumber      Int
-  dayOfWeek       Int
+  monthNumber     Int       // 1..12
+  weekNumber      Int       // 1..48
+  dayOfWeek       Int       // 1..6 (Dushanba..Shanba)
   topicId         String?
   topic           Topic?    @relation(fields: [topicId], references: [id], onDelete: SetNull)
   lessonId        String?
   lesson          Lesson?   @relation(fields: [lessonId], references: [id], onDelete: SetNull)
   titleUz         String
   descriptionUz   String
-  taskType        String    @default("LESSON")
+  taskType        String    @default("LESSON") // "LESSON" | "PRACTICE" | "REVIEW" | "MOCK_TEST" | "WRITING"
   durationMinutes Int       @default(60)
   xpReward        Int       @default(40)
   isCompleted     Boolean   @default(false)
@@ -230,8 +234,8 @@ model DailyPlan {
   id               String   @id @default(cuid())
   userId           String
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dateKey          String
-  selectedMinutes  Int      @default(60)
+  dateKey          String   // "YYYY-MM-DD"
+  selectedMinutes  Int      @default(60) // Standart <=120 yoki qo'lda kiritilgan >120
   completedMinutes Int      @default(0)
   tasksJson        String   @default("[]")
   isCompleted      Boolean  @default(false)
@@ -241,12 +245,16 @@ model DailyPlan {
   @@index([userId, dateKey])
 }
 
+// ==============================================================================
+// 4. GAMIFIKATSIYA (XP, NISHONLAR, STREAK) VA AI MURABBIY SUHBATLARI
+// ==============================================================================
+
 model XPEvent {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount    Int
-  reason    String
+  reason    String   // "LESSON_COMPLETE" | "CORRECT_ANSWER" | "STREAK_BONUS" | "PLACEMENT_DONE" | "WRITING_SUBMIT"
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
@@ -259,7 +267,7 @@ model Badge {
   descriptionUz  String
   icon           String
   xpBonus        Int      @default(100)
-  conditionType  String
+  conditionType  String   // "FIRST_STEP" | "STREAK_7" | "XP_500" | "SAT_MASTER" | "IELTS_WRITER"
   conditionValue Int      @default(1)
 
   users UserBadge[]
@@ -283,9 +291,9 @@ model Streak {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   currentStreak  Int      @default(0)
   longestStreak  Int      @default(0)
-  lastActiveDate String?
+  lastActiveDate String?  // "YYYY-MM-DD"
   freezeCount    Int      @default(1)
-  HistoryJson    String   @default("[]")
+  HistoryJson    String   @default("[]") // Oxirgi faol kunlar ro'yxati
   updatedAt      DateTime @updatedAt
 }
 
@@ -297,7 +305,7 @@ model ChatSession {
   topic     Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
   lessonId  String?
   lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  mode      String   @default("SOCRATIC_TUTOR")
+  mode      String   @default("SOCRATIC_TUTOR") // "SOCRATIC_TUTOR" | "WRITING_REVIEW" | "MOTIVATION"
   title     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -311,9 +319,9 @@ model ChatMessage {
   id           String      @id @default(cuid())
   sessionId    String
   session      ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  role         String
+  role         String      // "USER" | "ASSISTANT" | "SYSTEM"
   content      String
-  metadataJson String?
+  metadataJson String?     // Socratic step, writing score breakdown, mood hint
   createdAt    DateTime    @default(now())
 
   @@index([sessionId, createdAt])

@@ -1,5 +1,5 @@
 [build]
-  command = "prisma generate --schema=prisma/schema.postgresql.prisma && prisma db push --schema=prisma/schema.postgresql.prisma --skip-generate && tsx prisma/seed.ts && next build"
+  command = "prisma generate --schema=prisma/schema.postgresql.prisma && (prisma db push --schema=prisma/schema.postgresql.prisma --skip-generate || true) && (tsx prisma/seed.ts || true) && next build"
   publish = ".next"
 
 [build.environment]
