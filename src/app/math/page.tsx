@@ -31,6 +31,7 @@ import {
 } from "@/lib/curriculum/math-deep-dive";
 import { MathVisualDiagram } from "@/components/math/MathVisualDiagram";
 import { FormulaSheetView, InteractiveSolversView } from "@/components/math/MathTools";
+import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 
 type TopicProgress = { solved: string[]; masteredAt?: number };
 type ProgressMap = Record<string, TopicProgress>;
@@ -363,15 +364,21 @@ export default function MathDeepDivePage() {
               </span>
               <h2 className="text-xl font-extrabold text-fg sm:text-2xl">{topic.titleUz}</h2>
             </div>
-            <Link
-              href={`/coach?mode=MATH_DEEP_DIVE&q=${encodeURIComponent(
-                `"${topic.titleUz}" mavzusini 6 bosqichli metod bilan chuqur tushuntirib bering va menga bitta yangi masala bering.`
-              )}`}
+            <div className="flex flex-wrap items-center gap-2">
+              <JarvisVoiceButton
+                text={`${topic.titleUz} mavzusi. ${topic.intuitionUz.join('. ')}`}
+                label="JARVIS ovozida tinglash"
+              />
+              <Link
+                href={`/coach?mode=MATH_DEEP_DIVE&q=${encodeURIComponent(
+                  `"${topic.titleUz}" mavzusini 6 bosqichli metod bilan chuqur tushuntirib bering va menga bitta yangi masala bering.`
+                )}`}
               className="inline-flex items-center gap-1.5 rounded-xl border border-gold/40 bg-gold-soft px-3.5 py-2 text-xs font-bold text-gold hover:border-gold"
             >
               <Sparkles className="h-4 w-4" />
               AI Murabbiy bilan chuqurlashtirish
-            </Link>
+              </Link>
+            </div>
           </div>
 
           {/* Bosqichlar navigatsiyasi */}
@@ -541,9 +548,15 @@ function StepContent({
     case 4:
       return (
         <div>
-          <h3 className="flex items-center gap-2 text-base font-bold text-neon">
-            <ListOrdered className="h-5 w-5" /> 4-bosqich: Namuna — qadamma-qadam yechim
-          </h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="flex items-center gap-2 text-base font-bold text-neon">
+              <ListOrdered className="h-5 w-5" /> 4-bosqich: Namuna — qadamma-qadam yechim
+            </h3>
+            <JarvisVoiceButton
+              text={`Masala: ${topic.workedExample.problemUz}. Yechim qadamlari: ${topic.workedExample.steps.join('. ')}. Javob: ${topic.workedExample.answerUz}`}
+              label="Yechimni tinglash"
+            />
+          </div>
           <div className="mt-4 rounded-xl border border-gold/40 bg-gold-soft/30 p-4 text-sm font-bold text-fg">
             📝 {topic.workedExample.problemUz}
           </div>
