@@ -133,9 +133,20 @@ export function JarvisLessonTeacher({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-amber-300">
-              JARVIS Mark XXXIX Audio
-            </span>
+            <button
+              type="button"
+              onClick={() =>
+                jarvisVoice.setMode(
+                  voiceState.mode === "jarvis-original" ? "uzbek-native" : "jarvis-original"
+                )
+              }
+              className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-cyan-300 hover:text-white hover:border-cyan-400/50 transition-colors"
+              title="Ovoz rejimini o'zgartirish"
+            >
+              {voiceState.mode === "jarvis-original"
+                ? "🎙️ JARVIS (British Baritone)"
+                : "🇺🇿 O'zbek Tili (Native)"}
+            </button>
             <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-emerald-400">
               Onlayn
             </span>

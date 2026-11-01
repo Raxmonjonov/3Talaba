@@ -2,11 +2,12 @@
  * 3Talab — Haqiqiy JARVIS AI Ovoz Dvigateli (MARK XXXIX)
  *
  * JARVIS-OS-V.2 tizimidagi original ovoz arxitekturasi:
- * - Ovoz xarakteri: British AI baritone (Paul Bettany / Onyx / Ryan / Guy tembri)
- * - Pitch: 0.86 (chuqur, intellektual va vazmin rezonans)
- * - Rate: 0.94 (ravon, aniq artikulyatsiya va tinch temp)
- * - Barcha formulalar va belgilarni ravon talaffuz qilish qoidalari
+ * - Ovoz xarakteri: British AI baritone (Paul Bettany / Ryan / Guy tembri)
+ * - O'zbekcha ravon talaffuz rejimi (Mahalliy toza nutq)
+ * - Pitch & Rate: Chuqur vazmin rezonans
  */
+
+export type VoiceMode = "jarvis-original" | "uzbek-native";
 
 export interface JarvisVoiceState {
   isSpeaking: boolean;
@@ -14,11 +15,9 @@ export interface JarvisVoiceState {
   isListening: boolean;
   currentText: string;
   voiceName: string;
+  mode: VoiceMode;
 }
 
-/**
- * Matndagi texnik belgilarni toza nutqqa aylantiradi
- */
 export function cleanTextForSpeech(text: string): string {
   return text
     .replace(/[\*\_#`]/g, "")
@@ -55,21 +54,28 @@ class JarvisVoiceEngine {
     isPaused: false,
     isListening: false,
     currentText: "",
-    voiceName: "JARVIS Core Audio",
+    voiceName: "JARVIS British Baritone",
+    mode: "jarvis-original",
   };
 
   constructor() {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       this.synth = window.speechSynthesis;
-      // Ovozlar ro'yxati yangilanganda xabardor qilish
       if (this.synth.onvoiceschanged !== undefined) {
         this.synth.onvoiceschanged = () => {
-          const v = this.selectJarvisVoice();
+          const v = this.selectVoice(this.state.mode);
           if (v) this.state.voiceName = v.name;
           this.notify();
         };
       }
     }
+  }
+
+  public setMode(mode: VoiceMode) {
+    this.state.mode = mode;
+    const v = this.selectVoice(mode);
+    if (v) this.state.voiceName = v.name;
+    this.notify();
   }
 
   public subscribe(callback: (state: JarvisVoiceState) => void) {
@@ -86,25 +92,28 @@ class JarvisVoiceEngine {
     }
   }
 
-  /**
-   * Original JARVIS tembridagi Britaniya/erkak intellektual ovozini tanlaydi
-   */
-  public selectJarvisVoice(): SpeechSynthesisVoice | null {
+  public selectVoice(mode: VoiceMode = this.state.mode): SpeechSynthesisVoice | null {
     if (!this.synth) return null;
     const voices = this.synth.getVoices();
     if (voices.length === 0) return null;
 
-    // 1. Britaniya intellektual AI tembrlari (Paul Bettany / JARVIS uslubi)
+    if (mode === "uzbek-native") {
+      const uzVoice = voices.find(
+        (v) => v.lang.startsWith("uz") || v.name.toLowerCase().includes("uzbek") || v.name.toLowerCase().includes("sardor")
+      );
+      if (uzVoice) return uzVoice;
+    }
+
+    // Original JARVIS (British AI baritone)
     const jarvisKeywords = [
       "google uk english male",
       "en-gb",
       "ryan",
+      "guy",
       "george",
       "daniel",
-      "guy",
       "david",
       "arthur",
-      "oliver",
       "male",
     ];
 
@@ -117,18 +126,9 @@ class JarvisVoiceEngine {
       if (match) return match;
     }
 
-    // 2. Default inglizcha erkak ovozi
-    const enMale = voices.find(
-      (v) => v.lang.startsWith("en") && !v.name.toLowerCase().includes("female") && !v.name.toLowerCase().includes("zira")
-    );
-    if (enMale) return enMale;
-
     return voices[0] || null;
   }
 
-  /**
-   * Matnni haqiqiy JARVIS tembrida so'zlaydi
-   */
   public speak(text: string, onEnd?: () => void) {
     if (!this.synth) return;
 
@@ -138,16 +138,20 @@ class JarvisVoiceEngine {
     if (!spokenText) return;
 
     const utter = new SpeechSynthesisUtterance(spokenText);
-    const voice = this.selectJarvisVoice();
+    const voice = this.selectVoice(this.state.mode);
     if (voice) {
       utter.voice = voice;
       utter.lang = voice.lang;
       this.state.voiceName = voice.name;
     }
 
-    // JARVIS original ovoz sozlamalari (Chuqur bariton va osoyishta intellekt)
-    utter.pitch = 0.86; // Chuqur bariton
-    utter.rate = 0.94; // Osoyishta va aniq diksiya
+    if (this.state.mode === "jarvis-original") {
+      utter.pitch = 0.84; // Chuqur vazmin AI bariton
+      utter.rate = 0.92;
+    } else {
+      utter.pitch = 1.0;
+      utter.rate = 1.0;
+    }
     utter.volume = 1.0;
 
     utter.onstart = () => {
@@ -202,9 +206,6 @@ class JarvisVoiceEngine {
     }
   }
 
-  /**
-   * O'quvchi ovozini mikrofon orqali qabul qilish (STT)
-   */
   public startListening(
     onResult: (transcript: string) => void,
     onError?: (err: string) => void
