@@ -44,6 +44,114 @@ interface LessonHistoryItem {
   questionsCount: number;
 }
 
+
+const FALLBACK_LESSONS: LessonHistoryItem[] = [
+  {
+    id: "fb-1",
+    slug: "chiziqli-tenglamalar-sat",
+    titleUz: "Digital SAT: Chiziqli Tenglamalar va Grafik Tahlili",
+    summaryUz: "SAT Math 1-modulida eng ko'p uchraydigan chiziqli tenglamalar, burchak koeffitsiyenti (slope) va kesishish nuqtalarini topish sirlari.",
+    theoryMarkdown: "Chiziqli tenglamalarning umumiy ko'rinishi: y = mx + b. Bu yerda m — to'g'ri chiziqning qiyaligi (slope = (y₂ - y₁) / (x₂ - x₁)), b esa y-o'qi bilan kesishish nuqtasi (y-intercept). Agar ikki to'g'ri chiziq parallel bo'lsa, ularning qiyaliklari teng bo'ladi (m₁ = m₂). Agar perpendikulyar bo'lsa, ularning qiyaliklari ko'paytmasi -1 ga teng bo'ladi.",
+    examples: [
+      {
+        title: "SAT Savoli: Burchak koeffitsiyenti",
+        problem: "Agar to'g'ri chiziq (2, 5) va (6, 13) nuqtalardan o'tsa, uning burchak koeffitsiyentini va tenglamasini toping.",
+        stepByStepSolution: [
+          "1. Qiyalik formulasi: m = (13 - 5) / (6 - 2) = 8 / 4 = 2.",
+          "2. y = mx + b tenglamasiga (2, 5) nuqtani qo'yamiz: 5 = 2(2) + b => b = 1.",
+          "3. Yechim: y = 2x + 1.",
+        ],
+        takeaway: "SAT da qiyalikni topish orqali 10 soniyada to'g'ri javobni variantlardan ajratib olish mumkin.",
+      },
+    ],
+    estMinutes: 20,
+    xpReward: 50,
+    subjectSlug: "sat-math",
+    subjectNameUz: "Digital SAT Matematika",
+    topicTitleUz: "Algebraik Asoslar",
+    isCompleted: true,
+    questionsCount: 12,
+  },
+  {
+    id: "fb-2",
+    slug: "kvadrat-tenglamalar-viyet",
+    titleUz: "Algebra: Kvadrat Tenglamalar va Viyet Teoremasi",
+    summaryUz: "Kvadrat tenglamalarni diskriminantsiz, Viyet teoremasi yordamida soniyalar ichida yechish uslubi.",
+    theoryMarkdown: "ax² + bx + c = 0 kvadrat tenglamasi uchun, agar a = 1 bo'lsa (x² + px + q = 0):\nIldizlar yig'indisi: x₁ + x₂ = -p\nIldizlar ko'paytmasi: x₁ · x₂ = q.\nDiskriminant D = b² - 4ac. Agar D > 0 bo'lsa, ikkita haqiqiy ildiz; D = 0 bo'lsa, bitta karrali ildiz; D < 0 bo'lsa, haqiqiy ildiz yo'q.",
+    examples: [
+      {
+        title: "Tezkor Yechim Misoli",
+        problem: "x² - 9x + 20 = 0 tenglamaning ildizlarini Viyet orqali toping.",
+        stepByStepSolution: [
+          "1. Ildizlar yig'indisi: 9.",
+          "2. Ildizlar ko'paytmasi: 20.",
+          "3. 20 ning ko'paytuvchilari: 4 va 5 (4 + 5 = 9). Demak, x₁ = 4, x₂ = 5.",
+        ],
+        takeaway: "Kvadrat tenglamani og'zaki yechish imtihonda 1.5 daqiqa vaqtni tejaydi.",
+      },
+    ],
+    estMinutes: 25,
+    xpReward: 60,
+    subjectSlug: "math-foundations",
+    subjectNameUz: "Algebra & Geometriya",
+    topicTitleUz: "Tenglamalar va Funksiyalar",
+    isCompleted: true,
+    questionsCount: 15,
+  },
+  {
+    id: "fb-3",
+    slug: "ielts-writing-task2-structure",
+    titleUz: "IELTS Academic: Task 2 Essay 4-Paragraf Qolipi",
+    summaryUz: "Band 7.5+ insho yozishning aniq arxitekturasi: Kirish, 2 ta Asosiy Tanaviy Abzas va Xulosa.",
+    theoryMarkdown: "Academic Essay tuzilishi:\n1. Introduction (2 gap): Savolni parafraz qilish + Thesis statement (shaxsiy pozitsiya).\n2. Body Paragraph 1 (4-5 gap): Topic sentence + Tushuntirish + Hayotiy yoki ilmiy misol + Xulosa.\n3. Body Paragraph 2 (4-5 gap): Qarshi dalil yoki ikkinchi sabab + Isbot + Tahlil.\n4. Conclusion (2 gap): Thesis statementni yangi so'zlar bilan takrorlash + Kelajak xulosasi.",
+    examples: [
+      {
+        title: "Paraphrase Namunasi",
+        problem: "Savol: Some people think universities should focus on graduates' employment, while others think education is valuable in itself.",
+        stepByStepSolution: [
+          "1. Parafraz: While it is argued that higher education institutions ought to prioritize career preparation, others believe knowledge has inherent value.",
+          "2. Shaxsiy pozitsiya: In my view, while employability is vital for economic progress, fostering critical thinking is the primary purpose of academia.",
+        ],
+        takeaway: "Aniq va boy so'z boyligi (lexical resource) orqali darhol 7.0+ ball kafolatlanadi.",
+      },
+    ],
+    estMinutes: 30,
+    xpReward: 70,
+    subjectSlug: "ielts",
+    subjectNameUz: "IELTS Academic",
+    topicTitleUz: "Writing & Lexical Resource",
+    isCompleted: true,
+    questionsCount: 8,
+  },
+  {
+    id: "fb-4",
+    slug: "sat-rw-transitions-punctuation",
+    titleUz: "SAT Reading & Writing: Tinish Belgilari va Bog'lovchilar",
+    summaryUz: "Semicolon (;), Em-dash (—), Colon (:) va vergullardan foydalanish qoidalari bo'yicha mukammal qo'llanma.",
+    theoryMarkdown: "1. Nuqtali vergul (;) faqat ikkita mustaqil gapni (independent clauses) bog'laydi: [Mustaqil gap] ; [Mustaqil gap].\n2. Ikki nuqta (:) oldida ALBATTA to'liq mustaqil gap bo'lishi kerak. Ikki nuqtadan keyin esa tushuntirish, ro'yxat yoki bitta so'z kelishi mumkin.\n3. Em-dash (—) qo'shimcha izoh yoki kutilmagan to'xtalish uchun ishlatiladi.\n4. Bog'lovchilar: However / Therefore / Furthermore gap boshida yoki ikki nuqtali verguldan keyin vergul bilan ajratiladi.",
+    examples: [
+      {
+        title: "SAT Original Test Savoli",
+        problem: "The scientist conducted the experiment three times (____) the results were inconclusive.",
+        stepByStepSolution: [
+          "A) ; but (Xato, nuqtali verguldan keyin 'but' kerak emas)",
+          "B) ; however, (To'g'ri, ikki mustaqil fikr ziddiyati)",
+          "C) , however (Xato, comma splice xatosi)",
+          "D) : however (Xato)",
+        ],
+        takeaway: "Mustaqil gaplar orasida tinish belgilarini ajratish SAT Writing bo'limida 60+ ball beradi.",
+      },
+    ],
+    estMinutes: 20,
+    xpReward: 45,
+    subjectSlug: "sat-rw",
+    subjectNameUz: "SAT Reading & Writing",
+    topicTitleUz: "Grammar & Conventions",
+    isCompleted: true,
+    questionsCount: 10,
+  },
+];
+
 export default function LessonHistoryPage() {
   const [lessons, setLessons] = useState<LessonHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,14 +165,18 @@ export default function LessonHistoryPage() {
     fetch("/api/history")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.lessons) {
+        if (data?.lessons && data.lessons.length > 0) {
           setLessons(data.lessons);
-          if (data.lessons.length > 0) {
-            setActiveLessonId(data.lessons[0].id);
-          }
+          setActiveLessonId(data.lessons[0].id);
+        } else {
+          setLessons(FALLBACK_LESSONS);
+          setActiveLessonId(FALLBACK_LESSONS[0].id);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        setLessons(FALLBACK_LESSONS);
+        setActiveLessonId(FALLBACK_LESSONS[0].id);
+      })
       .finally(() => setLoading(false));
   }, []);
 

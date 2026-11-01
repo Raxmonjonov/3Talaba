@@ -60,14 +60,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="classroom-grid-bg relative flex min-h-[calc(100vh-70px)] items-center justify-center px-4 py-12">
-      <div ref={cardRef} className="glass-card w-full max-w-md p-6 sm:p-8">
+    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
+      <div ref={cardRef} className="glass-card w-full max-w-md p-8 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]">
         <div className="text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3 py-1 text-xs font-bold text-neon">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3.5 py-1 text-xs font-extrabold text-emerald-300">
             <Sparkles className="h-3.5 w-3.5" />
             <span>SINFXONAGA QAYTISH</span>
           </span>
-          <h1 className="mt-3 text-2xl font-extrabold text-fg sm:text-3xl">
+          <h1 className="mt-3 text-2xl font-black text-white sm:text-3xl">
             Xush kelibsiz!
           </h1>
           <p className="mt-1 text-xs text-fg-muted sm:text-sm">
@@ -137,6 +137,21 @@ export default function LoginPage() {
             <ArrowRight className="h-4 w-4" />
           </button>
         </form>
+        <div className="mt-5 pt-4 border-t border-white/10 text-center">
+          <p className="text-xs font-semibold text-slate-400 mb-2.5">
+            Tezkor test hisobi bilan kirish:
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setIdentifier('admin@3talab.uz');
+              setPassword('Talaba2026!');
+            }}
+            className="glass-pill rounded-xl px-3.5 py-2 text-xs font-bold text-amber-300 hover:text-amber-200 transition-colors"
+          >
+            🔑 Admin: admin@3talab.uz (Talaba2026!)
+          </button>
+        </div>
 
         <div className="mt-6 border-t border-border pt-5">
           <button

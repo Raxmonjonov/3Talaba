@@ -103,30 +103,36 @@ export function Navbar() {
             </>
           ) : (
             <>
+              <Link
+                href="/learn"
+                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
+              >
+                Darslar
+              </Link>
+              <Link
+                href="/math"
+                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
+              >
+                Algebra &amp; Geometriya
+              </Link>
+              <Link
+                href="/history"
+                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
+              >
+                Dars Tarixi
+              </Link>
               <a
                 href="#tizim"
                 className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
               >
                 12 Oylik Tizim
               </a>
-              <a
-                href="#fanlar"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Fanlar (SAT &amp; IELTS)
-              </a>
-              <a
-                href="#ai-murabbiy"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
+              <Link
+                href="/coach"
+                className="text-sm font-bold text-amber-300 transition-colors hover:text-emerald-400"
               >
                 AI Murabbiy
-              </a>
-              <a
-                href="#vaqt-kalkulyator"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Kunlik Vaqt Rejasi
-              </a>
+              </Link>
             </>
           )}
         </nav>

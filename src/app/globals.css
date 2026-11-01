@@ -59,6 +59,16 @@
     text-rendering: optimizeLegibility;
   }
 
+  body.student-authenticated-campus {
+    background-color: #060e18;
+    background-image: 
+      radial-gradient(circle at 50% 5%, rgba(16, 185, 129, 0.45) 0px, transparent 58%),
+      radial-gradient(circle at 90% 25%, rgba(14, 165, 233, 0.40) 0px, transparent 52%),
+      radial-gradient(circle at 10% 45%, rgba(99, 102, 241, 0.35) 0px, transparent 54%),
+      radial-gradient(circle at 85% 85%, rgba(245, 158, 11, 0.35) 0px, transparent 50%),
+      radial-gradient(circle at 15% 90%, rgba(16, 185, 129, 0.35) 0px, transparent 48%);
+  }
+
   body {
     min-height: 100vh;
     color: var(--text-primary);

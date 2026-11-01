@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { Navbar } from "@/components/layout/Navbar";
+import { DynamicAmbientBackground } from "@/components/layout/DynamicAmbientBackground";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
@@ -47,24 +49,115 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="relative min-h-screen font-sans text-fg antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
-        {/* Glassmorphic Ambient Luminous Backdrop (Haqiqiy shisha nurli fon) */}
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-          {/* Zumrad neon nur (Emerald Glow) */}
-          <div className="absolute -left-[10%] -top-[10%] h-[750px] w-[750px] rounded-full bg-emerald-500/20 blur-[130px] md:h-[950px] md:w-[950px] md:bg-emerald-500/25" />
-          {/* Moviy feruza nur (Cyan Glow) */}
-          <div className="absolute -right-[10%] top-[12%] h-[650px] w-[650px] rounded-full bg-cyan-500/18 blur-[120px] md:h-[850px] md:w-[850px] md:bg-cyan-500/22" />
-          {/* Indigo binafsha nur (Indigo Glow) */}
-          <div className="absolute -bottom-[20%] left-[5%] h-[700px] w-[700px] rounded-full bg-indigo-600/18 blur-[150px] md:h-[900px] md:w-[900px]" />
-          {/* Oltin iliq nur (Gold Accent Glow) */}
-          <div className="absolute -bottom-[10%] right-[10%] h-[600px] w-[600px] rounded-full bg-amber-500/18 blur-[130px] md:h-[750px] md:w-[750px]" />
-          {/* Shisha to'r akslantiruvchi yengil naqsh */}
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:28px_28px] opacity-80" />
-        </div>
-
         <AppProviders>
-          <div className="relative z-10 flex min-h-screen flex-col">
+          {/* O'quvchi tizimga kirganda yoki ro'yxatdan o'tganda avtomatik ravishda nurli sinfxona tusiga kiruvchi fon */}
+          <DynamicAmbientBackground />
+
+          <div className="relative z-10 flex min-h-screen flex-col justify-between">
             <Navbar />
             <main className="flex-1">{children}</main>
+
+            {/* Xalqaro O'quv Kampusi Footer */}
+            <footer className="mt-20 border-t border-white/10 bg-slate-950/70 backdrop-blur-2xl">
+              <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                  {/* Brand */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 font-black text-xl">
+                        3✦
+                      </div>
+                      <span className="text-xl font-black text-white">
+                        3<span className="text-emerald-400">Talab</span> CAMPUS
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      12 oyda xalqaro top universitetlarga grant asosida kirish uchun adaptiv ta&apos;lim platformasi.
+                    </p>
+                  </div>
+
+                  {/* Dasturlar */}
+                  <div>
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-400 mb-3">
+                      Akademik Dasturlar
+                    </h4>
+                    <ul className="space-y-2 text-xs text-slate-300 font-medium">
+                      <li>
+                        <Link href="/math" className="hover:text-emerald-400 transition-colors">
+                          Algebra &amp; Geometriya (Chuqur)
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/practice?subject=sat-math" className="hover:text-emerald-400 transition-colors">
+                          Digital SAT Matematika (800)
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/practice?subject=sat-rw" className="hover:text-emerald-400 transition-colors">
+                          SAT Reading &amp; Writing
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/practice?subject=ielts" className="hover:text-emerald-400 transition-colors">
+                          IELTS Academic (Band 8.5)
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* O'quv Asboblari */}
+                  <div>
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-300 mb-3">
+                      O&apos;quv Asboblari
+                    </h4>
+                    <ul className="space-y-2 text-xs text-slate-300 font-medium">
+                      <li>
+                        <Link href="/coach" className="hover:text-amber-300 transition-colors">
+                          JARVIS AI Murabbiy
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/history" className="hover:text-amber-300 transition-colors">
+                          Dars Tarixi &amp; Matnlar
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/roadmap" className="hover:text-amber-300 transition-colors">
+                          12 Oylik Shaxsiy Xarita
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/placement" className="hover:text-amber-300 transition-colors">
+                          Adaptiv Bilim Testi
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Maqsadli Universitetlar */}
+                  <div>
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-teal-300 mb-3">
+                      Top Universitetlar
+                    </h4>
+                    <div className="flex flex-wrap gap-1.5 text-[11px] text-slate-300">
+                      <span className="glass-pill rounded-lg px-2.5 py-1">MIT &amp; Harvard</span>
+                      <span className="glass-pill rounded-lg px-2.5 py-1">Oxford &amp; Cambridge</span>
+                      <span className="glass-pill rounded-lg px-2.5 py-1">KAIST &amp; Yonsei</span>
+                      <span className="glass-pill rounded-lg px-2.5 py-1">Yangi O&apos;zbekiston &amp; WIUT</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-10 border-t border-white/10 pt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+                  <p>© 2026 3Talab Ta&apos;lim Platformasi. Barcha huquqlar himoyalangan.</p>
+                  <div className="flex items-center gap-4">
+                    <span>Xavfsiz va Sifatli Ta&apos;lim</span>
+                    <span>•</span>
+                    <span>100% O&apos;zbek Tilida</span>
+                  </div>
+                </div>
+              </div>
+            </footer>
           </div>
         </AppProviders>
       </body>
