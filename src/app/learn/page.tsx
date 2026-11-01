@@ -7,12 +7,12 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
-  Trophy,
   ArrowRight,
   Layers,
   Compass,
-  Award,
   Sigma,
+  FileText,
+  Brain,
 } from "lucide-react";
 
 interface LessonSummary {
@@ -49,181 +49,185 @@ interface LessonsCatalogResponse {
   profile?: {
     xpTotal: number;
     levelNumber: number;
-    dailyGoalMinutes: number;
+    currentStreakDays: number;
   };
   subjects: SubjectSummary[];
   completedLessonIds: string[];
-  earnedBadges: Array<{
-    id: string;
-    slug: string;
-    titleUz: string;
-    descriptionUz: string;
-    xpBonus: number;
-  }>;
+  earnedBadges: Array<{ id: string; titleUz: string; xpBonus: number }>;
 }
 
-export default function LearnCatalogPage() {
+export default function LearnIndexPage() {
   const [data, setData] = useState<LessonsCatalogResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/lessons")
       .then((res) => (res.ok ? res.json() : null))
-      .then((payload: LessonsCatalogResponse | null) => {
-        setData(payload);
-        setLoading(false);
+      .then((d) => {
+        if (d) setData(d);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading || !data) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
-        <p className="text-sm text-fg-muted">Darslar katalogi yuklanmoqda...</p>
+        <div className="flex items-center gap-3 text-slate-300">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+          <span className="text-sm font-semibold">Darslar katalogi yuklanmoqda...</span>
+        </div>
       </div>
     );
   }
 
-  const { honorific, profile, subjects, completedLessonIds, earnedBadges } = data;
+  const { honorific, subjects, completedLessonIds } = data;
   const firstLessonSlug =
     subjects[0]?.topics[0]?.lessons[0]?.slug ?? "sat-math-linear-equations";
 
+  const totalLessons = subjects.reduce(
+    (acc, s) => acc + s.topics.reduce((tAcc, t) => tAcc + t.lessons.length, 0),
+    0
+  );
+  const completedCount = completedLessonIds.length;
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Yuqori sokin sinfxona peshlavhasi */}
       <div className="glass-card p-6 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
+        <div className="flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6">
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3.5 py-1 text-xs font-extrabold text-emerald-300">
               <Sparkles className="h-3.5 w-3.5" />
               <span>AKADEMIK KURSLAR • DARS VA AMALIYOT</span>
             </span>
-            <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-4xl">
-              <span className="text-gold">{honorific}</span>, bugungi darsga tayyormisiz?
+            <h1 className="text-2xl font-black text-white sm:text-4xl tracking-tight">
+              <span className="text-amber-300">{honorific}</span>, bugungi darslar rejasi
             </h1>
-            <p className="mt-1 text-xs text-fg-muted sm:text-sm">
+            <p className="text-xs text-slate-300 sm:text-sm max-w-2xl leading-relaxed">
               Har bir dars: <strong>Mavzu → Qisqa nazariya → Hayotiy misollar → Mashqlar → Tahlil</strong>{" "}
-              ketma-ketligida olib boriladi.
+              ketma-ketligida tuzilgan. JARVIS ovozli agenti darsni tushuntirishga yordam beradi.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-xl border border-gold/40 bg-gold-soft px-4 py-2.5 text-center">
-              <div className="flex items-center gap-1.5 font-mono text-xl font-extrabold text-gold">
-                <Trophy className="h-4 w-4" />
-                <span>{profile?.xpTotal ?? 100} XP</span>
-              </div>
-              <span className="text-[11px] text-fg-muted">
-                {profile?.levelNumber ?? 1}-daraja • {earnedBadges.length} ta nishon
+            <div className="glass-pill rounded-2xl px-5 py-3 text-center">
+              <span className="block font-mono text-xl font-black text-emerald-400">
+                {completedCount} / {totalLessons}
+              </span>
+              <span className="text-[11px] font-semibold text-slate-400">
+                Tugatilgan darslar
               </span>
             </div>
 
             <Link
-              href="/practice"
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-xs font-bold text-fg hover:border-neon sm:text-sm"
+              href="/history"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-xs font-bold text-white hover:border-emerald-400/50 hover:bg-white/10 transition-colors sm:text-sm"
             >
-              <Layers className="h-4 w-4 text-neon" />
-              <span>Savollar Banki (34 ta savol)</span>
+              <FileText className="h-4 w-4 text-emerald-400" />
+              <span>Dars Tarixi &amp; Matnlar</span>
             </Link>
 
             <Link
               href="/math"
-              className="inline-flex items-center gap-2 rounded-xl border border-gold/40 bg-gold-soft px-4 py-3 text-xs font-bold text-gold hover:border-gold sm:text-sm"
+              className="inline-flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-xs font-bold text-amber-300 hover:border-amber-300 transition-colors sm:text-sm"
             >
               <Sigma className="h-4 w-4" />
-              <span>Algebra &amp; Geometriya (Chuqur)</span>
+              <span>Algebra &amp; Geometriya</span>
             </Link>
 
             <Link
               href={`/learn/${firstLessonSlug}`}
               id="start-first-lesson-btn"
-              className="btn-neon inline-flex items-center gap-2 px-5 py-3 text-xs font-bold sm:text-sm"
+              className="btn-neon inline-flex items-center gap-2 px-6 py-3 text-xs font-bold shadow-xl sm:text-sm"
             >
               <BookOpen className="h-4 w-4" />
-              <span>Kunlik Darsni Boshlash</span>
+              <span>Darsni Boshlash</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
 
-        {/* Qo'lga kiritilgan nishonlar */}
-        {earnedBadges.length > 0 && (
-          <div className="mt-5 flex flex-wrap items-center gap-2.5">
-            <span className="flex items-center gap-1 text-xs font-bold text-gold">
-              <Award className="h-4 w-4" />
-              <span>Nishonlaringiz:</span>
+        {/* Tezkor Filtrlar va Asboblar */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-slate-400">Yo&apos;nalishlar:</span>
+            <span className="glass-pill rounded-lg px-2.5 py-1 text-emerald-300 font-bold">
+              Digital SAT (800)
             </span>
-            {earnedBadges.map((b) => (
-              <span
-                key={b.id}
-                className="rounded-full border border-gold/40 bg-gold-soft px-3 py-1 text-xs font-bold text-gold"
-              >
-                🏅 {b.titleUz} (+{b.xpBonus} XP)
-              </span>
-            ))}
+            <span className="glass-pill rounded-lg px-2.5 py-1 text-amber-300 font-bold">
+              IELTS Academic (8.5)
+            </span>
+            <span className="glass-pill rounded-lg px-2.5 py-1 text-cyan-300 font-bold">
+              Algebra &amp; Geometriya
+            </span>
           </div>
-        )}
+
+          <Link
+            href="/practice"
+            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5"
+          >
+            <Layers className="h-3.5 w-3.5" />
+            <span>Savollar Bankiga o&apos;tish →</span>
+          </Link>
+        </div>
       </div>
 
       {/* Fanlar va Darslar Ro'yxati */}
-      <div className="mt-8 space-y-6">
+      <div className="space-y-8">
         {subjects.map((subject) => (
-          <div key={subject.id} className="glass-card p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4">
+          <div key={subject.id} className="glass-card p-6 sm:p-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>
-                <h2 className="text-xl font-extrabold text-fg">{subject.nameUz}</h2>
-                <p className="mt-0.5 text-xs text-fg-muted sm:text-sm">
+                <h2 className="text-xl sm:text-2xl font-black text-white">{subject.nameUz}</h2>
+                <p className="mt-1 text-xs sm:text-sm text-slate-300">
                   {subject.descriptionUz}
                 </p>
               </div>
               <Link
                 href={`/practice?subject=${subject.slug}`}
-                className="rounded-xl border border-border bg-elevated px-3.5 py-2 text-xs font-semibold text-neon hover:border-neon"
+                className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-emerald-400 hover:border-emerald-400/50 hover:bg-white/10 transition-colors"
               >
-                Shu fandan mashq ishlash →
+                Ushbu fandan mashqlar →
               </Link>
             </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
               {subject.topics.map((topic) =>
                 topic.lessons.map((lesson) => {
                   const isDone = completedLessonIds.includes(lesson.id);
                   return (
                     <div
                       key={lesson.id}
-                      className={`flex flex-col justify-between rounded-2xl border p-5 transition-all backdrop-blur-md ${
+                      className={`flex flex-col justify-between rounded-2xl border p-5 transition-all backdrop-blur-xl ${
                         isDone
-                          ? "border-neon/60 bg-neon-soft/15"
-                          : "border-white/10 bg-surface/60 hover:border-neon/40 hover:bg-surface/80"
+                          ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+                          : "border-white/10 bg-white/[0.03] hover:border-emerald-400/40 hover:bg-white/[0.06]"
                       }`}
                     >
                       <div>
                         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <span className="rounded-md bg-elevated px-2.5 py-1 font-mono font-bold text-neon">
+                          <span className="glass-pill rounded-lg px-2.5 py-1 font-mono font-bold text-emerald-300">
                             {topic.titleUz}
                           </span>
-                          <div className="flex items-center gap-2">
-                            <span className="flex items-center gap-1 font-mono text-fg-muted">
-                              <Clock className="h-3.5 w-3.5" />
-                              {lesson.estMinutes} daq
-                            </span>
-                            <span className="rounded-md bg-gold-soft px-2 py-0.5 font-mono font-bold text-gold">
-                              +{lesson.xpReward} XP
-                            </span>
-                          </div>
+                          <span className="flex items-center gap-1 font-mono text-slate-400">
+                            <Clock className="h-3.5 w-3.5" />
+                            {lesson.estMinutes} daqiqa
+                          </span>
                         </div>
 
-                        <h3 className="mt-3 text-base font-extrabold text-fg sm:text-lg">
+                        <h3 className="mt-3 text-base sm:text-lg font-black text-white">
                           {lesson.titleUz}
                         </h3>
-                        <p className="mt-1.5 text-xs leading-relaxed text-fg-muted sm:text-sm">
+                        <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-300">
                           {lesson.summaryUz}
                         </p>
                       </div>
 
-                      <div className="mt-5 flex items-center justify-between border-t border-border pt-3.5">
-                        <span className="text-xs text-fg-muted">
-                          Nazariya + Misollar + {lesson._count.questions} ta mashq
+                      <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+                        <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                          <Brain className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>JARVIS audio &amp; {lesson._count.questions} ta mashq</span>
                         </span>
                         <Link
                           href={`/learn/${lesson.slug}`}
@@ -251,25 +255,28 @@ export default function LearnCatalogPage() {
         ))}
       </div>
 
-      {/* Pastki tezkor yo'llanma */}
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-6">
+      {/* Pastki yo'llanma */}
+      <div className="glass-card p-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Compass className="h-6 w-6 text-neon" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400">
+            <Compass className="h-6 w-6" />
+          </div>
           <div>
-            <h3 className="text-sm font-bold text-fg">
+            <h3 className="text-sm font-bold text-white">
               12 Oylik Shaxsiy Yo&apos;l Xaritangiz bilan bog&apos;langan
             </h3>
-            <p className="text-xs text-fg-muted">
-              Yakunlangan har bir dars avtomatik ravishda kunlik rejangiz va XP hisobingizga
-              qo&apos;shiladi.
+            <p className="text-xs text-slate-400">
+              Qaysi ketma-ketlikda o&apos;qish kerakligini xaritada ko&apos;ring.
             </p>
           </div>
         </div>
+
         <Link
           href="/roadmap"
-          className="rounded-xl border border-border bg-elevated px-4 py-2.5 text-xs font-bold text-fg hover:border-neon"
+          className="btn-neon inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold"
         >
-          12 Oylik Xaritaga qaytish →
+          <span>Xaritaga o&apos;tish</span>
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </div>
