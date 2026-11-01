@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { LEVEL_LABELS } from "@/lib/validations/onboarding";
 import { useUIPreferences } from "@/components/providers/AppProviders";
+import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 
 interface SubjectScoreDetail {
   nameUz: string;
@@ -202,7 +203,11 @@ export default function PlacementResultPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <JarvisVoiceButton
+              text={`Tabriklaymiz, ${honorific}! Sizning boshlang'ich darajangiz: ${levelInfo.uz}. ${levelInfo.desc}. AI Murabbiy xulosasi: ${result.writingSpeakingAdvice}`}
+              label="JARVIS ovozida tinglash"
+            />
             <Link
               href="/placement"
               className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-xs font-semibold text-fg-muted hover:text-fg"

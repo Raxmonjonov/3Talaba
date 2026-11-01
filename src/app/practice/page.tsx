@@ -14,6 +14,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
+import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 
 interface PracticeQuestionDTO {
   id: string;
@@ -114,7 +115,7 @@ export default function PracticeBankPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="glass-card p-6 sm:p-8">
+      <div className="glass-card p-6 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
@@ -215,9 +216,15 @@ export default function PracticeBankPage() {
               </div>
             )}
 
-            <h2 className="mt-4 text-base font-bold text-fg sm:text-lg">
-              {currentQuestion.promptUz}
-            </h2>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-bold text-white sm:text-xl">
+                {currentQuestion.promptUz}
+              </h2>
+              <JarvisVoiceButton
+                text={`${currentQuestion.promptUz}. Variantlar: ${currentQuestion.options.map(o => o.id + ': ' + o.text).join('. ')}`}
+                label="Savolni tinglash"
+              />
+            </div>
 
             <div className="mt-5 grid gap-3">
               {currentQuestion.options.map((opt) => {
@@ -254,7 +261,10 @@ export default function PracticeBankPage() {
                   <Brain className="mt-0.5 h-5 w-5 shrink-0 text-neon" />
                   <div>
                     <p className="font-bold text-neon">Tushuntirish:</p>
-                    <p className="mt-1 text-fg">{currentQuestion.explanationUz}</p>
+                    <div className="mt-1 flex flex-wrap items-start justify-between gap-2">
+                    <p className="text-slate-200 text-sm leading-relaxed">{currentQuestion.explanationUz}</p>
+                    <JarvisVoiceButton text={currentQuestion.explanationUz} label="Eshitish" />
+                  </div>
                   </div>
                 </div>
                 <div className="mt-4 flex justify-end">

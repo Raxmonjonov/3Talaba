@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
+import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 import { LEVEL_LABELS } from "@/lib/validations/onboarding";
 import type {
   DailyTimeBreakdown,
@@ -221,11 +222,11 @@ export default function RoadmapPage() {
   const startLevelLabel = LEVEL_LABELS[roadmap.startLevel]?.uz ?? "Boshlang'ich";
 
   return (
-    <div className="classroom-grid-bg mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* ====================================================================
           1. YUQORI SARLAVHA VA 12 OYLIK SVG PROGRESS TRAJEKTORIYASI
           ==================================================================== */}
-      <div className="glass-card p-6 sm:p-8">
+      <div className="glass-card p-6 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
@@ -243,7 +244,11 @@ export default function RoadmapPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <JarvisVoiceButton
+              text={`12 oylik shaxsiy yo'l xaritangiz. Boshlang'ich nuqta: ${startLevelLabel}. Maqsadingiz: ${roadmap.targetSummary}. Yillik reja: ${data.annualStudyHours} sof o'quv soati.`}
+              label="JARVIS ovozida tinglash"
+            />
             <div className="rounded-xl border border-neon/40 bg-neon-soft px-4 py-2.5 text-center">
               <span
                 ref={annualHoursRef}

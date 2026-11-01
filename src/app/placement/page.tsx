@@ -22,6 +22,7 @@ import {
   type PlacementQuestionItem,
 } from "@/lib/curriculum/placement-engine";
 import { useUIPreferences } from "@/components/providers/AppProviders";
+import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 
 const DIFFICULTY_LABELS: Record<1 | 2 | 3 | 4, { label: string; color: string }> = {
   1: { label: "1-pog'ona • Noldan (Tayanch)", color: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10" },
@@ -204,8 +205,8 @@ export default function PlacementTestPage() {
   const diffBadge = DIFFICULTY_LABELS[currentQuestion.difficulty];
 
   return (
-    <div className="classroom-grid-bg mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="glass-card p-6 sm:p-8">
+    <div className="relative z-10 mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="glass-card p-6 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]">
         {/* Sarlavha va Adaptiv Indikator */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div>
@@ -288,9 +289,15 @@ export default function PlacementTestPage() {
               </div>
             )}
 
-            <h2 className="mt-5 text-base font-bold leading-relaxed text-fg sm:text-lg">
-              {currentQuestion.promptUz}
-            </h2>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-bold leading-relaxed text-white sm:text-xl">
+                {currentQuestion.promptUz}
+              </h2>
+              <JarvisVoiceButton
+                text={`${currentQuestion.promptUz}. Variantlar: ${currentQuestion.options.map(o => o.id + ': ' + o.text).join('. ')}`}
+                label="Savolni tinglash"
+              />
+            </div>
 
             {/* Variantlar */}
             <div className="mt-5 grid gap-3">
@@ -352,7 +359,10 @@ export default function PlacementTestPage() {
                         ? `Barakalla, ${honorific}! To'g'ri javob — keyingi savol darajasi biroz ko'tariladi.`
                         : `Xavotir olmang, ${honorific}! Har bir xato — yangi bilim demakdir:`}
                     </p>
-                    <p className="mt-1 text-fg">{currentQuestion.explanationUz}</p>
+                    <div className="mt-1 flex flex-wrap items-start justify-between gap-2">
+                      <p className="text-slate-200 text-sm leading-relaxed">{currentQuestion.explanationUz}</p>
+                      <JarvisVoiceButton text={currentQuestion.explanationUz} label="Tushuntirishni tinglash" />
+                    </div>
                   </div>
                 </div>
 
