@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   BookOpen,
   Calculator,
+  Sigma,
   Globe2,
   PenTool,
   ShieldCheck,

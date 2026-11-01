@@ -118,6 +118,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 5,
         hintUz: "Avval ikkala tomondan 4 ni ayiring.",
         solutionUz: "3x = 15 ⇒ x = 5.",
+        options: [
+          { id: "A", text: "3" },
+          { id: "B", text: "4" },
+          { id: "C", text: "5" },
+          { id: "D", text: "6" },
+        ],
+        correctOption: "C",
       },
       {
         id: "lin-2",
@@ -126,6 +133,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 6,
         hintUz: "Ikkala tomondan 7 ni ayiring, so'ng −2 ga bo'ling (ishoraga e'tibor bering).",
         solutionUz: "−2x = −12 ⇒ x = 6.",
+        options: [
+          { id: "A", text: "-6" },
+          { id: "B", text: "1" },
+          { id: "C", text: "6" },
+          { id: "D", text: "12" },
+        ],
+        correctOption: "C",
       },
       {
         id: "lin-3",
@@ -134,6 +148,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 17,
         hintUz: "Kasrdan qutulish uchun ikkala tomonni 4 ga ko'paytiring.",
         solutionUz: "x + 3 = 20 ⇒ x = 17.",
+        options: [
+          { id: "A", text: "17" },
+          { id: "B", text: "20" },
+          { id: "C", text: "23" },
+          { id: "D", text: "32" },
+        ],
+        correctOption: "A",
       },
     ],
     commonMistakesUz: [
@@ -190,6 +211,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 3,
         hintUz: "x² = 9 ko'rinishiga keltiring.",
         solutionUz: "x² = 9 ⇒ x = ±3, musbat ildiz 3.",
+        options: [
+          { id: "A", text: "1" },
+          { id: "B", text: "3" },
+          { id: "C", text: "9" },
+          { id: "D", text: "81" },
+        ],
+        correctOption: "B",
       },
       {
         id: "kv-2",
@@ -198,6 +226,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 7,
         hintUz: "Viyet teoremasi: x₁ + x₂ = −b/a.",
         solutionUz: "x₁ + x₂ = −(−7)/1 = 7 (ildizlar 2 va 5).",
+        options: [
+          { id: "A", text: "-7" },
+          { id: "B", text: "5" },
+          { id: "C", text: "7" },
+          { id: "D", text: "10" },
+        ],
+        correctOption: "C",
       },
       {
         id: "kv-3",
@@ -206,6 +241,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 3,
         hintUz: "x₁ · x₂ = c/a — a = 2 ekanini unutmang.",
         solutionUz: "x₁ · x₂ = 6/2 = 3 (ildizlar 1 va 3).",
+        options: [
+          { id: "A", text: "3" },
+          { id: "B", text: "4" },
+          { id: "C", text: "6" },
+          { id: "D", text: "8" },
+        ],
+        correctOption: "A",
       },
     ],
     commonMistakesUz: [
@@ -557,6 +599,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 13,
         hintUz: "5² + 12² = ?",
         solutionUz: "25 + 144 = 169 ⇒ c = 13.",
+        options: [
+          { id: "A", text: "13" },
+          { id: "B", text: "14" },
+          { id: "C", text: "15" },
+          { id: "D", text: "17" },
+        ],
+        correctOption: "A",
       },
       {
         id: "pyt-2",
@@ -565,6 +614,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 15,
         hintUz: "b² = c² − a².",
         solutionUz: "289 − 64 = 225 ⇒ b = 15.",
+        options: [
+          { id: "A", text: "9" },
+          { id: "B", text: "12" },
+          { id: "C", text: "15" },
+          { id: "D", text: "16" },
+        ],
+        correctOption: "C",
       },
       {
         id: "pyt-3",
@@ -798,6 +854,13 @@ export const MATH_TOPICS: MathTopic[] = [
         answer: 0.5,
         hintUz: "30-60-90 uchburchakda 30° qarshisidagi katet gipotenuzaning yarmi.",
         solutionUz: "sin 30° = 1/2 = 0,5.",
+        options: [
+          { id: "A", text: "0.25" },
+          { id: "B", text: "0.5" },
+          { id: "C", text: "0.707" },
+          { id: "D", text: "0.866" },
+        ],
+        correctOption: "B",
       },
       {
         id: "trig-2",
