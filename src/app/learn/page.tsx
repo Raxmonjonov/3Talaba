@@ -12,6 +12,7 @@ import {
   Layers,
   Compass,
   Award,
+  Sigma,
 } from "lucide-react";
 
 interface LessonSummary {
@@ -123,6 +124,14 @@ export default function LearnCatalogPage() {
             >
               <Layers className="h-4 w-4 text-neon" />
               <span>Savollar Banki (34 ta savol)</span>
+            </Link>
+
+            <Link
+              href="/math"
+              className="inline-flex items-center gap-2 rounded-xl border border-gold/40 bg-gold-soft px-4 py-3 text-xs font-bold text-gold hover:border-gold sm:text-sm"
+            >
+              <Sigma className="h-4 w-4" />
+              <span>Algebra &amp; Geometriya (Chuqur)</span>
             </Link>
 
             <Link
