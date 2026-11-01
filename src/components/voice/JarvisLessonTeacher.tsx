@@ -134,7 +134,7 @@ export function JarvisLessonTeacher({
           </div>
           <div className="flex items-center gap-2">
             <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-amber-300">
-              Ovoz: Puck (Gemini Live)
+              JARVIS Mark XXXIX Audio
             </span>
             <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-emerald-400">
               Onlayn
