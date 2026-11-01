@@ -1,29 +1,28 @@
 /**
- * 3Talab — Haqiqiy JARVIS AI Ovoz Dvigateli (MARK XXXIX)
+ * 3Talab — JARVIS AI Ovozli Agenti (TTS & STT Dvigateli)
  *
- * JARVIS-OS-V.2 tizimidagi original ovoz arxitekturasi:
- * - Ovoz xarakteri: British AI baritone (Paul Bettany / Ryan / Guy tembri)
- * - O'zbekcha ravon talaffuz rejimi (Mahalliy toza nutq)
- * - Pitch & Rate: Chuqur vazmin rezonans
+ * JARVIS-OS-V.2 arxitekturasi asosida:
+ * - Ovoz tembri: Chuqur, jiddiy, intellektual va samimiy ohang (Pitch: 0.92, Rate: 0.98)
+ * - Afzal ko'rilgan ovozlar: Microsoft Guy / Sardor / David / Google UK Male / Onyx-style
+ * - Matematik formulalar va Markdown belgilarini toza o'zbekcha talaffuzga moslash
  */
-
-export type VoiceMode = "jarvis-original" | "uzbek-native";
 
 export interface JarvisVoiceState {
   isSpeaking: boolean;
   isPaused: boolean;
   isListening: boolean;
   currentText: string;
-  voiceName: string;
-  mode: VoiceMode;
 }
 
+/**
+ * Matndagi LaTeX, formulalar va markdown belgilarini audio talaffuzga moslaydi.
+ */
 export function cleanTextForSpeech(text: string): string {
-  return text
-    .replace(/[\*\_#`]/g, "")
-    .replace(/\[.*?\]\(.*?\)/g, "")
-    .replace(/\$\$(.*?)\$\$/g, "$1")
-    .replace(/\$(.*?)\$/g, "$1")
+  let cleaned = text
+    .replace(/[\*\_#`]/g, "") // Markdown formatlash belgilarini olib tashlash
+    .replace(/\[.*?\]\(.*?\)/g, "") // Havolalarni tozalash
+    .replace(/\$\$(.*?)\$\$/g, "$1") // LaTeX bloklari
+    .replace(/\$(.*?)\$/g, "$1") // LaTeX inline
     .replace(/x\^2/g, "x kvadrat")
     .replace(/a\^2/g, "a kvadrat")
     .replace(/b\^2/g, "b kvadrat")
@@ -41,6 +40,8 @@ export function cleanTextForSpeech(text: string): string {
     .replace(/=/g, " teng ")
     .replace(/\s+/g, " ")
     .trim();
+
+  return cleaned;
 }
 
 class JarvisVoiceEngine {
@@ -54,28 +55,12 @@ class JarvisVoiceEngine {
     isPaused: false,
     isListening: false,
     currentText: "",
-    voiceName: "JARVIS British Baritone",
-    mode: "jarvis-original",
   };
 
   constructor() {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       this.synth = window.speechSynthesis;
-      if (this.synth.onvoiceschanged !== undefined) {
-        this.synth.onvoiceschanged = () => {
-          const v = this.selectVoice(this.state.mode);
-          if (v) this.state.voiceName = v.name;
-          this.notify();
-        };
-      }
     }
-  }
-
-  public setMode(mode: VoiceMode) {
-    this.state.mode = mode;
-    const v = this.selectVoice(mode);
-    if (v) this.state.voiceName = v.name;
-    this.notify();
   }
 
   public subscribe(callback: (state: JarvisVoiceState) => void) {
@@ -92,43 +77,42 @@ class JarvisVoiceEngine {
     }
   }
 
-  public selectVoice(mode: VoiceMode = this.state.mode): SpeechSynthesisVoice | null {
+  /**
+   * JARVIS uslubidagi eng yaxshi mos keluvchi ovozni tanlaydi
+   */
+  private selectJarvisVoice(): SpeechSynthesisVoice | null {
     if (!this.synth) return null;
     const voices = this.synth.getVoices();
     if (voices.length === 0) return null;
 
-    if (mode === "uzbek-native") {
-      const uzVoice = voices.find(
-        (v) => v.lang.startsWith("uz") || v.name.toLowerCase().includes("uzbek") || v.name.toLowerCase().includes("sardor")
-      );
-      if (uzVoice) return uzVoice;
-    }
+    // 1. Agar o'zbekcha ovoz bo'lsa
+    const uzVoice = voices.find((v) => v.lang.startsWith("uz") || v.name.toLowerCase().includes("uzbek"));
+    if (uzVoice) return uzVoice;
 
-    // Original JARVIS (British AI baritone)
+    // 2. Microsoft Guy / Sardor / David / Google UK Male / Natural erkak ovozlari
     const jarvisKeywords = [
-      "google uk english male",
-      "en-gb",
-      "ryan",
       "guy",
-      "george",
-      "daniel",
+      "sardor",
       "david",
-      "arthur",
+      "george",
       "male",
+      "natural",
+      "richard",
+      "james",
     ];
 
     for (const kw of jarvisKeywords) {
-      const match = voices.find((v) => {
-        const name = v.name.toLowerCase();
-        const lang = v.lang.toLowerCase();
-        return name.includes(kw) || (kw === "en-gb" && lang.startsWith("en-gb"));
-      });
+      const match = voices.find((v) => v.name.toLowerCase().includes(kw));
       if (match) return match;
     }
 
-    return voices[0] || null;
+    // 3. Inglizcha default
+    return voices.find((v) => v.lang.startsWith("en")) || voices[0] || null;
   }
 
+  /**
+   * Matnni JARVIS ovozida gapiradi
+   */
   public speak(text: string, onEnd?: () => void) {
     if (!this.synth) return;
 
@@ -138,20 +122,15 @@ class JarvisVoiceEngine {
     if (!spokenText) return;
 
     const utter = new SpeechSynthesisUtterance(spokenText);
-    const voice = this.selectVoice(this.state.mode);
+    const voice = this.selectJarvisVoice();
     if (voice) {
       utter.voice = voice;
       utter.lang = voice.lang;
-      this.state.voiceName = voice.name;
     }
 
-    if (this.state.mode === "jarvis-original") {
-      utter.pitch = 0.84; // Chuqur vazmin AI bariton
-      utter.rate = 0.92;
-    } else {
-      utter.pitch = 1.0;
-      utter.rate = 1.0;
-    }
+    // JARVIS ovoz parametrlari:
+    utter.pitch = 0.92; // Chuqur, jiddiy va intellektual tembr
+    utter.rate = 0.98; // Sokin, ravon va tushunarli tezlik
     utter.volume = 1.0;
 
     utter.onstart = () => {
@@ -166,7 +145,7 @@ class JarvisVoiceEngine {
       this.state.isPaused = false;
       this.state.currentText = "";
       this.notify();
-      if (onEnd) onEnd();
+      onEnd?.();
     };
 
     utter.onerror = () => {
@@ -206,55 +185,57 @@ class JarvisVoiceEngine {
     }
   }
 
-  public startListening(
-    onResult: (transcript: string) => void,
-    onError?: (err: string) => void
-  ) {
+  /**
+   * O'quvchi ovozini mikrofon orqali matnga aylantirish (Speech-to-Text)
+   */
+  public startListening(onResult: (transcript: string) => void, onError?: () => void) {
     if (typeof window === "undefined") return;
 
     const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      if (onError) onError("Brauzeringiz ovozli kiritishni qo'llab-quvvatlamaydi.");
+      console.warn("Brauzeringizda ovozni tanish (SpeechRecognition) qo'llab-quvvatlanmaydi.");
+      onError?.();
       return;
     }
 
     try {
-      this.recognition = new SpeechRecognition();
-      this.recognition.lang = "uz-UZ";
-      this.recognition.continuous = false;
-      this.recognition.interimResults = false;
+      this.stopListening();
+      const rec = new SpeechRecognition();
+      rec.lang = "uz-UZ";
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
 
-      this.recognition.onstart = () => {
+      rec.onstart = () => {
         this.state.isListening = true;
         this.notify();
       };
 
-      this.recognition.onresult = (event: any) => {
-        const transcript = event.results[0]?.[0]?.transcript ?? "";
-        this.state.isListening = false;
-        this.notify();
-        onResult(transcript);
+      rec.onresult = (event: any) => {
+        const transcript = event.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          onResult(transcript);
+        }
       };
 
-      this.recognition.onerror = (event: any) => {
+      rec.onerror = () => {
         this.state.isListening = false;
         this.notify();
-        if (onError) onError(event.error);
+        onError?.();
       };
 
-      this.recognition.onend = () => {
+      rec.onend = () => {
         this.state.isListening = false;
         this.notify();
       };
 
-      this.recognition.start();
-    } catch (e: any) {
+      this.recognition = rec;
+      rec.start();
+    } catch {
       this.state.isListening = false;
       this.notify();
-      if (onError) onError(e?.message ?? "Mikrofonni yoqishda xatolik");
+      onError?.();
     }
   }
 
@@ -263,6 +244,7 @@ class JarvisVoiceEngine {
       try {
         this.recognition.stop();
       } catch {}
+      this.recognition = null;
       this.state.isListening = false;
       this.notify();
     }
