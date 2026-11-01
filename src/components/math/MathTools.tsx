@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Copy,
   Check,
+  Printer,
+  CircleDot,
 } from "lucide-react";
 import { MATH_TOPICS } from "@/lib/curriculum/math-deep-dive";
 
@@ -69,9 +71,20 @@ export function FormulaSheetView() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="flex items-center gap-2 text-lg font-bold text-neon">
-            <BookOpen className="h-5 w-5" /> Barcha Formulalar Spravochnigi (Formula Sheet)
-          </h3>
+          <div className="flex items-center gap-3">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-neon">
+              <BookOpen className="h-5 w-5" /> Barcha Formulalar Spravochnigi (Formula Sheet)
+            </h3>
+            <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gold/50 bg-gold-soft px-3 py-1.5 text-xs font-bold text-gold hover:border-gold"
+            title="Formulalar varaqasini chop etish yoki PDF sifatida saqlash"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            <span>Chop etish / PDF</span>
+          </button>
+          </div>
           <p className="text-xs text-fg-muted mt-0.5">
             SAT va xalqaro imtihonlar uchun zarur bo&apos;lgan barcha asosiy formulalar va ularning isbot g&apos;oyasi.
           </p>
@@ -172,7 +185,9 @@ export function FormulaSheetView() {
 }
 
 export function InteractiveSolversView() {
-  const [activeTool, setActiveTool] = useState<"quadratic" | "pythagoras" | "percent">("quadratic");
+  const [activeTool, setActiveTool] = useState<"quadratic" | "pythagoras" | "percent" | "circle">("quadratic");
+  const [circleR, setCircleR] = useState("6");
+  const [circleAngle, setCircleAngle] = useState("60");
 
   // 1. Kvadrat tenglama holatlari
   const [qa, setQa] = useState("1");
@@ -186,6 +201,27 @@ export function InteractiveSolversView() {
   // 3. Foiz holatlari
   const [pctInitial, setPctInitial] = useState("100");
   const [pctChange, setPctChange] = useState("20");
+
+
+  // 4. Doira va sektor hisobi
+  const circleResult = useMemo(() => {
+    const r = parseFloat(circleR);
+    const angle = parseFloat(circleAngle);
+    if (isNaN(r) || isNaN(angle) || r <= 0 || angle <= 0) return null;
+
+    const area = Math.PI * r * r;
+    const circumference = 2 * Math.PI * r;
+    const sectorArea = (angle / 360) * area;
+    const arcLength = (angle / 360) * circumference;
+
+    return {
+      area,
+      circumference,
+      sectorArea,
+      arcLength,
+      explanation: `Radiusi ${r} bo'lgan doira: S = π·${r}² ≈ ${area.toFixed(2)}, Aylana uzunligi C = 2π·${r} ≈ ${circumference.toFixed(2)}. ${angle}° li sektor: S_sektor = (${angle}/360)·${area.toFixed(2)} ≈ ${sectorArea.toFixed(2)}, Yoy uzunligi L = (${angle}/360)·${circumference.toFixed(2)} ≈ ${arcLength.toFixed(2)}.`,
+    };
+  }, [circleR, circleAngle]);
 
   // Kvadrat tenglama hisobi
   const quadraticResult = useMemo(() => {
@@ -279,6 +315,17 @@ export function InteractiveSolversView() {
           }`}
         >
           Pifagor Teoremasi (a² + b² = c²)
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTool("circle")}
+          className={`rounded-xl border px-4 py-2.5 text-xs font-bold transition-colors ${
+            activeTool === "circle"
+              ? "border-neon bg-neon-soft text-neon"
+              : "border-border bg-surface text-fg-muted hover:text-fg"
+          }`}
+        >
+          Aylana & Sektor (S = πr², L = 2πr)
         </button>
         <button
           type="button"
@@ -426,6 +473,57 @@ export function InteractiveSolversView() {
                 <span className="rounded-lg bg-elevated px-3 py-1 font-mono text-sm font-bold text-gold">
                   O&apos;zgarish = {percentResult.delta >= 0 ? `+${percentResult.delta.toFixed(2)}` : percentResult.delta.toFixed(2)}
                 </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {/* 4. Doira va sektor kalkulyatori */}
+      {activeTool === "circle" && (
+        <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6 space-y-4">
+          <h4 className="text-sm font-bold text-fg">Aylana uzunligi, doira va sektor yuzini hisoblash</h4>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-bold text-fg-muted">Radius (r):</label>
+              <input
+                type="number"
+                value={circleR}
+                onChange={(e) => setCircleR(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-border bg-canvas px-3.5 py-2 font-mono text-sm text-fg focus:border-neon focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-fg-muted">Markaziy burchak (α gradusda, masalan: 60°):</label>
+              <input
+                type="number"
+                value={circleAngle}
+                onChange={(e) => setCircleAngle(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-border bg-canvas px-3.5 py-2 font-mono text-sm text-fg focus:border-neon focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {circleResult && (
+            <div className="rounded-xl border border-neon/50 bg-neon-soft/30 p-4 space-y-2">
+              <p className="text-xs font-bold text-neon uppercase tracking-wide">Aylana va sektor hisoblari:</p>
+              <p className="text-sm text-fg leading-relaxed">{circleResult.explanation}</p>
+              <div className="pt-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div className="rounded-lg bg-elevated p-2.5 text-center">
+                  <p className="text-[10px] text-fg-muted uppercase">Doira Yuzi (S)</p>
+                  <p className="font-mono text-sm font-bold text-neon">{circleResult.area.toFixed(2)}</p>
+                </div>
+                <div className="rounded-lg bg-elevated p-2.5 text-center">
+                  <p className="text-[10px] text-fg-muted uppercase">Aylana Uzunligi (C)</p>
+                  <p className="font-mono text-sm font-bold text-gold">{circleResult.circumference.toFixed(2)}</p>
+                </div>
+                <div className="rounded-lg bg-elevated p-2.5 text-center">
+                  <p className="text-[10px] text-fg-muted uppercase">Sektor Yuzi (S_sek)</p>
+                  <p className="font-mono text-sm font-bold text-neon">{circleResult.sectorArea.toFixed(2)}</p>
+                </div>
+                <div className="rounded-lg bg-elevated p-2.5 text-center">
+                  <p className="text-[10px] text-fg-muted uppercase">Yoy Uzunligi (L_yoy)</p>
+                  <p className="font-mono text-sm font-bold text-gold">{circleResult.arcLength.toFixed(2)}</p>
+                </div>
               </div>
             </div>
           )}

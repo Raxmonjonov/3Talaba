@@ -240,6 +240,18 @@ export default function MathDeepDivePage() {
           </button>
         </div>
 
+        {masteredCount === MATH_TOPICS.length && (
+          <div className="mt-6 rounded-2xl border border-gold bg-gradient-to-r from-gold-soft/40 via-surface to-gold-soft/40 p-6 text-center shadow-gold">
+            <span className="text-3xl">🏆</span>
+            <h2 className="mt-2 text-xl font-extrabold text-gold sm:text-2xl">
+              Ofarin! Barcha ${MATH_TOPICS.length} ta Algebra va Geometriya Modulini 100% O&apos;zlashtirdingiz!
+            </h2>
+            <p className="mt-1 text-sm text-fg-muted max-w-xl mx-auto">
+              Siz SAT Math va xalqaro universitetlar darajasidagi barcha asosiy teoremalarni isboti bilan o&apos;rgandingiz.
+            </p>
+          </div>
+        )}
+
         {/* Metod bosqichlari */}
         <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
           {DEEP_METHOD_STEPS.map((s, idx) => {
