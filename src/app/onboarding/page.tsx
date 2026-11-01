@@ -6,21 +6,18 @@ import { useSession } from "next-auth/react";
 import { animate } from "animejs";
 import {
   Sparkles,
-  Trophy,
-  Flame,
-  GraduationCap,
-  MapPin,
-  CheckCircle2,
   ArrowRight,
   ArrowLeft,
-  Compass,
-  Clock,
-  Brain,
+  Check,
+  Building2,
+  GraduationCap,
   Target,
-  Sliders,
+  BookOpen,
+  Brain,
+  Clock,
+  Compass,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
-import { LEVEL_LABELS } from "@/lib/validations/onboarding";
 
 interface ProfileResponse {
   id: string;
@@ -46,55 +43,135 @@ interface ProfileResponse {
     xpTotal: number;
     levelNumber: number;
   };
-  streak?: {
-    currentStreak: number;
-  };
 }
 
-const UNIVERSITY_PRESETS = [
-  { uni: "MIT / Stanford / Ivy League", country: "AQSh" },
-  { uni: "University of Oxford / Cambridge", country: "Buyuk Britaniya" },
-  { uni: "KAIST / Yonsei University", country: "Janubiy Koreya" },
-  { uni: "Nazarbayev University / Constructor", country: "Xalqaro / Yevropa" },
-  { uni: "Yangi O'zbekiston / Westminster (WIUT)", country: "O'zbekiston" },
+const UNIVERSITY_OPTIONS = [
+  {
+    title: "AQSh & Ivy League",
+    subtitle: "MIT, Stanford, Harvard, Columbia",
+    country: "AQSh",
+    icon: "🇺🇸",
+  },
+  {
+    title: "Buyuk Britaniya (Russell Group)",
+    subtitle: "University of Oxford, Cambridge, Imperial",
+    country: "Buyuk Britaniya",
+    icon: "🇬🇧",
+  },
+  {
+    title: "Janubiy Koreya & Osiyo",
+    subtitle: "KAIST, Yonsei, Seoul National, NUS",
+    country: "Janubiy Koreya",
+    icon: "🇰🇷",
+  },
+  {
+    title: "O'zbekiston Top OTM",
+    subtitle: "Yangi O'zbekiston, Westminster (WIUT), Turin",
+    country: "O'zbekiston",
+    icon: "🇺🇿",
+  },
+];
+
+const LEVEL_OPTIONS: Array<{
+  id: "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+  title: string;
+  badge: string;
+  desc: string;
+  icon: string;
+}> = [
+  {
+    id: "ZERO",
+    title: "Noldan (Fundamental)",
+    badge: "0-bosqich",
+    desc: "Asosiy algebra qoidalari va ingliz tili asoslarini boshidan tartibli o'rganmoqchiman.",
+    icon: "🌱",
+  },
+  {
+    id: "BEGINNER",
+    title: "Boshlang'ich",
+    badge: "1-bosqich",
+    desc: "Maktab dasturidan asosiy bilimlarim bor. Xalqaro imtihon formatiga moslashmoqchiman.",
+    icon: "📖",
+  },
+  {
+    id: "INTERMEDIATE",
+    title: "O'rta (Mustahkam)",
+    badge: "2-bosqich",
+    desc: "Poydevorim mustahkam. Asosiy e'tiborimni SAT va IELTS strategiyalariga qaratmoqchiman.",
+    icon: "⚡",
+  },
+  {
+    id: "ADVANCED",
+    title: "Yuqori (Ilg'or)",
+    badge: "3-bosqich",
+    desc: "1500+ SAT va 8.0+ IELTS uchun eng qiyin masalalar va yuqori tezlik ustida ishlayman.",
+    icon: "🏆",
+  },
 ];
 
 const SUBJECT_OPTIONS = [
-  { slug: "sat-math", label: "SAT Matematika" },
-  { slug: "sat-rw", label: "SAT Reading & Writing" },
-  { slug: "ielts", label: "IELTS Academic (4 ko'nikma)" },
-  { slug: "foundation-math", label: "Fundamental Matematika (Noldan)" },
-  { slug: "academic-writing", label: "Akademik Yozuv & Insho" },
-];
-
-const LEARNING_STYLES = [
   {
-    id: "VISUAL_PRACTICE" as const,
-    title: "Vizual sxemalar + Ko'p amaliy mashq",
-    desc: "Qisqa grafik tushuntirish va darhol test yechish orqali tez o'rganaman.",
+    id: "sat-math",
+    title: "SAT Matematika (Digital SAT)",
+    desc: "Algebra, Chiziqli va kvadratik tenglamalar, Funksiyalar, Geometriya",
+    icon: "📐",
   },
   {
-    id: "SOCRATIC_CHAT" as const,
-    title: "AI Murabbiy bilan savol-javob (Socratic)",
-    desc: "Ustoz men bilan suhbatlashib, yo'naltiruvchi savollar bersa yaxshi tushunaman.",
+    id: "sat-rw",
+    title: "SAT Reading & Writing",
+    desc: "Akademik matnlar, xulosalar, grammatika va so'z boyligi",
+    icon: "📚",
   },
   {
-    id: "DEEP_THEORY" as const,
-    title: "Chuqur nazariya va qoidalar tahlili",
-    desc: "Har bir formula va grammatik qoidaning negizini batafsil o'qishni yoqtiraman.",
+    id: "ielts",
+    title: "IELTS Academic",
+    desc: "Listening, Reading, Academic Writing va Speaking ko'nikmalari",
+    icon: "🎧",
   },
   {
-    id: "POMODORO_SPRINT" as const,
-    title: "Qisqa 25 daqiqalik intensiv bloklar",
-    desc: "Tez-tez tanaffus bilan qisqa va diqqatli sprintlarda o'qish menga qulay.",
+    id: "foundation-math",
+    title: "Fundamental Matematika",
+    desc: "Maktab algebrasini noldan chuqur isbotlar bilan o'rganish",
+    icon: "🧮",
   },
 ];
 
-const STUDY_TIME_SLOTS = [
-  { id: "MORNING" as const, label: "🌅 Ertalab (06:00 – 10:00)", note: "Tiniq xotira vaqti" },
-  { id: "AFTERNOON" as const, label: "☀️ Kunduzi (13:00 – 17:00)", note: "Darsdan so'ng" },
-  { id: "EVENING" as const, label: "🌆 Kechqurun (18:00 – 22:00)", note: "Eng ommabop sokin vaqt" },
-  { id: "NIGHT" as const, label: "🌙 Tungi sokinlik (22:00+)", note: "Chuqur konsentratsiya" },
+const LEARNING_STYLES: Array<{
+  id: "VISUAL_PRACTICE" | "SOCRATIC_CHAT" | "DEEP_THEORY";
+  title: string;
+  desc: string;
+  icon: string;
+}> = [
+  {
+    id: "VISUAL_PRACTICE",
+    title: "Vizual amaliyot va tezkor mashqlar",
+    desc: "Qisqa tushuntirish va ko'p amaliy testlar orqali tez o'zlashtiraman.",
+    icon: "👁️",
+  },
+  {
+    id: "SOCRATIC_CHAT",
+    title: "AI Sokratik Murabbiy bilan muloqot",
+    desc: "AI ustoz yo'naltiruvchi savollar berib, xatolarimni tushuntirishini xohlayman.",
+    icon: "🤖",
+  },
+  {
+    id: "DEEP_THEORY",
+    title: "Chuqur nazariya va isbotlar",
+    desc: "Har bir formula va qoidaning kelib chiqishini batafsil o'rganishni yoqtiraman.",
+    icon: "📖",
+  },
+];
+
+const TIME_SLOTS: Array<{
+  id: "MORNING" | "AFTERNOON" | "EVENING" | "NIGHT";
+  label: string;
+  time: string;
+  icon: string;
+}> = [
+  { id: "MORNING", label: "Ertalab", time: "06:00 – 10:00", icon: "🌅" },
+  { id: "AFTERNOON", label: "Kunduzi", time: "13:00 – 17:00", icon: "☀️" },
+  { id: "EVENING", label: "Kechqurun", time: "18:00 – 22:00", icon: "🌆" },
+  { id: "NIGHT", label: "Tungi sokinlik", time: "22:00+", icon: "🌙" },
 ];
 
 export default function OnboardingPage() {
@@ -103,25 +180,27 @@ export default function OnboardingPage() {
   const { reduceMotion } = useUIPreferences();
 
   const stepCardRef = useRef<HTMLDivElement | null>(null);
-  const xpRef = useRef<HTMLSpanElement | null>(null);
 
-  const [userData, setUserData] = useState<ProfileResponse | null>(null);
+  // 1..5 Page to Page
   const [step, setStep] = useState<number>(1);
   const [saving, setSaving] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Onboarding form state
-  const [targetUniversity, setTargetUniversity] = useState("MIT / Westminster / Top OTM");
-  const [targetCountry, setTargetCountry] = useState("AQSh va O'zbekiston");
+  // Form State
+  const [targetUniversity, setTargetUniversity] = useState("MIT / Stanford / Ivy League");
+  const [targetCountry, setTargetCountry] = useState("AQSh");
+  const [customUni, setCustomUni] = useState("");
   const [targetSatScore, setTargetSatScore] = useState<number>(1480);
   const [targetIeltsScore, setTargetIeltsScore] = useState<number>(7.5);
   const [selfAssessedLevel, setSelfAssessedLevel] = useState<
     "ZERO" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
   >("BEGINNER");
-  const [strongSubjects, setStrongSubjects] = useState<string[]>(["foundation-math"]);
-  const [weakSubjects, setWeakSubjects] = useState<string[]>(["sat-rw", "ielts"]);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([
+    "sat-math",
+    "foundation-math",
+  ]);
   const [learningStyle, setLearningStyle] = useState<
-    "VISUAL_PRACTICE" | "SOCRATIC_CHAT" | "DEEP_THEORY" | "POMODORO_SPRINT"
+    "VISUAL_PRACTICE" | "SOCRATIC_CHAT" | "DEEP_THEORY"
   >("VISUAL_PRACTICE");
   const [preferredStudyTime, setPreferredStudyTime] = useState<
     "MORNING" | "AFTERNOON" | "EVENING" | "NIGHT"
@@ -131,80 +210,70 @@ export default function OnboardingPage() {
     fetch("/api/user/profile")
       .then((res) => (res.ok ? res.json() : null))
       .then((data: ProfileResponse | null) => {
-        if (!data) return;
-        setUserData(data);
-        if (data.profile) {
-          if (data.profile.targetUniversity) setTargetUniversity(data.profile.targetUniversity);
-          if (data.profile.targetCountry) setTargetCountry(data.profile.targetCountry);
-          if (data.profile.targetSatScore) setTargetSatScore(data.profile.targetSatScore);
-          if (data.profile.targetIeltsScore) setTargetIeltsScore(data.profile.targetIeltsScore);
-          if (data.profile.selfAssessedLevel) setSelfAssessedLevel(data.profile.selfAssessedLevel);
-          if (data.profile.learningStyle) setLearningStyle(data.profile.learningStyle);
-          if (data.profile.preferredStudyTime) {
-            setPreferredStudyTime(data.profile.preferredStudyTime);
-          }
-        }
+        if (!data?.profile) return;
+        if (data.profile.targetUniversity) setTargetUniversity(data.profile.targetUniversity);
+        if (data.profile.targetCountry) setTargetCountry(data.profile.targetCountry);
+        if (data.profile.targetSatScore) setTargetSatScore(data.profile.targetSatScore);
+        if (data.profile.targetIeltsScore) setTargetIeltsScore(data.profile.targetIeltsScore);
+        if (data.profile.selfAssessedLevel) setSelfAssessedLevel(data.profile.selfAssessedLevel);
+        if (data.profile.preferredStudyTime) setPreferredStudyTime(data.profile.preferredStudyTime);
       })
       .catch(() => {});
   }, []);
 
-  // XP hisoblagich animatsiyasi
-  useEffect(() => {
-    if (!xpRef.current || !userData?.profile) return;
-    const targetXp = userData.profile.xpTotal || 50;
-    if (reduceMotion) {
-      xpRef.current.textContent = String(targetXp);
-      return;
-    }
-    const obj = { val: 0 };
-    animate(obj, {
-      val: targetXp,
-      duration: 900,
-      ease: "outQuart",
-      onUpdate: () => {
-        if (xpRef.current) xpRef.current.textContent = String(Math.round(obj.val));
-      },
-    });
-  }, [userData, reduceMotion]);
-
-  // Qadam almashganda karta animatsiyasi
+  // Animate card on step change
   useEffect(() => {
     if (reduceMotion || !stepCardRef.current) return;
     animate(stepCardRef.current, {
       opacity: [0, 1],
-      translateY: [18, 0],
-      duration: 480,
+      translateY: [16, 0],
+      duration: 380,
       ease: "outExpo",
     });
   }, [step, reduceMotion]);
 
-  const toggleSubjectInList = (
-    slug: string,
-    list: string[],
-    setList: React.Dispatch<React.SetStateAction<string[]>>,
-  ) => {
-    if (list.includes(slug)) {
-      setList(list.filter((item) => item !== slug));
+  const toggleSubject = (id: string) => {
+    if (selectedSubjects.includes(id)) {
+      if (selectedSubjects.length > 1) {
+        setSelectedSubjects(selectedSubjects.filter((s) => s !== id));
+      }
     } else {
-      setList([...list, slug]);
+      setSelectedSubjects([...selectedSubjects, id]);
     }
   };
 
-  const handleFinishOnboarding = async () => {
+  const handleNext = () => {
+    setErrorMsg(null);
+    if (step < 5) {
+      setStep(step + 1);
+    } else {
+      handleFinish();
+    }
+  };
+
+  const handleBack = () => {
+    setErrorMsg(null);
+    if (step > 1) setStep(step - 1);
+  };
+
+  const handleFinish = async () => {
     setSaving(true);
     setErrorMsg(null);
+
+    const finalUni = customUni.trim() || targetUniversity;
+
     try {
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          targetUniversity,
+          targetUniversity: finalUni,
           targetCountry,
           targetSatScore,
           targetIeltsScore,
           selfAssessedLevel,
-          strongSubjects,
-          weakSubjects,
+          strongSubjects: selectedSubjects,
+          weakSubjects: ["sat-rw"],
           learningStyle,
           preferredStudyTime,
         }),
@@ -212,14 +281,14 @@ export default function OnboardingPage() {
 
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setErrorMsg(data.error ?? "Saqlashda xatolik yuz berdi");
+        setErrorMsg(data.error ?? "Ma'lumotlarni saqlashda xatolik yuz berdi");
         setSaving(false);
         return;
       }
 
       router.push("/placement");
     } catch {
-      setErrorMsg("Tarmoq xatoligi yuz berdi. Qayta urinib ko'ring.");
+      setErrorMsg("Tarmoq xatoligi. Qayta urinib ko'ring.");
       setSaving(false);
     }
   };
@@ -227,430 +296,492 @@ export default function OnboardingPage() {
   if (status === "loading") {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
-        <p className="text-sm text-fg-muted">Profilingiz yuklanmoqda...</p>
+        <div className="flex items-center gap-3 text-slate-300">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+          <span className="text-base font-medium">Profilingiz tayyorlanmoqda...</span>
+        </div>
       </div>
     );
   }
 
-  const honorific = userData?.name?.split(" ")[0] ?? session?.user?.name?.split(" ")[0] ?? "Aziz o'quvchi";
-  const displayName = userData?.name ?? session?.user?.name ?? "O'quvchi";
+  const studentName = session?.user?.name ?? "O'quvchi";
 
   return (
-    <div className="classroom-grid-bg mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Yuqori salomlashuv va profil kartasi */}
-      <div className="glass-card p-6 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>SHAXSIY SINFXONA VA TANISHUV</span>
-            </span>
-            <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-3xl">
-              Xush kelibsiz, <span className="text-gold">{displayName}</span>!
-            </h1>
-            <p className="mt-1 text-xs text-fg-muted sm:text-sm">
-              12 oylik shaxsiy yo&apos;l xaritangizni aniq tuzishimiz uchun 4 ta qisqa savolga
-              javob bering.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-gold/40 bg-gold-soft px-4 py-2 text-center">
-              <div className="flex items-center gap-1.5 font-mono text-lg font-extrabold text-gold">
-                <Trophy className="h-4 w-4" />
-                <span ref={xpRef}>{userData?.profile?.xpTotal ?? 50}</span>
-                <span>XP</span>
-              </div>
-              <span className="text-[10px] text-fg-muted">1-daraja • Ilk qadam</span>
-            </div>
-
-            <div className="rounded-xl border border-neon/40 bg-neon-soft px-4 py-2 text-center">
-              <div className="flex items-center gap-1.5 font-mono text-lg font-extrabold text-neon">
-                <Flame className="h-4 w-4" />
-                <span>{userData?.streak?.currentStreak ?? 1} kun</span>
-              </div>
-              <span className="text-[10px] text-fg-muted">Kunlik Streak</span>
-            </div>
-          </div>
+    <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-4 py-8 sm:px-6">
+      {/* Yuqori Qadam Navigatsiyasi (Page to Page) */}
+      <div className="w-full max-w-2xl mb-6">
+        <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-300 mb-2.5">
+          <span className="inline-flex items-center gap-1.5 text-emerald-400">
+            <Sparkles className="h-4 w-4" />
+            <span>QADAM {step} / 5</span>
+          </span>
+          <span className="text-slate-400">
+            {step === 1 && "Maqsadli Universitet"}
+            {step === 2 && "Maqsadli Ballar"}
+            {step === 3 && "Bilim Darajangiz"}
+            {step === 4 && "Asosiy Fanlar"}
+            {step === 5 && "O'rganish Uslubi"}
+          </span>
         </div>
-
-        {/* O'quvchi profili qisqa ma'lumoti */}
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-elevated/50 px-3.5 py-2.5 text-xs">
-            <GraduationCap className="h-4 w-4 text-neon" />
-            <span className="text-fg-muted">Sinf:</span>
-            <strong className="text-fg">
-              {userData?.profile?.grade ?? "10-sinf"} • {userData?.profile?.age ?? 16} yosh
-            </strong>
-          </div>
-          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-elevated/50 px-3.5 py-2.5 text-xs">
-            <MapPin className="h-4 w-4 text-gold" />
-            <span className="text-fg-muted">Hudud:</span>
-            <strong className="text-fg">{userData?.profile?.region ?? "Toshkent sh."}</strong>
-          </div>
-          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-elevated/50 px-3.5 py-2.5 text-xs">
-            <CheckCircle2 className="h-4 w-4 text-neon" />
-            <span className="text-fg-muted">AI Murojaati:</span>
-            <strong className="text-neon">«{honorific}» (Socratic)</strong>
-          </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 transition-all duration-400"
+            style={{ width: `${(step / 5) * 100}%` }}
+          />
         </div>
+      </div>
 
-        {/* Bosqich indikatori (1..4) */}
-        <div className="mt-6">
-          <div className="flex items-center justify-between text-xs font-semibold text-fg-muted">
-            <span>Shaxsiy savollar bosqichi: {step} / 4</span>
-            <span className="font-mono text-neon">{step * 25}%</span>
-          </div>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-elevated">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-neon to-gold transition-all duration-300"
-              style={{ width: `${step * 25}%` }}
-            />
-          </div>
-        </div>
-
+      {/* Shisha Karta (Glassmorphic Step Card) */}
+      <div
+        ref={stepCardRef}
+        className="w-full max-w-2xl rounded-3xl border border-white/15 bg-slate-900/55 p-6 sm:p-10 backdrop-blur-2xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]"
+      >
         {errorMsg && (
-          <div className="mt-4 rounded-xl border border-danger/50 bg-danger/10 p-3 text-xs font-semibold text-danger">
+          <div className="mb-6 rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm font-semibold text-red-300">
             {errorMsg}
           </div>
         )}
 
-        {/* ====================================================================
-            INTERAKTIV QADAMLAR (1..4)
-            ==================================================================== */}
-        <div ref={stepCardRef} className="mt-6 rounded-2xl border border-border bg-canvas/70 p-6">
-          {step === 1 && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-2.5">
-                <Target className="h-5 w-5 text-neon" />
-                <h2 className="text-lg font-extrabold text-fg">
-                  1-qadam: Maqsadli Universitet, Mamlakat va Ko&apos;zlangan Ball
-                </h2>
-              </div>
+        {/* ------------------------------------------------------------------ */}
+        {/* PAGE 1: MAQSADLI UNIVERSITET VA MAMLAKAT */}
+        {/* ------------------------------------------------------------------ */}
+        {step === 1 && (
+          <div>
+            <div className="mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                Xush kelibsiz, {studentName}!
+              </span>
+              <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+                Qaysi nufuzli universitetda o&apos;qishni maqsad qildingiz?
+              </h1>
+              <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                12 oylik ta&apos;lim xaritangiz tanlangan oliygoh va mamlakat talablariga moslashtiriladi.
+              </p>
+            </div>
 
-              <div>
-                <p className="mb-2 text-xs font-semibold text-fg-muted">
-                  Mashhur yo&apos;nalishlardan birini tanlang yoki o&apos;zingiz yozing:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {UNIVERSITY_PRESETS.map((preset) => (
-                    <button
-                      key={preset.uni}
-                      type="button"
-                      onClick={() => {
-                        setTargetUniversity(preset.uni);
-                        setTargetCountry(preset.country);
-                      }}
-                      className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
-                        targetUniversity === preset.uni
-                          ? "border-neon bg-neon-soft text-neon"
-                          : "border-border bg-surface text-fg-muted hover:text-fg"
+            <div className="space-y-3">
+              {UNIVERSITY_OPTIONS.map((opt) => {
+                const isSelected = targetUniversity === opt.title;
+                return (
+                  <button
+                    key={opt.title}
+                    type="button"
+                    onClick={() => {
+                      setTargetUniversity(opt.title);
+                      setTargetCountry(opt.country);
+                      setCustomUni("");
+                    }}
+                    className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left transition-all ${
+                      isSelected
+                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/40"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <span className="text-2xl">{opt.icon}</span>
+                      <div>
+                        <h3 className="text-base font-bold text-white sm:text-lg">
+                          {opt.title}
+                        </h3>
+                        <p className="text-xs text-slate-300 sm:text-sm">
+                          {opt.subtitle}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                        isSelected
+                          ? "border-emerald-400 bg-emerald-500 text-slate-950"
+                          : "border-white/20 bg-transparent"
                       }`}
                     >
-                      🎓 {preset.uni} ({preset.country})
+                      {isSelected && <Check className="h-4 w-4 stroke-[3]" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Boshqa OTM kiritish */}
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                Yoki boshqa shaxsiy OTM nomini kiriting:
+              </label>
+              <input
+                type="text"
+                value={customUni}
+                onChange={(e) => {
+                  setCustomUni(e.target.value);
+                  if (e.target.value.trim()) {
+                    setTargetUniversity(e.target.value.trim());
+                  }
+                }}
+                placeholder="Masalan: Harvard University, KAIST yoki Westminster"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-emerald-400 focus:outline-none"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* PAGE 2: MAQSADLI BALLAR (SAT VA IELTS) */}
+        {/* ------------------------------------------------------------------ */}
+        {step === 2 && (
+          <div>
+            <div className="mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                Natijalar rejasi
+              </span>
+              <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+                Ko&apos;zlangan imtihon ballaringizni belgilang
+              </h1>
+              <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                AI murabbiy ushbu ballarga erishishingiz uchun kerakli kunlik yuklama va testlar sonini belgilaydi.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* SAT Slayderi */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-emerald-400" />
+                    <span className="text-base font-bold text-white">Maqsadli SAT Ball</span>
+                  </div>
+                  <div className="flex items-baseline gap-1 font-mono text-2xl font-black text-emerald-400">
+                    <span>{targetSatScore}</span>
+                    <span className="text-xs text-slate-400">/ 1600</span>
+                  </div>
+                </div>
+
+                <input
+                  type="range"
+                  min={1100}
+                  max={1600}
+                  step={10}
+                  value={targetSatScore}
+                  onChange={(e) => setTargetSatScore(Number(e.target.value))}
+                  className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-white/10 accent-emerald-400"
+                />
+
+                <div className="mt-3.5 flex flex-wrap gap-2">
+                  {[1350, 1450, 1550].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setTargetSatScore(preset)}
+                      className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
+                        targetSatScore === preset
+                          ? "border-emerald-400 bg-emerald-500/20 text-emerald-300"
+                          : "border-white/10 bg-white/5 text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      {preset}+ {preset >= 1500 ? "(Ivy League)" : "(Top Grant)"}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="onb-uni"
-                    className="mb-1.5 block text-xs font-semibold text-fg-muted"
-                  >
-                    Maqsadli Universitet(lar)ingiz
-                  </label>
-                  <input
-                    id="onb-uni"
-                    type="text"
-                    value={targetUniversity}
-                    onChange={(e) => setTargetUniversity(e.target.value)}
-                    placeholder="Masalan: MIT, Harvard, Westminster..."
-                    className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-fg focus:border-neon focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="onb-country"
-                    className="mb-1.5 block text-xs font-semibold text-fg-muted"
-                  >
-                    Maqsadli Mamlakat
-                  </label>
-                  <input
-                    id="onb-country"
-                    type="text"
-                    value={targetCountry}
-                    onChange={(e) => setTargetCountry(e.target.value)}
-                    placeholder="Masalan: AQSh, Buyuk Britaniya, Janubiy Koreya"
-                    className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-fg focus:border-neon focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="rounded-xl border border-border bg-surface p-4">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="onb-sat" className="text-xs font-bold text-fg">
-                      Maqsadli SAT Ball
-                    </label>
-                    <span className="font-mono text-lg font-extrabold text-neon">
-                      {targetSatScore} / 1600
-                    </span>
+              {/* IELTS Slayderi */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5 text-amber-400" />
+                    <span className="text-base font-bold text-white">Maqsadli IELTS Band</span>
                   </div>
-                  <input
-                    id="onb-sat"
-                    type="range"
-                    min={1100}
-                    max={1600}
-                    step={20}
-                    value={targetSatScore}
-                    onChange={(e) => setTargetSatScore(Number(e.target.value))}
-                    className="mt-3 w-full accent-emerald-500"
-                  />
-                </div>
-
-                <div className="rounded-xl border border-border bg-surface p-4">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="onb-ielts" className="text-xs font-bold text-fg">
-                      Maqsadli IELTS Band
-                    </label>
-                    <span className="font-mono text-lg font-extrabold text-gold">
-                      Band {targetIeltsScore.toFixed(1)}
-                    </span>
+                  <div className="flex items-baseline gap-1 font-mono text-2xl font-black text-amber-300">
+                    <span>Band {targetIeltsScore.toFixed(1)}</span>
+                    <span className="text-xs text-slate-400">/ 9.0</span>
                   </div>
-                  <input
-                    id="onb-ielts"
-                    type="range"
-                    min={5.5}
-                    max={9.0}
-                    step={0.5}
-                    value={targetIeltsScore}
-                    onChange={(e) => setTargetIeltsScore(Number(e.target.value))}
-                    className="mt-3 w-full accent-amber-500"
-                  />
                 </div>
-              </div>
-            </div>
-          )}
 
-          {step === 2 && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-2.5">
-                <Compass className="h-5 w-5 text-gold" />
-                <h2 className="text-lg font-extrabold text-fg">
-                  2-qadam: Hozirgi darajangizni qanday baholaysiz?
-                </h2>
-              </div>
-              <p className="text-xs text-fg-muted sm:text-sm">
-                Hech tortinmasdan haqiqiy holatingizni belgilang — saralash testi shunga qarab
-                savollarni moslashtiradi.
-              </p>
+                <input
+                  type="range"
+                  min={5.5}
+                  max={9.0}
+                  step={0.5}
+                  value={targetIeltsScore}
+                  onChange={(e) => setTargetIeltsScore(Number(e.target.value))}
+                  className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-white/10 accent-amber-400"
+                />
 
-              <div className="grid gap-3.5 sm:grid-cols-2">
-                {(["ZERO", "BEGINNER", "INTERMEDIATE", "ADVANCED"] as const).map((lvl) => {
-                  const info = LEVEL_LABELS[lvl];
-                  const active = selfAssessedLevel === lvl;
-                  return (
+                <div className="mt-3.5 flex flex-wrap gap-2">
+                  {[6.5, 7.5, 8.5].map((preset) => (
                     <button
-                      key={lvl}
+                      key={preset}
                       type="button"
-                      onClick={() => setSelfAssessedLevel(lvl)}
-                      className={`rounded-xl border p-4 text-left transition-all ${
-                        active
-                          ? "border-neon bg-neon-soft shadow-neon"
-                          : "border-border bg-surface hover:border-neon/40"
+                      onClick={() => setTargetIeltsScore(preset)}
+                      className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
+                        targetIeltsScore === preset
+                          ? "border-amber-400 bg-amber-400/20 text-amber-300"
+                          : "border-white/10 bg-white/5 text-slate-300 hover:text-white"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-bold text-gold">
-                          {info.badge}
-                        </span>
-                        {active && <CheckCircle2 className="h-4 w-4 text-neon" />}
-                      </div>
-                      <p className="mt-1.5 text-base font-bold text-fg">{info.uz}</p>
-                      <p className="mt-1 text-xs leading-relaxed text-fg-muted">{info.desc}</p>
+                      Band {preset} {preset >= 8 ? "(C2 daraja)" : "(Akademik qabul)"}
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-2.5">
-                <Sliders className="h-5 w-5 text-neon" />
-                <h2 className="text-lg font-extrabold text-fg">
-                  3-qadam: Kuchli va yordam kerak bo&apos;lgan (zaif) fanlaringiz
-                </h2>
-              </div>
-
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neon">
-                  O&apos;zingizni nisbatan kuchli his qiladigan fanlar:
-                </p>
-                <div className="flex flex-wrap gap-2.5">
-                  {SUBJECT_OPTIONS.map((subj) => {
-                    const selected = strongSubjects.includes(subj.slug);
-                    return (
-                      <button
-                        key={subj.slug}
-                        type="button"
-                        onClick={() =>
-                          toggleSubjectInList(subj.slug, strongSubjects, setStrongSubjects)
-                        }
-                        className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all ${
-                          selected
-                            ? "border-neon bg-neon-soft text-neon shadow-neon"
-                            : "border-border bg-surface text-fg-muted"
-                        }`}
-                      >
-                        ✓ {subj.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gold">
-                  Ko&apos;proq qiynaladigan va kuchaytirmoqchi bo&apos;lgan fanlaringiz:
-                </p>
-                <div className="flex flex-wrap gap-2.5">
-                  {SUBJECT_OPTIONS.map((subj) => {
-                    const selected = weakSubjects.includes(subj.slug);
-                    return (
-                      <button
-                        key={subj.slug}
-                        type="button"
-                        onClick={() =>
-                          toggleSubjectInList(subj.slug, weakSubjects, setWeakSubjects)
-                        }
-                        className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all ${
-                          selected
-                            ? "border-gold bg-gold-soft text-gold shadow-gold"
-                            : "border-border bg-surface text-fg-muted"
-                        }`}
-                      >
-                        ⚡ {subj.label}
-                      </button>
-                    );
-                  })}
+                  ))}
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {step === 4 && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-2.5">
-                <Brain className="h-5 w-5 text-gold" />
-                <h2 className="text-lg font-extrabold text-fg">
-                  4-qadam: O&apos;qish uslubingiz va qulay vaqtingiz
-                </h2>
-              </div>
+        {/* ------------------------------------------------------------------ */}
+        {/* PAGE 3: HOZIRGI BILIM DARAJANGIZ */}
+        {/* ------------------------------------------------------------------ */}
+        {step === 3 && (
+          <div>
+            <div className="mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                Boshlang&apos;ich nuqta
+              </span>
+              <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+                Hozirgi tayyorgarlik darajangiz qanday?
+              </h1>
+              <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                Boshlang&apos;ich darajani to&apos;g&apos;ri tanlash darslarning sizga mos tezlikda borishini ta&apos;minlaydi.
+              </p>
+            </div>
 
+            <div className="space-y-3">
+              {LEVEL_OPTIONS.map((lvl) => {
+                const isSelected = selfAssessedLevel === lvl.id;
+                return (
+                  <button
+                    key={lvl.id}
+                    type="button"
+                    onClick={() => setSelfAssessedLevel(lvl.id)}
+                    className={`flex w-full items-start justify-between rounded-2xl border p-4 text-left transition-all ${
+                      isSelected
+                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/40"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <span className="text-2xl mt-0.5">{lvl.icon}</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-bold text-white sm:text-lg">
+                            {lvl.title}
+                          </h3>
+                          <span className="rounded-md border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                            {lvl.badge}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-300 sm:text-sm">
+                          {lvl.desc}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border mt-1 ${
+                        isSelected
+                          ? "border-emerald-400 bg-emerald-500 text-slate-950"
+                          : "border-white/20 bg-transparent"
+                      }`}
+                    >
+                      {isSelected && <Check className="h-4 w-4 stroke-[3]" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* PAGE 4: ASOSIY E'TIBOR QARATILADIGAN FANLAR */}
+        {/* ------------------------------------------------------------------ */}
+        {step === 4 && (
+          <div>
+            <div className="mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                Yo&apos;nalishlar
+              </span>
+              <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+                Qaysi fanlardan ko&apos;proq mashq qilmoqchisiz?
+              </h1>
+              <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                O&apos;zingiz kuchaytirmoqchi bo&apos;lgan modullarni belgilang (bir nechta tanlash mumkin):
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {SUBJECT_OPTIONS.map((sub) => {
+                const isSelected = selectedSubjects.includes(sub.id);
+                return (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => toggleSubject(sub.id)}
+                    className={`flex w-full items-start justify-between rounded-2xl border p-4 text-left transition-all ${
+                      isSelected
+                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/40"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <span className="text-2xl mt-0.5">{sub.icon}</span>
+                      <div>
+                        <h3 className="text-base font-bold text-white sm:text-lg">
+                          {sub.title}
+                        </h3>
+                        <p className="mt-1 text-xs text-slate-300 sm:text-sm">
+                          {sub.desc}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border mt-1 ${
+                        isSelected
+                          ? "border-emerald-400 bg-emerald-500 text-slate-950"
+                          : "border-white/20 bg-transparent"
+                      }`}
+                    >
+                      {isSelected && <Check className="h-4 w-4 stroke-[3]" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* PAGE 5: O'RGANISH USLUBI VA QULAY VAQT */}
+        {/* ------------------------------------------------------------------ */}
+        {step === 5 && (
+          <div>
+            <div className="mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                Yakuniy qadam
+              </span>
+              <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+                O&apos;qish uslubi va Qulay vaqtingiz
+              </h1>
+              <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                Sizga qaysi metod bilan o&apos;qish va kunning qaysi vaqtida shug&apos;ullanish qulay?
+              </p>
+            </div>
+
+            <div className="space-y-4">
               <div>
-                <p className="mb-2 text-xs font-semibold text-fg-muted">
-                  Sizga qaysi o&apos;rganish uslubi eng yoqadi?
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+                  Afzal ko&apos;rgan ta&apos;lim formatingiz:
+                </label>
+                <div className="space-y-2.5">
                   {LEARNING_STYLES.map((style) => {
-                    const active = learningStyle === style.id;
+                    const isSelected = learningStyle === style.id;
                     return (
                       <button
                         key={style.id}
                         type="button"
                         onClick={() => setLearningStyle(style.id)}
-                        className={`rounded-xl border p-3.5 text-left transition-all ${
-                          active
-                            ? "border-neon bg-neon-soft shadow-neon"
-                            : "border-border bg-surface hover:border-neon/40"
+                        className={`flex w-full items-start justify-between rounded-2xl border p-3.5 text-left transition-all ${
+                          isSelected
+                            ? "border-emerald-400/80 bg-emerald-500/15 ring-1 ring-emerald-400/40"
+                            : "border-white/10 bg-white/[0.03] hover:border-white/20"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-fg">{style.title}</span>
-                          {active && <CheckCircle2 className="h-4 w-4 text-neon" />}
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl mt-0.5">{style.icon}</span>
+                          <div>
+                            <h4 className="text-sm font-bold text-white sm:text-base">
+                              {style.title}
+                            </h4>
+                            <p className="text-xs text-slate-300">
+                              {style.desc}
+                            </p>
+                          </div>
                         </div>
-                        <p className="mt-1 text-xs text-fg-muted">{style.desc}</p>
+                        <div
+                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border mt-0.5 ${
+                            isSelected
+                              ? "border-emerald-400 bg-emerald-500 text-slate-950"
+                              : "border-white/20 bg-transparent"
+                          }`}
+                        >
+                          {isSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                        </div>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              <div>
-                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-fg-muted">
-                  <Clock className="h-3.5 w-3.5 text-gold" />
-                  <span>Kun davomida qaysi vaqtda dars qilish sizga qulay?</span>
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {STUDY_TIME_SLOTS.map((slot) => {
-                    const active = preferredStudyTime === slot.id;
+              <div className="pt-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+                  Kunlik shug&apos;ullanish uchun eng qulay vaqt:
+                </label>
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                  {TIME_SLOTS.map((slot) => {
+                    const isSelected = preferredStudyTime === slot.id;
                     return (
                       <button
                         key={slot.id}
                         type="button"
                         onClick={() => setPreferredStudyTime(slot.id)}
-                        className={`rounded-xl border p-3 text-left transition-all ${
-                          active
-                            ? "border-gold bg-gold-soft text-gold"
-                            : "border-border bg-surface text-fg"
+                        className={`rounded-xl border p-3 text-center transition-all ${
+                          isSelected
+                            ? "border-amber-400 bg-amber-400/20 text-amber-300"
+                            : "border-white/10 bg-white/5 text-slate-300 hover:text-white"
                         }`}
                       >
-                        <p className="text-xs font-bold sm:text-sm">{slot.label}</p>
-                        <p className="mt-0.5 text-[11px] text-fg-muted">{slot.note}</p>
+                        <span className="block text-xl mb-1">{slot.icon}</span>
+                        <strong className="block text-xs font-bold text-white">{slot.label}</strong>
+                        <span className="text-[10px] text-slate-400">{slot.time}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* PASTKI TUGMALAR (PAGE TO PAGE NAVIGATSIYA) */}
+        {/* ------------------------------------------------------------------ */}
+        <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-5">
+          {step > 1 ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-slate-200 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Orqaga</span>
+            </button>
+          ) : (
+            <div />
           )}
 
-          {/* Navigatsiya tugmalari */}
-          <div className="mt-7 flex items-center justify-between border-t border-border pt-5">
-            {step > 1 ? (
-              <button
-                type="button"
-                onClick={() => setStep(step - 1)}
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-fg hover:border-neon/40 sm:text-sm"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Orqaga</span>
-              </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={saving}
+            className={`btn-neon inline-flex items-center gap-2 px-6 py-3.5 text-sm sm:text-base font-bold shadow-lg ${
+              saving ? "cursor-not-allowed opacity-75" : ""
+            }`}
+          >
+            {saving ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span>Reja tuzilmoqda...</span>
+              </>
+            ) : step === 5 ? (
+              <>
+                <span>12 Oylik Shaxsiy Rejani Boshlash</span>
+                <Sparkles className="h-4 w-4" />
+              </>
             ) : (
-              <div />
-            )}
-
-            {step < 4 ? (
-              <button
-                type="button"
-                onClick={() => setStep(step + 1)}
-                id="onboarding-next-btn"
-                className="btn-neon inline-flex items-center gap-2 px-6 py-2.5 text-xs font-bold sm:text-sm"
-              >
+              <>
                 <span>Keyingi qadam</span>
                 <ArrowRight className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                id="onboarding-finish-btn"
-                disabled={saving}
-                onClick={handleFinishOnboarding}
-                className="btn-neon inline-flex items-center gap-2 px-7 py-3 text-xs font-bold sm:text-sm"
-              >
-                <span>
-                  {saving
-                    ? "Saqlanmoqda..."
-                    : "Saqlash va Adaptiv Saralash Testini Boshlash (+50 XP)"}
-                </span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
+              </>
             )}
-          </div>
+          </button>
         </div>
       </div>
     </div>

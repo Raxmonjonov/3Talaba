@@ -4,11 +4,11 @@
 
 /* ==========================================================================
    3TALAB DIZAYN TIZIMI — YAGONA CSS O'ZGARUVCHILAR MARKAZI
-   "Chiroyli zamonaviy sinfxona + Matrix vaqt oqimi"
+   "Zamonaviy Shisha (Glassmorphism) Sinifxona + Luminous Ambient Aurora"
    ========================================================================== */
 
 :root {
-  /* Shriftlar (O'zbek lotin harflari va o', g', ʻ belgilarini to'liq qo'llab-quvvatlaydi) */
+  /* Shriftlar */
   --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, monospace;
 
@@ -18,58 +18,58 @@
   --radius-lg: 1.25rem;
   --radius-xl: 1.75rem;
 
-  /* Sukut bo'yicha Qorong'u rejim (Chuqur zumrad sinfxona + Neon yashil + Oltin) */
-  --bg-canvas: #050a0e;
-  --bg-surface: #0b141b;
-  --bg-elevated: #111f2a;
-  --border-subtle: rgba(16, 185, 129, 0.18);
-  --border-strong: rgba(16, 185, 129, 0.38);
+  /* Sukut bo'yicha Qorong'u rejim (Luminous Dark Glassmorphism) */
+  --bg-canvas: #060b10;
+  --bg-surface: #0c151e;
+  --bg-elevated: #11202e;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(16, 185, 129, 0.45);
 
   --accent-neon: #10b981;
-  --accent-neon-bright: #00e676;
-  --accent-neon-soft: rgba(16, 185, 129, 0.14);
-  --accent-neon-glow: rgba(0, 230, 118, 0.32);
+  --accent-neon-bright: #34d399;
+  --accent-neon-soft: rgba(16, 185, 129, 0.16);
+  --accent-neon-glow: rgba(16, 185, 129, 0.35);
 
   --accent-gold: #f59e0b;
   --accent-gold-bright: #fbbf24;
-  --accent-gold-soft: rgba(245, 158, 11, 0.15);
+  --accent-gold-soft: rgba(245, 158, 11, 0.16);
 
-  --text-primary: #ecfdf5;
+  --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   --danger: #ef4444;
 
   /* Soyalar */
-  --shadow-neon: 0 0 28px -4px rgba(16, 185, 129, 0.35), 0 8px 20px -6px rgba(0, 0, 0, 0.6);
-  --shadow-gold: 0 0 28px -4px rgba(245, 158, 11, 0.32), 0 8px 20px -6px rgba(0, 0, 0, 0.6);
-  --shadow-card: 0 14px 34px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --shadow-neon: 0 0 28px -4px rgba(16, 185, 129, 0.4), 0 8px 24px -6px rgba(0, 0, 0, 0.6);
+  --shadow-gold: 0 0 28px -4px rgba(245, 158, 11, 0.35), 0 8px 24px -6px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 16px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 }
 
-/* Yorug' rejim ("Yorug' zamonaviy sinfxona") */
+/* Yorug' rejim ("Yorug' shisha sinfxona") */
 html.light {
-  --bg-canvas: #f4f8f6;
+  --bg-canvas: #f0fdf4;
   --bg-surface: #ffffff;
-  --bg-elevated: #eaf2ee;
+  --bg-elevated: #e2f1e8;
   --border-subtle: rgba(5, 150, 105, 0.18);
-  --border-strong: rgba(5, 150, 105, 0.38);
+  --border-strong: rgba(5, 150, 105, 0.45);
 
   --accent-neon: #059669;
   --accent-neon-bright: #10b981;
-  --accent-neon-soft: rgba(5, 150, 105, 0.11);
-  --accent-neon-glow: rgba(5, 150, 105, 0.22);
+  --accent-neon-soft: rgba(5, 150, 105, 0.12);
+  --accent-neon-glow: rgba(5, 150, 105, 0.25);
 
   --accent-gold: #d97706;
   --accent-gold-bright: #f59e0b;
-  --accent-gold-soft: rgba(217, 119, 6, 0.12);
+  --accent-gold-soft: rgba(217, 119, 6, 0.14);
 
-  --text-primary: #061812;
+  --text-primary: #04130d;
   --text-secondary: #1e293b;
   --text-muted: #475569;
   --danger: #dc2626;
 
-  --shadow-neon: 0 10px 25px -5px rgba(5, 150, 105, 0.22), 0 4px 10px -4px rgba(6, 24, 18, 0.06);
-  --shadow-gold: 0 10px 25px -5px rgba(217, 119, 6, 0.22), 0 4px 10px -4px rgba(6, 24, 18, 0.06);
-  --shadow-card: 0 12px 30px -8px rgba(6, 24, 18, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  --shadow-neon: 0 10px 25px -5px rgba(5, 150, 105, 0.25), 0 4px 10px -4px rgba(6, 24, 18, 0.08);
+  --shadow-gold: 0 10px 25px -5px rgba(217, 119, 6, 0.25), 0 4px 10px -4px rgba(6, 24, 18, 0.08);
+  --shadow-card: 0 12px 32px -8px rgba(6, 24, 18, 0.1), inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
 }
 
 @layer base {
@@ -101,23 +101,52 @@ html.light {
 }
 
 /* ==========================================================================
-   KOMPONENT USLUBLARI VA MIKRO-INTERAKSIYALAR (60 FPS Transform/Opacity)
+   SHISHA (GLASSMORPHISM) VA MIKRO-INTERAKSIYALAR
    ========================================================================== */
 
-.classroom-grid-bg {
-  background-image:
-    linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px);
-  background-size: 48px 48px;
+.glass-card {
+  background: rgba(12, 22, 32, 0.68);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
-.glass-card {
-  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-card);
-  border-radius: var(--radius-lg);
-  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease, box-shadow 0.22s ease;
+.glass-panel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  border-radius: 1.5rem;
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 6px 18px -3px rgba(0, 0, 0, 0.45);
+  transition: all 0.2s ease;
+}
+.glass-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.glass-interactive {
+  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.glass-interactive:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.25), 0 0 24px rgba(16, 185, 129, 0.15);
 }
 
 .glass-card-interactive:hover {
@@ -156,26 +185,6 @@ html.light {
 .btn-gold:hover {
   transform: translateY(-2px) scale(1.01);
   filter: brightness(1.06);
-}
-
-/* CSS Scroll-Driven Animations (Qo'llab-quvvatlovchi brauzerlar uchun) */
-@supports (animation-timeline: view()) {
-  html:not(.reduce-motion) .scroll-reveal-css {
-    animation: scrollFadeUp linear both;
-    animation-timeline: view();
-    animation-range: entry 8% cover 26%;
-  }
-}
-
-@keyframes scrollFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 /* prefers-reduced-motion va "Animatsiyalarni kamaytirish" rejimi */

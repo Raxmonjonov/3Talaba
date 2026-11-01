@@ -46,7 +46,21 @@ export default function RootLayout({
       className={`${jakarta.variable} ${jetbrainsMono.variable} dark`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-canvas font-sans text-fg antialiased">
+      <body className="relative min-h-screen bg-canvas font-sans text-fg antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
+        {/* Glassmorphic Ambient Luminous Backdrop (Shisha effektli nurli fon) */}
+        <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+          {/* Zumrad neon nur (Emerald Glow) */}
+          <div className="absolute -left-[15%] -top-[10%] h-[650px] w-[650px] rounded-full bg-emerald-500/18 blur-[140px] md:h-[850px] md:w-[850px] md:bg-emerald-500/22" />
+          {/* Moviy feruza nur (Cyan Glow) */}
+          <div className="absolute -right-[15%] top-[10%] h-[550px] w-[550px] rounded-full bg-cyan-500/15 blur-[130px] md:h-[750px] md:w-[750px] md:bg-cyan-500/18" />
+          {/* Indigo binafsha nur (Indigo Glow) */}
+          <div className="absolute -bottom-[20%] left-[5%] h-[600px] w-[600px] rounded-full bg-indigo-600/15 blur-[160px] md:h-[800px] md:w-[800px]" />
+          {/* Oltin iliq nur (Gold Accent Glow) */}
+          <div className="absolute -bottom-[10%] right-[10%] h-[500px] w-[500px] rounded-full bg-amber-500/12 blur-[140px] md:h-[650px] md:w-[650px]" />
+          {/* Shisha to'r akslantiruvchi yengil naqsh */}
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:28px_28px] opacity-75" />
+        </div>
+
         <AppProviders>
           <div className="relative flex min-h-screen flex-col">
             <Navbar />

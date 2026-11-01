@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { AICoachMetadata, AICoachMode } from "@/lib/ai";
 import { TypewriterText, ThinkingBubble } from "@/components/ai/TypewriterText";
+import { JarvisVoiceButton, JarvisMicButton } from "@/components/voice/JarvisVoiceAgent";
 
 interface ChatMsgItem {
   id: string;

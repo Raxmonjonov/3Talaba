@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { ConfettiBurst } from "@/components/anime/ConfettiBurst";
 import { LessonCoachWidget } from "@/components/ai/LessonCoachWidget";
+import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 
 interface LessonExample {

@@ -114,7 +114,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="classroom-grid-bg relative flex min-h-[calc(100vh-70px)] items-center justify-center px-4 py-10 sm:px-6">
+    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-10 sm:px-6">
       <div
         ref={cardRef}
         className={`glass-card w-full max-w-2xl p-6 sm:p-9 ${
@@ -125,10 +125,10 @@ export default function RegisterPage() {
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3 py-1 text-xs font-bold text-neon">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>1-QADAM: SHAXSIY PROFIL YARATISH</span>
+              <span>RO'YXATDAN O'TISH</span>
             </span>
             <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-3xl">
-              3Talab sinfxonasiga xush kelibsiz!
+              3Talab platformasiga xush kelibsiz!
             </h1>
             <p className="mt-1 text-xs text-fg-muted sm:text-sm">
               Ma&apos;lumotlaringiz AI murabbiy sizga munosib murojaat qilishi va 12 oylik
