@@ -436,7 +436,7 @@ export function CampusExperience() {
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-emerald-400" /> KUNLIK TEZKOR SPRINT (+15 XP)
+              <Zap className="h-4 w-4 text-emerald-400" /> KUNLIK TEZKOR MASHQ
             </span>
             <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
               {currentQuiz.subject}: Bilimingizni sinab ko&apos;ring

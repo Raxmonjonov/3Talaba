@@ -169,8 +169,12 @@ export function Navbar() {
                 href="/onboarding"
                 className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-3.5 py-2 text-xs font-bold text-emerald-300 transition-all hover:bg-emerald-500 hover:text-slate-950"
               >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
                 <UserCheck className="h-4 w-4" />
-                <span>{session.user.name}</span>
+                <span>{session.user.name?.split(" ")[0]}</span>
               </Link>
               <button
                 type="button"
