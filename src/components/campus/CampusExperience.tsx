@@ -35,7 +35,7 @@ interface QuickQuizQuestion {
 const SAMPLE_QUIZ_QUESTIONS: QuickQuizQuestion[] = [
   {
     id: "q-1",
-    subject: "Algebra & SAT Math",
+    subject: "Digital SAT Matematika",
     prompt: "Agar 3x + 7 = 22 bo'lsa, 6x + 5 ning qiymati nechiga teng?",
     options: [
       { id: "A", text: "30" },
@@ -49,7 +49,7 @@ const SAMPLE_QUIZ_QUESTIONS: QuickQuizQuestion[] = [
   {
     id: "q-2",
     subject: "Geometriya (Pifagor)",
-    prompt: "To'g'ri burchakli uchburchakning katetlari 9 va 12 ga teng. Uning gipotenuzasini toping:",
+    prompt: "To'g'ri burchakli uchburchakning katetlari 9 va 12 ga teng. Gipotenuzani toping:",
     options: [
       { id: "A", text: "14" },
       { id: "B", text: "15" },
@@ -57,7 +57,7 @@ const SAMPLE_QUIZ_QUESTIONS: QuickQuizQuestion[] = [
       { id: "D", text: "18" },
     ],
     correct: "B",
-    explanation: "3-4-5 Pifagor uchligining 3 barobari: 3·3 = 9, 4·3 = 12, 5·3 = 15.",
+    explanation: "3-4-5 Pifagor uchligining 3 barobari: 9, 12, 15. Gipotenuza c = 15.",
   },
   {
     id: "q-3",
@@ -81,8 +81,6 @@ export function CampusExperience() {
   const [quizAnswered, setQuizAnswered] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
 
-  const [aiQuestion, setAiQuestion] = useState("");
-
   const currentQuiz = SAMPLE_QUIZ_QUESTIONS[activeQuizIdx];
 
   const handleChoose = (optId: "A" | "B" | "C" | "D") => {
@@ -100,127 +98,177 @@ export function CampusExperience() {
     setActiveQuizIdx((prev) => (prev + 1) % SAMPLE_QUIZ_QUESTIONS.length);
   };
 
-  const studentName = session?.user?.name?.split(" ")[0] || "O'quvchi";
+  const studentName = session?.user?.name?.split(" ")[0];
 
   return (
-    <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-10">
+    <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-16">
       {/* ====================================================================
-          1. O'QUVCHI BOSHQARUV PANELI (Campus Header & Progress)
+          1. ASOSIY QIYOFASI: HAQIQIY O'QUV PLATFORMASI HERO (Coursera/Apple uslubida)
           ==================================================================== */}
-      <section className="glass-card p-6 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">
-                Jonli O&apos;quv Muhiti • 3Talab Campus
-              </span>
-            </div>
-            <h1 className="mt-2 text-2xl font-extrabold text-white sm:text-4xl tracking-tight">
-              Xush kelibsiz, <span className="text-amber-300">{studentName}</span>!
-            </h1>
-            <p className="mt-1 text-sm text-slate-300">
-              12 oylik xalqaro universitetlarga tayyorgarlik tizimi. Bugungi darslaringiz tayyor.
-            </p>
+      <section className="grid gap-8 lg:grid-cols-12 items-center">
+        {/* Chap qism: Sarlavha, Maqsad va Harakat tugmalari */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3.5 py-1.5 text-xs font-extrabold text-emerald-300">
+            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>XALQARO TA&apos;LIM PLATFORMASI • 12 OYLIK TIZIM</span>
           </div>
 
-          {/* O'quvchi ko'rsatkichlari */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="glass-pill rounded-2xl px-4 py-2.5 text-center flex items-center gap-2.5">
-              <Flame className="h-5 w-5 text-amber-400 fill-amber-400/20" />
-              <div className="text-left">
-                <span className="block font-mono text-xs font-extrabold text-white">5 Kun</span>
-                <span className="block text-[10px] text-slate-400">Uzluksiz Streak</span>
-              </div>
-            </div>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
+            Top Universitetlar Sari{" "}
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 bg-clip-text text-transparent">
+              Tizimli Tayyorgarlik
+            </span>
+          </h1>
 
-            <div className="glass-pill rounded-2xl px-4 py-2.5 text-center flex items-center gap-2.5">
-              <Zap className="h-5 w-5 text-emerald-400" />
-              <div className="text-left">
-                <span className="block font-mono text-xs font-extrabold text-emerald-400">+{quizScore + 150} XP</span>
-                <span className="block text-[10px] text-slate-400">Ballar</span>
-              </div>
-            </div>
+          <p className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
+            Digital SAT (1500+), IELTS (Band 7.5+) va chuqur Matematikani noldan boshlab,
+            JARVIS sun&apos;iy intellekt murabbiyi bilan birga o&apos;rganing.
+          </p>
 
-            <div className="glass-pill rounded-2xl px-4 py-2.5 text-center flex items-center gap-2.5">
-              <Trophy className="h-5 w-5 text-amber-300" />
-              <div className="text-left">
-                <span className="block font-mono text-xs font-extrabold text-amber-300">2-Daraja</span>
-                <span className="block text-[10px] text-slate-400">Zukko Yetakchi</span>
-              </div>
+          <div className="flex flex-wrap items-center gap-4 pt-2">
+            {session?.user ? (
+              <Link
+                href="/roadmap"
+                className="btn-neon inline-flex items-center gap-2.5 px-7 py-4 text-base font-bold shadow-xl"
+              >
+                <Compass className="h-5 w-5" />
+                <span>12 Oylik Xaritangizni Ochish</span>
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            ) : (
+              <Link
+                href="/register"
+                className="btn-neon inline-flex items-center gap-2.5 px-8 py-4 text-base font-bold shadow-xl"
+              >
+                <Sparkles className="h-5 w-5" />
+                <span>Hoziroq Boshlash (Diagnostika)</span>
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            )}
+
+            <Link
+              href="/math"
+              className="glass-card inline-flex items-center gap-2 px-6 py-4 text-base font-bold text-white hover:text-emerald-300 transition-colors"
+            >
+              <Sigma className="h-5 w-5 text-emerald-400" />
+              <span>Algebra &amp; Geometriya</span>
+            </Link>
+          </div>
+
+          {/* Afzalliklar qatori */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-white/10">
+            <div className="glass-pill rounded-xl p-3 text-center">
+              <span className="block font-mono text-lg font-black text-emerald-400">1450+</span>
+              <span className="text-[11px] font-semibold text-slate-400">SAT Maqsadi</span>
+            </div>
+            <div className="glass-pill rounded-xl p-3 text-center">
+              <span className="block font-mono text-lg font-black text-amber-300">Band 7.5+</span>
+              <span className="text-[11px] font-semibold text-slate-400">IELTS Academic</span>
+            </div>
+            <div className="glass-pill rounded-xl p-3 text-center">
+              <span className="block font-mono text-lg font-black text-teal-300">12 Oy</span>
+              <span className="text-[11px] font-semibold text-slate-400">Shaxsiy Reja</span>
+            </div>
+            <div className="glass-pill rounded-xl p-3 text-center">
+              <span className="block font-mono text-lg font-black text-emerald-400">24/7 AI</span>
+              <span className="text-[11px] font-semibold text-slate-400">JARVIS Murabbiy</span>
             </div>
           </div>
         </div>
 
-        {/* Faol Darsni Davom Ettirish Bloki (Continue Learning Hero Card) */}
-        <div className="mt-6 grid gap-4 lg:grid-cols-12 items-center">
-          <div className="lg:col-span-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-              <Sigma className="h-7 w-7" />
-            </div>
-            <div className="flex-1">
+        {/* O'ng qism: Jonli Interaktiv Darslik Vitrinasi (Live Glass Classroom Card) */}
+        <div className="lg:col-span-5">
+          <div className="glass-card p-6 sm:p-7 relative overflow-hidden">
+            {/* Yuqori modul yorlig'i */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
-                <span className="rounded-md bg-emerald-500/15 border border-emerald-400/30 px-2 py-0.5 text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
-                  Faol Darslik
+                <span className="flex h-3 w-3 rounded-full bg-emerald-400" />
+                <span className="font-mono text-xs font-bold text-emerald-400">
+                  NAMUNA INTERAKTIV DARSLIK
                 </span>
-                <span className="text-xs text-slate-400">15 moduldan 4 tasi tugallangan</span>
               </div>
-              <h3 className="mt-1 text-base font-bold text-white sm:text-lg">
-                Algebra &amp; Geometriya: 6 Bosqichli Chuqur Metod
-              </h3>
-              <div className="mt-2 flex items-center gap-3">
-                <div className="h-2 flex-1 max-w-md overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-amber-300 w-[32%]" />
-                </div>
-                <span className="font-mono text-xs font-bold text-emerald-400">32%</span>
-              </div>
+              <span className="glass-pill rounded-full px-3 py-0.5 text-xs font-mono font-bold text-amber-300">
+                SAT 800
+              </span>
             </div>
-          </div>
 
-          <div className="lg:col-span-4 flex items-center justify-start lg:justify-end gap-3">
-            <Link
-              href="/math"
-              className="btn-neon inline-flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-bold w-full sm:w-auto justify-center"
-            >
-              <Play className="h-4 w-4 fill-current" />
-              <span>Darsni Boshlash</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/history"
-              className="glass-pill inline-flex items-center gap-1.5 px-4 py-3 text-xs font-bold text-slate-200 hover:text-emerald-400"
-            >
-              <BookOpen className="h-4 w-4" />
-              <span>Dars Tarixi</span>
-            </Link>
+            {/* Darslik mazmuni */}
+            <div className="mt-5 space-y-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Mavzu: Kvadrat Tenglamalar va Viyet
+                </span>
+                <h3 className="mt-1 text-xl font-black text-white">
+                  x² - 6x + 8 = 0 ning ildizlarini toping
+                </h3>
+              </div>
+
+              {/* Yechim qadamlari */}
+              <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm font-mono">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span>1. Ko&apos;paytuvchilar: (x - 2)(x - 4) = 0</span>
+                </div>
+                <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span>2. Ildizlar: x₁ = 2, x₂ = 4</span>
+                </div>
+              </div>
+
+              {/* JARVIS Ovozli tushuntirish paneli */}
+              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-3.5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                    <Brain className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="block text-xs font-bold text-white">JARVIS Ovozli Tushuntirish</span>
+                    <span className="block text-[11px] text-slate-300">Nutq bilan tinglash</span>
+                  </div>
+                </div>
+                <JarvisVoiceButton
+                  text="Kvadrat tenglamani Viyet teoremasi orqali tezkor yechamiz. Ildizlar yig'indisi 6 ga, ko'paytmasi 8 ga teng. Demak, javob: 2 va 4."
+                  label="Tinglash"
+                />
+              </div>
+
+              {/* Tugma */}
+              <Link
+                href="/math"
+                className="btn-neon flex items-center justify-center gap-2 py-3 text-center text-sm font-bold w-full"
+              >
+                <span>Barcha 15 ta Matematika Modullarini Ochish</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ====================================================================
-          2. ASOSIY FANLAR VA O'QUV MODULLARI (Clean Visual Course Cards)
+          2. ASOSIY O'QUV KURSLARI VA MODULLAR KATALOGI
           ==================================================================== */}
-      <section className="space-y-5">
+      <section className="space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="font-mono text-xs font-bold uppercase tracking-widest text-emerald-400">
-              Akademik Dastur
+              O&apos;QUV DASTURLARI
             </span>
-            <h2 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl tracking-tight">
-              Asosiy Fanlar va Chuqur Tayyorgarlik Modullari
+            <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl tracking-tight">
+              Asosiy Fanlar va Chuqur Tayyorgarlik Kurslari
             </h2>
           </div>
           <Link
             href="/roadmap"
-            className="text-xs font-bold text-amber-300 hover:text-amber-200 inline-flex items-center gap-1"
+            className="text-sm font-bold text-amber-300 hover:text-amber-200 inline-flex items-center gap-1.5"
           >
             <span>12 Oylik Xaritani ko&apos;rish</span>
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {/* 1. Algebra & Geometriya */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Kurs 1: Algebra & Geometriya */}
           <Link
             href="/math"
             className="glass-card glass-card-interactive p-6 flex flex-col justify-between group"
@@ -235,24 +283,19 @@ export function CampusExperience() {
                 </span>
               </div>
               <h3 className="mt-4 text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
-                Algebra &amp; Geometriya (Chuqur)
+                Algebra &amp; Geometriya
               </h3>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  SAT &amp; Olimpiada
-                </span>
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Formulalar &amp; Isbotlar
-                </span>
-              </div>
+              <p className="mt-2 text-xs font-medium text-slate-300">
+                6 bosqichli chuqur metod, formulalar isboti va vizual SVG modellar.
+              </p>
             </div>
             <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-emerald-400">
-              <span>Laboratoriyaga kirish</span>
+              <span>Kursga kirish</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
-          {/* 2. SAT Matematika */}
+          {/* Kurs 2: Digital SAT Matematika */}
           <Link
             href="/practice?subject=sat-math"
             className="glass-card glass-card-interactive p-6 flex flex-col justify-between group"
@@ -267,16 +310,11 @@ export function CampusExperience() {
                 </span>
               </div>
               <h3 className="mt-4 text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
-                SAT Matematika (Digital SAT)
+                SAT Matematika
               </h3>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Tenglamalar &amp; Funksiyalar
-                </span>
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Savollar Banki
-                </span>
-              </div>
+              <p className="mt-2 text-xs font-medium text-slate-300">
+                Tenglamalar, funksiyalar va raqamli SAT imtihoni savollar banki.
+              </p>
             </div>
             <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300">
               <span>Savollar bankiga o&apos;tish</span>
@@ -284,7 +322,7 @@ export function CampusExperience() {
             </div>
           </Link>
 
-          {/* 3. SAT Reading & Writing */}
+          {/* Kurs 3: SAT Reading & Writing */}
           <Link
             href="/practice?subject=sat-rw"
             className="glass-card glass-card-interactive p-6 flex flex-col justify-between group"
@@ -301,14 +339,9 @@ export function CampusExperience() {
               <h3 className="mt-4 text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
                 SAT Reading &amp; Writing
               </h3>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Akademik Matnlar
-                </span>
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Grammatika
-                </span>
-              </div>
+              <p className="mt-2 text-xs font-medium text-slate-300">
+                Akademik matnlar tahlili, mantiqiy xulosalar va grammatik qoliplar.
+              </p>
             </div>
             <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-emerald-400">
               <span>Mashqlarni boshlash</span>
@@ -316,7 +349,7 @@ export function CampusExperience() {
             </div>
           </Link>
 
-          {/* 4. IELTS Academic */}
+          {/* Kurs 4: IELTS Academic */}
           <Link
             href="/practice?subject=ielts"
             className="glass-card glass-card-interactive p-6 flex flex-col justify-between group"
@@ -331,83 +364,14 @@ export function CampusExperience() {
                 </span>
               </div>
               <h3 className="mt-4 text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
-                IELTS Academic (4 Ko&apos;nikma)
+                IELTS Academic
               </h3>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Listening &amp; Reading
-                </span>
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Writing Task 1/2
-                </span>
-              </div>
+              <p className="mt-2 text-xs font-medium text-slate-300">
+                Listening, Reading, Academic Writing Task 1/2 va Speaking ko&apos;nikmalari.
+              </p>
             </div>
             <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300">
               <span>IELTS darslariga o&apos;tish</span>
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* 5. Dars Tarixi & Matnlar */}
-          <Link
-            href="/history"
-            className="glass-card glass-card-interactive p-6 flex flex-col justify-between group"
-          >
-            <div>
-              <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 group-hover:scale-105 transition-transform">
-                  <FileText className="h-6 w-6" />
-                </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-emerald-300">
-                  Audio &amp; Matn
-                </span>
-              </div>
-              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
-                Dars Tarixi &amp; Konspektlar
-              </h3>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  To&apos;liq Dars Matnlari
-                </span>
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  JARVIS Ovozida
-                </span>
-              </div>
-            </div>
-            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-emerald-400">
-              <span>Arxivni ochish</span>
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* 6. Shaxsiy AI Murabbiy */}
-          <Link
-            href="/coach"
-            className="glass-card glass-card-interactive p-6 flex flex-col justify-between group border-amber-400/40"
-          >
-            <div>
-              <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-400/20 text-amber-300 group-hover:scale-105 transition-transform">
-                  <Brain className="h-6 w-6" />
-                </div>
-                <span className="glass-pill rounded-full px-3 py-1 font-mono text-xs font-bold text-amber-300">
-                  24/7 JARVIS AI
-                </span>
-              </div>
-              <h3 className="mt-4 text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
-                AI Ovozli Murabbiy
-              </h3>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Sokratik Muloqot
-                </span>
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-300">
-                  Ovozli Javob (STT/TTS)
-                </span>
-              </div>
-            </div>
-            <div className="mt-6 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300">
-              <span>Murabbiy bilan suhbat</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
@@ -415,15 +379,66 @@ export function CampusExperience() {
       </section>
 
       {/* ====================================================================
-          3. JONLI AMALIYOT ARENASI (Live Practice Sprint)
+          3. 12 OYLIK TIZIMNING 4 CHORAGI (Structured Timeline)
+          ==================================================================== */}
+      <section className="glass-card p-6 sm:p-10">
+        <div className="text-center max-w-3xl mx-auto mb-8">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-emerald-400">
+            STRATEGIYA
+          </span>
+          <h2 className="mt-1 text-2xl font-black text-white sm:text-3xl">
+            12 Oylik Tayyorgarlik Traektoriyasi
+          </h2>
+          <p className="mt-2 text-sm text-slate-300">
+            Noldan boshlab dunyoning nufuzli universitetlariga grant asosida kirishgacha bo&apos;lgan yo&apos;l.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-emerald-400">
+            <span className="text-xs font-extrabold text-emerald-400 uppercase">1-CHORAK (1–3 OY)</span>
+            <h4 className="mt-1.5 text-base font-bold text-white">Fundamental Poydevor</h4>
+            <p className="mt-2 text-xs text-slate-300">
+              Maktab algebrasini noldan mustahkamlash, ingliz tili grammatikasi va bazaviy so&apos;z boyligi.
+            </p>
+          </div>
+
+          <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-teal-400">
+            <span className="text-xs font-extrabold text-teal-300 uppercase">2-CHORAK (4–6 OY)</span>
+            <h4 className="mt-1.5 text-base font-bold text-white">SAT &amp; IELTS Strategiyalari</h4>
+            <p className="mt-2 text-xs text-slate-300">
+              Test tuzoqlari, tezkor ishlash uslublari, Reading skanerlash va Writing qoidalari.
+            </p>
+          </div>
+
+          <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-amber-400">
+            <span className="text-xs font-extrabold text-amber-300 uppercase">3-CHORAK (7–9 OY)</span>
+            <h4 className="mt-1.5 text-base font-bold text-white">Intensiv Amaliyot</h4>
+            <p className="mt-2 text-xs text-slate-300">
+              Minglab haqiqiy savollar banki, xatolar tahlili va Sokratik murabbiy bilan qiyin mavzular.
+            </p>
+          </div>
+
+          <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-emerald-400">
+            <span className="text-xs font-extrabold text-emerald-400 uppercase">4-CHORAK (10–12 OY)</span>
+            <h4 className="mt-1.5 text-base font-bold text-white">Mock Testlar &amp; Grant Qabuli</h4>
+            <p className="mt-2 text-xs text-slate-300">
+              To&apos;liq vaqtli sinov imtihonlari, insholarni tekshirish va xorijiy universitetlarga ariza topshirish.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          4. JONLI AMALIYOT: KUNLIK MASHQ SPRINTI
           ==================================================================== */}
       <section className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-emerald-400" /> JONLI MASHQ SPRINTI (+15 XP)
+              <Zap className="h-4 w-4 text-emerald-400" /> KUNLIK TEZKOR SPRINT (+15 XP)
             </span>
-            <h2 className="mt-1 text-xl font-extrabold text-white sm:text-2xl">
+            <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
               {currentQuiz.subject}: Bilimingizni sinab ko&apos;ring
             </h2>
           </div>
