@@ -20,6 +20,10 @@ import {
 import { ConfettiBurst } from "@/components/anime/ConfettiBurst";
 import { LessonCoachWidget } from "@/components/ai/LessonCoachWidget";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
+import {
+  JarvisLiveTeacher,
+  type LiveTeacherAction,
+} from "@/components/voice/JarvisLiveTeacher";
 import { TheoryMethodCards } from "@/components/curriculum/TheoryMethodCards";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 
@@ -169,8 +173,7 @@ export default function LessonRunnerPage({
   const { lesson, honorific, tomorrowLesson } = data;
   const currentQuestion = lesson.questions[qIdx] ?? lesson.questions[0];
 
-  const handleSelectAnswer = (optId: "A" | "B" | "C" | "D") => {
-    if (feedback !== "idle" || !currentQuestion) return;
+  const handleSelectAnswer = (optId: "A" | "B" | "C" | "D") => {    if (feedback !== "idle" || !currentQuestion) return;
     setSelectedOpt(optId);
 
     const isRight = optId === currentQuestion.correctAnswer;
@@ -237,9 +240,9 @@ export default function LessonRunnerPage({
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-3 py-3 sm:px-6">
       {/* Tinch sinfxona sarlavhasi (Matrix oqimisiz, diqqatni jamlovchi muhit) */}
-      <div className="glass-card p-6 sm:p-8">
+      <div className="glass-card p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-neon">
@@ -251,12 +254,26 @@ export default function LessonRunnerPage({
               <span>•</span>
               <span className="text-fg-muted">{lesson.topic.titleUz}</span>
             </div>
-            <h1 className="mt-2 text-xl font-extrabold text-fg sm:text-3xl">
+            <h1 className="mt-1 text-lg font-extrabold text-fg sm:text-2xl">
               {lesson.titleUz}
             </h1>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <JarvisLiveTeacher
+              lessonSlug={lesson.slug}
+              stage={phase}
+              questionIndex={phase === "EXERCISES" ? qIdx : undefined}
+              onAction={(action: LiveTeacherAction) => {
+                if (action === "theory") setPhase("THEORY");
+                else if (action === "examples") setPhase("EXAMPLES");
+                else if (action === "exercises") setPhase("EXERCISES");
+                else if (action === "hint") {
+                  setShowHint(true);
+                  setPhase("EXERCISES");
+                }
+              }}
+            />
             <span className="flex items-center gap-1 rounded-xl border border-border bg-elevated px-3 py-1.5 font-mono text-xs text-fg-muted">
               <Clock className="h-3.5 w-3.5 text-neon" />
               {lesson.estMinutes} daq
@@ -269,7 +286,7 @@ export default function LessonRunnerPage({
 
         
         {/* 4 bosqichli dars navigatsiyasi: Nazariya -> Misollar -> Mashqlar -> Tahlil */}
-        <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
           {phasesList.map((item) => {
             const active = phase === item.id;
             return (
@@ -297,7 +314,7 @@ export default function LessonRunnerPage({
             1-BOSQICH: INTERAKTIV AI MURABBIY VA METOD KARTALARI (Xom matnsiz)
             ==================================================================== */}
         {phase === "THEORY" && (
-          <div ref={stageCardRef} className="mt-6">
+          <div ref={stageCardRef} className="mt-3.5">
             <TheoryMethodCards
               theoryMarkdown={lesson.theoryMarkdown}
               lessonTitle={lesson.titleUz}

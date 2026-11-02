@@ -5,15 +5,14 @@ import Link from "next/link";
 import {
   Brain,
   Sparkles,
-  BookOpen,
   ArrowRight,
   FileText,
-  HelpCircle,
   MessageSquare,
   Send,
   Zap,
   CheckCircle2,
-  Sigma,
+  ChevronRight,
+  X,
 } from "lucide-react";
 import { JarvisVoiceButton, JarvisMicButton } from "@/components/voice/JarvisVoiceAgent";
 
@@ -55,13 +54,10 @@ export function TheoryMethodCards({
   lessonSlug,
   onProceedToExamples,
 }: TheoryMethodCardsProps) {
-  // Sokratik AI Murabbiy bilan jonli muloqot
-  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<number | "ALL">("ALL");
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-  const [chatHistory, setChatHistory] = useState<
-    Array<{ role: "USER" | "AI"; text: string }>
-  >([]);
+  const [latestAiReply, setLatestAiReply] = useState<string | null>(null);
 
   // Xom matnni toza metod kartalariga ajratish
   const sections = useMemo<ParsedSection[]>(() => {
@@ -126,8 +122,6 @@ export function TheoryMethodCards({
     const q = (presetText ?? question).trim();
     if (!q || loading) return;
 
-    const newHist = [...chatHistory, { role: "USER" as const, text: q }];
-    setChatHistory(newHist);
     if (!presetText) setQuestion("");
     setLoading(true);
 
@@ -149,73 +143,88 @@ export function TheoryMethodCards({
         const reply =
           data.assistantMessage?.content ??
           `Juda yaxshi savol, ${honorific}! Ushbu metodda asosiysi formulani eslab qolish va keyingi misollarda qo'llashdir.`;
-        setChatHistory((prev) => [...prev, { role: "AI" as const, text: reply }]);
+        setLatestAiReply(reply);
       }
     } catch {
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          role: "AI" as const,
-          text: `Kechirasiz ${honorific}, aloqada uzilish bo'ldi. Qaytadan urinib ko'ring.`,
-        },
-      ]);
+      setLatestAiReply(
+        `Kechirasiz ${honorific}, aloqada qisqa uzilish bo'ldi. Qaytadan urinib ko'ring.`
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Yuqori E'lon & Dars Maqsadi (Matnsiz, toza intellektual vitrina) */}
-      <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-500/15 via-slate-900/80 to-slate-950 p-6 sm:p-8 backdrop-blur-2xl shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-              <Brain className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 px-3 py-0.5 text-xs font-black text-emerald-300">
-                  <Sparkles className="h-3 w-3" />
-                  <span>AI MURABBIY METODLARI</span>
-                </span>
-                <span className="text-xs font-mono font-bold text-amber-300">
-                  {sections.length} ta asosiy qoida
-                </span>
-              </div>
-              <h2 className="mt-1 text-xl sm:text-2xl font-black text-white">
-                {lessonTitle}
-              </h2>
-            </div>
-          </div>
+  const activeSections = useMemo(() => {
+    if (selectedTab === "ALL") return sections;
+    return sections.filter((s) => s.index === selectedTab);
+  }, [sections, selectedTab]);
 
-          <div className="flex items-center gap-2">
-            <JarvisVoiceButton
-              text={`${lessonTitle}. ${sections.map((s) => s.title).join(". ")}.`}
-              label="Bosh rejani tinglash"
-            />
-          </div>
+  return (
+    <div className="space-y-3">
+      {/* 1. Ixcham Qoidalar Paneli & Filtr Navigatsiyasi (Scrolsiz, 1 ekran) */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-slate-900/50 px-3 py-2 backdrop-blur-xl">
+        <div className="flex items-center gap-2">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
+            <Zap className="h-4 w-4" />
+          </span>
+          <span className="text-xs font-black uppercase tracking-wider text-white">
+            Metodlar ({sections.length})
+          </span>
         </div>
 
-        <p className="mt-4 text-xs sm:text-sm text-slate-300 leading-relaxed">
-          Ushbu darsning asosiy formulalari va qoidalari alohida intellektual kartalarga
-          ajratilgan. Xom matnni o&apos;qish shart emas — har bir qoidani qisqa o&apos;rganib,
-          AI murabbiydan tushunmagan joyingizni so&apos;rashingiz mumkin.
-        </p>
+        {/* Tablar: Barchasi yoki alohida metodlar */}
+        <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+          <button
+            type="button"
+            onClick={() => setSelectedTab("ALL")}
+            className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all ${
+              selectedTab === "ALL"
+                ? "bg-emerald-500 text-slate-950 shadow-sm"
+                : "bg-white/5 text-slate-300 hover:bg-white/10"
+            }`}
+          >
+            Barchasi
+          </button>
+          {sections.map((sec) => (
+            <button
+              key={sec.index}
+              type="button"
+              onClick={() => setSelectedTab(sec.index)}
+              className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all whitespace-nowrap ${
+                selectedTab === sec.index
+                  ? "bg-emerald-500 text-slate-950 shadow-sm"
+                  : "bg-white/5 text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              {sec.index}-Qoida
+            </button>
+          ))}
+        </div>
+
+        <JarvisVoiceButton
+          text={`${lessonTitle}. ${sections.map((s) => s.title).join(". ")}.`}
+          label="Tinglash"
+        />
       </div>
 
-      {/* ====================================================================
-          METOD KARTALARI (Xom matn o'rniga strukturalangan shisha kartalar)
-          ==================================================================== */}
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {sections.map((sec) => (
+      {/* 2. Ixcham Metod Kartalari (Gorizontal/Kichraytirilgan, scrolsiz) */}
+      <div
+        className={`grid gap-2.5 ${
+          selectedTab === "ALL" && sections.length >= 3
+            ? "grid-cols-1 md:grid-cols-3"
+            : selectedTab === "ALL" && sections.length === 2
+            ? "grid-cols-1 md:grid-cols-2"
+            : "grid-cols-1"
+        }`}
+      >
+        {activeSections.map((sec) => (
           <div
             key={sec.index}
-            className="glass-card p-6 rounded-3xl border border-white/10 flex flex-col justify-between hover:border-emerald-400/40 transition-colors shadow-lg"
+            className="flex flex-col justify-between rounded-2xl border border-white/10 bg-slate-900/60 p-3.5 backdrop-blur-md hover:border-emerald-400/40 transition-colors shadow-sm"
           >
             <div>
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="font-mono text-xs font-extrabold text-emerald-400 uppercase">
+              <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
+                <span className="font-mono text-[10px] font-black text-emerald-400 uppercase tracking-wider">
                   {sec.index}-Qoida
                 </span>
                 <JarvisVoiceButton
@@ -224,19 +233,19 @@ export function TheoryMethodCards({
                 />
               </div>
 
-              <h3 className="mt-3 text-base sm:text-lg font-black text-white">
+              <h4 className="mt-1.5 text-xs sm:text-sm font-extrabold text-white leading-tight">
                 {sec.title}
-              </h3>
+              </h4>
 
-              {/* Formulalar */}
+              {/* Formula bloki (Ixcham, toza) */}
               {sec.formulas.length > 0 && (
-                <div className="my-3 space-y-2">
+                <div className="my-2 space-y-1">
                   {sec.formulas.map((f, fIdx) => (
                     <div
                       key={fIdx}
-                      className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-3 text-center shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                      className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-center shadow-[0_0_10px_rgba(16,185,129,0.1)]"
                     >
-                      <span className="font-mono text-base sm:text-lg font-black text-emerald-300">
+                      <span className="font-mono text-xs font-black text-emerald-300">
                         {f}
                       </span>
                     </div>
@@ -244,113 +253,63 @@ export function TheoryMethodCards({
                 </div>
               )}
 
-              {/* Matn / Abzaslar */}
+              {/* Asosiy izoh / abzaslar (Ixcham 2-3 qator) */}
               {sec.paragraphs.length > 0 && (
-                <div className="mt-2 space-y-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                <div className="mt-1.5 space-y-1 text-[11px] text-slate-300 leading-snug">
                   {sec.paragraphs.map((p, pIdx) => (
-                    <p key={pIdx}>{p}</p>
+                    <p key={pIdx} className="line-clamp-3">
+                      {p}
+                    </p>
                   ))}
                 </div>
               )}
 
-              {/* Ro'yxat punktlari */}
+              {/* Asosiy nuqtalar */}
               {sec.bulletPoints.length > 0 && (
-                <ul className="mt-3 space-y-2 text-xs sm:text-sm text-slate-300">
-                  {sec.bulletPoints.map((bp, bIdx) => (
-                    <li key={bIdx} className="flex items-start gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-teal-400 mt-1.5 shrink-0" />
-                      <span>{bp}</span>
+                <ul className="mt-2 space-y-1 text-[11px] text-slate-300">
+                  {sec.bulletPoints.slice(0, 2).map((bp, bIdx) => (
+                    <li key={bIdx} className="flex items-start gap-1.5 leading-snug">
+                      <span className="h-1 w-1 rounded-full bg-teal-400 mt-1.5 shrink-0" />
+                      <span className="line-clamp-2">{bp}</span>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
+
+            {selectedTab === "ALL" && (
+              <button
+                type="button"
+                onClick={() => setSelectedTab(sec.index)}
+                className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400/80 hover:text-emerald-300 self-start"
+              >
+                <span>Kengroq ko&apos;rish</span>
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-      {/* ====================================================================
-          DARSDAGI JONLI AI MURABBIY MULOQOT MAYDONI
-          ==================================================================== */}
-      <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/10 bg-slate-900/70 backdrop-blur-2xl">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400">
-              <MessageSquare className="h-5 w-5" />
-            </div>
-            <div>
-              <h4 className="text-base font-black text-white">
-                Sokratik AI Murabbiyga Savol Berish
-              </h4>
-              <p className="text-xs text-slate-400">
-                Mavzu bo&apos;yicha istalgan savolingizni so&apos;rang — ustoz yo&apos;l ko&apos;rsatadi
-              </p>
-            </div>
-          </div>
-
-          <span className="glass-pill rounded-full px-3 py-1 text-xs font-mono font-bold text-emerald-300">
-            24/7 Tayyor
-          </span>
-        </div>
-
-        {/* Tezkor savol takliflari */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {[
-            "Imtihonda bu mavzudan qanday tuzoqlar tushadi?",
-            "Ushbu metodning hayotiy misolini ko'rsating",
-            "Formulani eslab qolishning eng oson yo'li nima?",
-          ].map((prompt, pIdx) => (
-            <button
-              key={pIdx}
-              type="button"
-              onClick={() => handleAskCoach(prompt)}
-              className="glass-pill rounded-xl px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-emerald-300 hover:border-emerald-400/40 transition-colors"
-            >
-              💬 {prompt}
-            </button>
-          ))}
-        </div>
-
-        {/* Suhbat tarixi */}
-        {chatHistory.length > 0 && (
-          <div className="mt-4 space-y-3 max-h-[260px] overflow-y-auto pr-2">
-            {chatHistory.map((msg, i) => (
-              <div
-                key={i}
-                className={`rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${
-                  msg.role === "USER"
-                    ? "ml-8 border border-white/15 bg-white/5 text-white"
-                    : "mr-8 border border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[11px] uppercase tracking-wider text-slate-400">
-                    {msg.role === "USER" ? "Siz" : "AI Murabbiy"}
-                  </span>
-                  {msg.role === "AI" && (
-                    <JarvisVoiceButton text={msg.text} label="Tinglash" />
-                  )}
-                </div>
-                <p>{msg.text}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Savol yuborish maydoni */}
+      {/* 3. Ixcham Jonli AI Murabbiy Muloqot Qatori (1 qatorli bar) */}
+      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-2 backdrop-blur-xl">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleAskCoach();
           }}
-          className="mt-4 flex items-center gap-2"
+          className="flex items-center gap-1.5"
         >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+            <Brain className="h-4 w-4" />
+          </div>
+
           <input
             type="text"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="AI Murabbiyga savolingizni yozing..."
-            className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:border-emerald-400 focus:outline-none"
+            placeholder="AI Murabbiyga savol bering (masalan: Bu formulaning amaliy siri nima?)..."
+            className="flex-1 rounded-xl border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-emerald-400 focus:outline-none"
           />
 
           <JarvisMicButton onTranscript={(txt) => setQuestion(txt)} />
@@ -358,32 +317,52 @@ export function TheoryMethodCards({
           <button
             type="submit"
             disabled={loading || !question.trim()}
-            className="btn-neon flex items-center justify-center rounded-2xl px-5 py-3.5 text-xs font-bold disabled:opacity-50"
+            className="btn-neon flex h-8 items-center justify-center rounded-xl px-3 text-xs font-bold disabled:opacity-50"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-3.5 w-3.5" />
           </button>
         </form>
+
+        {/* AI Javobi (Agar savol berilsa, ixcham paydo bo'ladi) */}
+        {latestAiReply && (
+          <div className="mt-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-2.5 text-xs text-emerald-200">
+            <div className="flex items-center justify-between border-b border-emerald-400/20 pb-1 mb-1">
+              <span className="font-bold text-[10px] uppercase tracking-wider text-emerald-300">
+                JARVIS AI Murabbiy
+              </span>
+              <div className="flex items-center gap-1.5">
+                <JarvisVoiceButton text={latestAiReply} label="Tinglash" />
+                <button
+                  type="button"
+                  onClick={() => setLatestAiReply(null)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+            <p className="leading-snug">{latestAiReply}</p>
+          </div>
+        )}
       </div>
 
-      {/* ====================================================================
-          PASTKI HARAKAT VA DARS TARIXIGA HAVOLA
-          ==================================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
+      {/* 4. Pastki Navigatsiya & 2-Bosqichga o'tish (Ko'rinadigan qatorda) */}
+      <div className="flex items-center justify-between pt-1">
         <Link
           href="/history"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-amber-300 transition-colors"
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-amber-300 transition-colors"
         >
-          <FileText className="h-4 w-4" />
-          <span>To&apos;liq matnli darslikni Dars Tarixida o&apos;qish →</span>
+          <FileText className="h-3.5 w-3.5" />
+          <span>Dars Tarixida to&apos;liq matn →</span>
         </Link>
 
         <button
           type="button"
           onClick={onProceedToExamples}
-          className="btn-neon flex items-center gap-2.5 px-7 py-3.5 text-sm font-bold shadow-xl"
+          className="btn-neon flex items-center gap-2 px-4 py-2 text-xs font-bold shadow-lg"
         >
-          <span>2-Bosqich: Hayotiy Misollarni Ko&apos;rish</span>
-          <ArrowRight className="h-4 w-4" />
+          <span>2-Bosqich: Misollarni Ko&apos;rish</span>
+          <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>
