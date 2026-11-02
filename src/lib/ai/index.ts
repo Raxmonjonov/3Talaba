@@ -1,5 +1,5 @@
 /**
- * 3Talab — Haqiqiy AI Murabbiy Dvigateli (/lib/ai)
+ * 3Talaba — Haqiqiy AI Murabbiy Dvigateli (/lib/ai)
  *
  * Provayderlar:
  * 1. AI Gateway / Gemini / Claude / OpenRouter (agar API key bo'lsa)
@@ -420,7 +420,7 @@ function buildSystemPrompt(req: AICoachRequest, honorific: string): string {
   };
 
   return [
-    `Sen "3Talab" o'quv platformasining bilimdon va samimiy AI Murabbiyisan.`,
+    `Sen "3Talaba" o'quv platformasining bilimdon va samimiy AI Murabbiyisan.`,
     `MUHIM QOIDALAR:`,
     `1. FOYDALANUVCHINING ANIQ SAVOLIGA QARAB JAVOB BER. Bir xil shablon gaplarni takrorlama!`,
     `2. Har doim toza o'zbek tilida (lotin alifbosida), hurmat bilan javob yoz.`,

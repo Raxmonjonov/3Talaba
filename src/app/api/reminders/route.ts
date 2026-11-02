@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       reminderTime: activeTime,
       notificationPreview: data.triggerTestNotification
         ? {
-            titleUz: `🔔 3Talab Kunlik O'qish Eslatmasi (${activeTime})`,
+            titleUz: `🔔 3Talaba Kunlik O'qish Eslatmasi (${activeTime})`,
             bodyUz: `${honorific} (${user?.name ?? "O'quvchi"}), bugungi ${dailyMinutes} daqiqalik SAT & IELTS mashg'ulotingiz vaqti keldi! Kunlik Streak zanjirini davom ettiramizmi?`,
             channels: ["Web Push Bildirishnoma", `Email (${user?.email ?? "oquvchi@3talab.uz"})`],
           }

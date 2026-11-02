@@ -15,7 +15,7 @@ import { jarvisVoice, type JarvisVoiceState } from "@/lib/voice/jarvis-speech";
 
 export function JarvisVoiceButton({
   text,
-  label = "Jarvis ovozida tinglash",
+  label = "Talaba AI ovozida tinglash",
   className = "",
 }: {
   text: string;
@@ -60,7 +60,7 @@ export function JarvisVoiceButton({
               ? "border-gold bg-gold-soft text-gold"
               : "border-white/10 bg-surface/80 text-fg-muted hover:border-neon hover:text-neon"
         }`}
-        title={isPlaying ? "Vaqtincha to'xtatish" : "Jarvis ovozida tinglash"}
+        title={isPlaying ? "Vaqtincha to'xtatish" : "Talaba AI ovozida tinglash"}
       >
         {isPlaying ? (
           <>

@@ -226,15 +226,24 @@ export default function LessonHistoryPage() {
       <div className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
-              <History className="h-3.5 w-3.5" />
-              <span>DARS TARIXI VA ARXIVI • MATN & OVOZLI O&apos;QISh</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
+                <History className="h-3.5 w-3.5" />
+                <span>DARS TARIXI VA ARXIVI • MATN & OVOZLI O&apos;QISh</span>
+              </div>
+              <Link
+                href="/profile?tab=history"
+                className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[11px] font-bold text-amber-300 hover:bg-amber-400/20 transition-all"
+              >
+                <span>Mening Profilimda ochish</span>
+                <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
             <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-4xl tracking-tight">
               Barcha O&apos;tilgan va Tugatilgan Darslar Matni
             </h1>
             <p className="mt-1.5 text-xs sm:text-sm text-fg-muted max-w-3xl">
-              Har bir dars to&apos;liq nazariy matni, formulalari, hayotiy misollari va JARVIS AI ovozli audiosi bilan
+              Har bir dars to&apos;liq nazariy matni, formulalari, hayotiy misollari va Talaba AI ovozli audiosi bilan
               bir joyda. Istalgan darsni qayta o&apos;qing, nusxalang yoki tinglang.
             </p>
           </div>
@@ -403,10 +412,10 @@ export default function LessonHistoryPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* JARVIS Ovozli Agent bilan darsni tinglash */}
+                    {/* Talaba AI Ovozli Agent bilan darsni tinglash */}
                     <JarvisVoiceButton
                       text={`${activeLesson.titleUz}. ${activeLesson.summaryUz}. ${activeLesson.theoryMarkdown}`}
-                      label="JARVIS ovozida darsni tinglash"
+                      label="Talaba AI ovozida darsni tinglash"
                     />
 
                     <button

@@ -16,20 +16,36 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
+import { BRAND, GUEST_NAV_LINKS, STUDENT_NAV_LINKS, type NavLinkItem } from "@/lib/site-config";
+
+const DESKTOP_TONE_CLASSES: Record<NonNullable<NavLinkItem["tone"]>, string> = {
+  default: "text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400",
+  gold: "text-sm font-bold text-amber-300 transition-colors hover:text-emerald-400",
+  neon: "text-sm font-bold text-emerald-400 transition-colors hover:text-amber-300",
+};
+
+const MOBILE_TONE_CLASSES: Record<NonNullable<NavLinkItem["tone"]>, string> = {
+  default: "rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5",
+  gold: "rounded-xl px-3 py-2 text-sm font-semibold text-amber-300 hover:bg-white/5",
+  neon: "rounded-xl px-3 py-2 text-sm font-semibold text-emerald-400 hover:bg-white/5",
+};
 
 export function Navbar() {
   const { data: session } = useSession();
   const { theme, toggleTheme, reduceMotion, toggleReduceMotion } = useUIPreferences();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const navLinks = session?.user ? STUDENT_NAV_LINKS : GUEST_NAV_LINKS;
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-canvas/75 backdrop-blur-2xl shadow-lg">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-canvas/75 shadow-lg backdrop-blur-2xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Katta, Aniq va Yorqin Brend Logotipi */}
         <Link
           href="/"
           className="group flex items-center gap-3.5 focus:outline-none"
-          aria-label="3Talab Bosh sahifa"
+          aria-label={`${BRAND.fullName} Bosh sahifa`}
         >
           <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/25 via-slate-900/90 to-amber-500/25 shadow-[0_0_24px_rgba(16,185,129,0.35)] backdrop-blur-xl transition-transform duration-200 group-hover:scale-105">
             <span className="font-mono text-2xl font-black text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.6)]">
@@ -42,99 +58,23 @@ export function Navbar() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-black tracking-tight text-white drop-shadow-sm">
-                3<span className="text-emerald-400">Talab</span>
+                3<span className="text-emerald-400">Talaba</span>
               </span>
               <span className="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
                 Campus
               </span>
             </div>
-            <span className="block text-xs font-semibold text-slate-300">
-              Xalqaro O&apos;quv Platformasi
-            </span>
+            <span className="block text-xs font-semibold text-slate-300">{BRAND.tagline}</span>
           </div>
         </Link>
 
         {/* Desktop navigatsiya */}
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Asosiy navigatsiya">
-          {session?.user ? (
-            <>
-              <Link
-                href="/roadmap"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                12 Oylik Xarita
-              </Link>
-              <Link
-                href="/learn"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Darslar
-              </Link>
-              <Link
-                href="/history"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Dars Tarixi
-              </Link>
-              <Link
-                href="/practice"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Savollar Banki
-              </Link>
-              <Link
-                href="/math"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Algebra &amp; Geometriya
-              </Link>
-              <Link
-                href="/coach"
-                className="text-sm font-bold text-amber-300 transition-colors hover:text-emerald-400"
-              >
-                AI Murabbiy
-              </Link>
-              <Link
-                href="/progress"
-                className="text-sm font-bold text-emerald-400 transition-colors hover:text-amber-300"
-              >
-                Progress &amp; XP
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/learn"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Darslar
-              </Link>
-              <Link
-                href="/math"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Algebra &amp; Geometriya
-              </Link>
-              <Link
-                href="/history"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                Dars Tarixi
-              </Link>
-              <a
-                href="#tizim"
-                className="text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400"
-              >
-                12 Oylik Tizim
-              </a>
-              <Link
-                href="/coach"
-                className="text-sm font-bold text-amber-300 transition-colors hover:text-emerald-400"
-              >
-                AI Murabbiy
-              </Link>
-            </>
-          )}
+          {navLinks.map((link) => (
+            <Link key={link.href} href={link.href} className={DESKTOP_TONE_CLASSES[link.tone ?? "default"]}>
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         {/* Sozlamalar va Profil */}
@@ -166,15 +106,16 @@ export function Navbar() {
           {session?.user ? (
             <div className="flex items-center gap-2.5">
               <Link
-                href="/onboarding"
+                href="/profile"
                 className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-3.5 py-2 text-xs font-bold text-emerald-300 transition-all hover:bg-emerald-500 hover:text-slate-950"
+                title="Mening Profilim (12 Oylik Xarita, Dars Tarixi, Savollar Banki)"
               >
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
                 <UserCheck className="h-4 w-4" />
-                <span>{session.user.name?.split(" ")[0]}</span>
+                <span>{session.user.name?.split(" ")[0]} (Profil)</span>
               </Link>
               <button
                 type="button"
@@ -194,10 +135,7 @@ export function Navbar() {
               >
                 Kirish
               </Link>
-              <Link
-                href="/register"
-                className="btn-neon inline-flex items-center gap-1.5 px-4 py-2 text-sm"
-              >
+              <Link href="/register" className="btn-neon inline-flex items-center gap-1.5 px-4 py-2 text-sm">
                 <Sparkles className="h-4 w-4" />
                 <span>Boshlash</span>
               </Link>
@@ -219,7 +157,9 @@ export function Navbar() {
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white"
-            aria-label="Menyuni ochish"
+            aria-label={mobileMenuOpen ? "Menyuni yopish" : "Menyuni ochish"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -228,96 +168,29 @@ export function Navbar() {
 
       {/* Mobil ochiluvchi menyu */}
       {mobileMenuOpen && (
-        <div className="border-t border-white/10 bg-canvas/95 px-4 py-4 backdrop-blur-2xl lg:hidden">
-          <div className="flex flex-col gap-2.5">
-            {session?.user ? (
-              <>
-                <Link
-                  href="/roadmap"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5"
-                >
-                  12 Oylik Xarita
-                </Link>
-                <Link
-                  href="/learn"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5"
-                >
-                  Darslar
-                </Link>
-                <Link
-                  href="/history"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-emerald-400 hover:bg-white/5"
-                >
-                  Dars Tarixi &amp; Matnlar
-                </Link>
-                <Link
-                  href="/practice"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5"
-                >
-                  Savollar Banki
-                </Link>
-                <Link
-                  href="/math"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-emerald-400 hover:bg-white/5"
-                >
-                  Algebra &amp; Geometriya (Chuqur)
-                </Link>
-                <Link
-                  href="/coach"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-amber-300 hover:bg-white/5"
-                >
-                  AI Murabbiy
-                </Link>
-                <Link
-                  href="/progress"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-emerald-400 hover:bg-white/5"
-                >
-                  Progress &amp; XP
-                </Link>
-              </>
-            ) : (
-              <>
-                <a
-                  href="#tizim"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5"
-                >
-                  12 Oylik Tizim
-                </a>
-                <a
-                  href="#fanlar"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5"
-                >
-                  Fanlar (SAT &amp; IELTS)
-                </a>
-                <a
-                  href="#ai-murabbiy"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5"
-                >
-                  AI Murabbiy
-                </a>
-              </>
-            )}
+        <div id="mobile-menu" className="border-t border-white/10 bg-canvas/95 px-4 py-4 backdrop-blur-2xl lg:hidden">
+          <nav className="flex flex-col gap-2.5" aria-label="Mobil navigatsiya">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={closeMobileMenu}
+                className={MOBILE_TONE_CLASSES[link.tone ?? "default"]}
+              >
+                {link.label}
+              </Link>
+            ))}
 
-            <div className="mt-2 grid grid-cols-2 gap-2.5 pt-2 border-t border-white/10">
+            <div className="mt-2 grid grid-cols-2 gap-2.5 border-t border-white/10 pt-2">
               {session?.user ? (
                 <>
                   <Link
-                    href="/onboarding"
-                    onClick={() => setMobileMenuOpen(false)}
+                    href="/profile"
+                    onClick={closeMobileMenu}
                     className="btn-neon flex items-center justify-center gap-1.5 py-2.5 text-center text-sm"
                   >
                     <Compass className="h-4 w-4" />
-                    <span>Kabinet</span>
+                    <span>Mening Profilim</span>
                   </Link>
                   <button
                     type="button"
@@ -331,22 +204,18 @@ export function Navbar() {
                 <>
                   <Link
                     href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={closeMobileMenu}
                     className="rounded-xl border border-white/10 bg-white/5 py-2.5 text-center text-sm font-semibold text-white"
                   >
                     Kirish
                   </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="btn-neon py-2.5 text-center text-sm"
-                  >
+                  <Link href="/register" onClick={closeMobileMenu} className="btn-neon py-2.5 text-center text-sm">
                     Boshlash
                   </Link>
                 </>
               )}
             </div>
-          </div>
+          </nav>
         </div>
       )}
     </header>

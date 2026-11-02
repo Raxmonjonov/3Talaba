@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "JARVIS jonli ovozi sozlanmagan. GEMINI_API_KEY muhit o'zgaruvchisini qo'shing.",
+          "Talaba AI jonli ovozi sozlanmagan. GEMINI_API_KEY muhit o'zgaruvchisini qo'shing.",
       },
       { status: 503 },
     );
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
     const message =
       error instanceof Error
         ? error.message
-        : "JARVIS jonli sessiyasini boshlab bo'lmadi.";
+        : "Talaba AI jonli sessiyasini boshlab bo'lmadi.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

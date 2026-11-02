@@ -206,7 +206,7 @@ export default function PlacementResultPage() {
           <div className="flex flex-wrap items-center gap-3">
             <JarvisVoiceButton
               text={`Tabriklaymiz, ${honorific}! Sizning boshlang'ich darajangiz: ${levelInfo.uz}. ${levelInfo.desc}. AI Murabbiy xulosasi: ${result.writingSpeakingAdvice}`}
-              label="JARVIS ovozida tinglash"
+              label="Talaba AI ovozida tinglash"
             />
             <Link
               href="/placement"

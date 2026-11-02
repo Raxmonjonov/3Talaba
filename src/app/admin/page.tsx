@@ -197,7 +197,7 @@ export default function AdminDashboardPage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-gold-soft px-3.5 py-1 text-xs font-bold text-gold">
               <ShieldAlert className="h-3.5 w-3.5" />
-              <span>3TALAB BOSHQARUV MARKAZI • ADMIN PANEL</span>
+              <span>3TALABA BOSHQARUV MARKAZI • ADMIN PANEL</span>
             </div>
             <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-3xl">
               Foydalanuvchilar, Savollar Banki va Kontent Boshqaruvi

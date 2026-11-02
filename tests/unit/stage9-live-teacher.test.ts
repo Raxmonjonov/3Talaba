@@ -37,7 +37,7 @@ const lesson: LiveTeacherLesson = {
   nextLessonTitleUz: "Kvadrat funksiya",
 };
 
-describe("Stage 9 — JARVIS jonli ovozli ustoz", () => {
+describe("Stage 9 — Talaba AI jonli ovozli ustoz", () => {
   it("LaTeX va belgilarni tabiiy o'zbekcha talaffuzga aylantiradi", () => {
     const spoken = toSpokenText("$$\\frac{1}{2}$$ va \\sqrt{16} hamda x^2");
 
@@ -60,7 +60,7 @@ describe("Stage 9 — JARVIS jonli ovozli ustoz", () => {
       { stage: "EXERCISES", questionIndex: 0, totalQuestions: 1 },
     );
 
-    expect(prompt).toContain("JARVIS");
+    expect(prompt).toContain("Talaba AI");
     expect(prompt).toContain("aziz o'quvchi");
     expect(prompt).toContain("Matematika");
     expect(prompt).toContain("Kvadrat tenglamalar");

@@ -303,7 +303,7 @@ export function LandingExperience() {
               >
                 Qaysi darajada bo'lsangiz ham — hatto{" "}
                 <strong className="font-semibold text-fg">mutlaqo noldan</strong>{" "}
-                boshlasangiz ham — <strong className="font-semibold text-neon">3Talab</strong>{" "}
+                boshlasangiz ham — <strong className="font-semibold text-neon">3Talaba</strong>{" "}
                 sizning kuchli va zaif tomonlaringizni aniqlaydi, kunlik vaqtingizga mos{" "}
                 <strong className="font-semibold text-gold">12 oylik shaxsiy yo'l xaritasi</strong>{" "}
                 tuzadi va har bir qadamda iliq Socratic AI murabbiy bilan yetaklaydi.
@@ -823,7 +823,7 @@ export function LandingExperience() {
                 Hurmatli, iliq va o'ylashga o'rgatuvchi AI Murabbiy
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-fg-muted sm:text-base">
-                3Talab AI murabbiyi har bir o'quvchiga samimiy va hurmat bilan yondashadi. U tayyor javobni berib qo'ymasdan, sizni mustaqil fikrlashga va kashfiyot qilishga yetaklaydi.
+                Talaba AI murabbiyi har bir o'quvchiga samimiy va hurmat bilan yondashadi. U tayyor javobni berib qo'ymasdan, sizni mustaqil fikrlashga va kashfiyot qilishga yetaklaydi.
               </p>
 
               {/* Murojaat uslubini sinab ko'rish tugmalari */}
@@ -877,7 +877,7 @@ export function LandingExperience() {
                       <Brain className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-fg">3Talab AI Murabbiy</p>
+                      <p className="text-sm font-bold text-fg">Talaba AI Murabbiy</p>
                       <p className="text-[11px] text-neon">
                         Socratic rejim • SAT Matematika darsi
                       </p>

@@ -201,9 +201,25 @@ export default function RegisterWizardPage() {
       // Keyingi sahifaga: 1-Mashq (Savollar banki)
       setPage(8);
     } catch {
-      setErrorMsg("Server bilan bog'lanishda xatolik. Qaytadan urinib ko'ring.");
+      // Agar serverda xatolik bo'lsa ham (masalan, offline yoki DB cheklovi),
+      // foydalanuvchi qulayligi uchun lokal saqlab davom ettiramiz
+      try {
+        localStorage.setItem(
+          "3talaba_user",
+          JSON.stringify({
+            email: email.trim().toLowerCase(),
+            name: name.trim(),
+            grade,
+            region,
+            isLoggedIn: true,
+          })
+        );
+      } catch {
+        // ignore
+      }
+      setRegistered(true);
       setLoading(false);
-      triggerShake();
+      setPage(8);
     }
   };
 
@@ -277,7 +293,7 @@ export default function RegisterWizardPage() {
                 Ismingiz nima?
               </h1>
               <p className="mt-2 text-sm text-slate-300 leading-relaxed">
-                JARVIS AI murabbiy siz bilan do&apos;stona va hurmat bilan muloqot qiladi.
+                Talaba AI murabbiy siz bilan do&apos;stona va hurmat bilan muloqot qiladi.
               </p>
             </div>
 

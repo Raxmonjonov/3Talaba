@@ -46,27 +46,45 @@ test("Bosqich 2: 4 qadamli Onboarding, Adaptiv Placement Test va Natija Grafikla
   await page.waitForURL("**/placement", { timeout: 20_000 });
   await page.waitForTimeout(700);
 
-  // 1-savol (pm-fm-2: to'g'ri javob C) — yashil porlash va Socratic xabar skrinshoti
+  // 1-bosqich: hozirgi daraja va maqsadni tanlash
+  await expect(page.locator("#placement-start-btn")).toBeVisible({
+    timeout: 10_000,
+  });
+  await page.click('button[data-level-id="INTERMEDIATE"]');
+  await page.click('button[data-goal-id="SAT_1450"]');
+  await page.screenshot({
+    path: path.join(ARTIFACT_DIR, "stage2-placement-setup.png"),
+    fullPage: false,
+  });
+
+  // 2-bosqich: 6 ta tezkor savol
+  await page.click("#placement-start-btn");
+  await page.waitForTimeout(400);
+  await expect(page.locator("h1")).toContainText("Savol 1");
+
+  // 1-savol (to'g'ri javob C) — yashil porlash va progress ko'rsatkichi
   await page.click('button[data-option-id="C"]');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(400);
 
   await page.screenshot({
     path: path.join(ARTIFACT_DIR, "stage2-placement-adaptive.png"),
     fullPage: false,
   });
 
-  // Qolgan savollardan namuna yechish (turli fanlarda darajani ko'rsatish uchun)
-  for (const ans of ["B", "B", "B", "B", "A", "B", "C", "C"]) {
+  // Yana 2 ta savolga javob berib, "Keyingisi" tugmasini tekshirish
+  for (const ans of ["B", "B"]) {
     await page.click("#placement-next-btn");
     await page.waitForTimeout(250);
     await page.click(`button[data-option-id="${ans}"]`);
     await page.waitForTimeout(250);
   }
 
-  // Natijani hisoblash va /placement/result sahifasiga o'tish
+  // Mavjud javoblar asosida natijani hoziroq ko'rish (3-bosqich: inline natija)
   await page.click("#placement-quick-finish-btn");
-  await page.waitForURL("**/placement/result", { timeout: 20_000 });
-  await page.waitForTimeout(1400); // SVG Radar va Mastery Bar animatsiyalari uchun
+  await expect(page.locator("#placement-inline-result")).toBeVisible({
+    timeout: 20_000,
+  });
+  await page.waitForTimeout(1400); // Progress bar va counter animatsiyalari uchun
 
   await expect(page.locator("h1")).toContainText("Shag'zodam");
   await page.screenshot({

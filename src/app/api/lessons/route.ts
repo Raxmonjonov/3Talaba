@@ -10,7 +10,30 @@ export async function GET() {
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Avtorizatsiya talab qilinadi" }, { status: 401 });
+    const subjects = await prisma.subject.findMany({
+      orderBy: { order: "asc" },
+      include: {
+        topics: {
+          orderBy: { order: "asc" },
+          include: {
+            lessons: {
+              orderBy: { order: "asc" },
+              include: {
+                _count: { select: { questions: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      honorific: "Bo'lajak Talaba",
+      profile: null,
+      subjects,
+      completedLessonIds: [],
+      earnedBadges: [],
+    });
   }
 
   const [profile, subjects, attempts, userBadges] = await Promise.all([

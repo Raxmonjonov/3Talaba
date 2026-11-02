@@ -328,7 +328,7 @@ export function TheoryMethodCards({
           <div className="mt-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-2.5 text-xs text-emerald-200">
             <div className="flex items-center justify-between border-b border-emerald-400/20 pb-1 mb-1">
               <span className="font-bold text-[10px] uppercase tracking-wider text-emerald-300">
-                JARVIS AI Murabbiy
+                Talaba AI Murabbiy
               </span>
               <div className="flex items-center gap-1.5">
                 <JarvisVoiceButton text={latestAiReply} label="Tinglash" />

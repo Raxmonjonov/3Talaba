@@ -46,7 +46,7 @@ export const SEED_BADGES = [
   {
     slug: "first-step",
     titleUz: "Ilk Qadam",
-    descriptionUz: "3Talab platformasida shaxsiy profil yaratib o'qishni boshlagani uchun.",
+    descriptionUz: "3Talaba platformasida shaxsiy profil yaratib o'qishni boshlagani uchun.",
     icon: "Sparkles",
     xpBonus: 50,
     conditionType: "FIRST_STEP",

@@ -1,5 +1,5 @@
 /**
- * 3Talab — JARVIS jonli ovozli ustoz (Gemini Live)
+ * 3Talaba — Talaba AI jonli ovozli ustoz (Gemini Live)
  *
  * JARVIS-OS-V.2 arxitekturasidan moslashtirilgan:
  * - Gemini Live native audio (PCM 16 kHz kirish / 24 kHz chiqish)
@@ -202,7 +202,7 @@ export const LIVE_TEACHER_TOOL_DECLARATIONS = [
 ];
 
 /**
- * Dars ma'lumotlari asosida JARVIS uchun o'qituvchilik tizim promptini quradi.
+ * Dars ma'lumotlari asosida Talaba AI uchun o'qituvchilik tizim promptini quradi.
  */
 export function buildLiveTeacherPrompt(
   lesson: LiveTeacherLesson,
@@ -220,7 +220,7 @@ export function buildLiveTeacherPrompt(
       : "";
 
   return [
-    "Sen — JARVIS, 3Talab ta'lim platformasining jonli ovozli ustozisan (JARVIS MARK XXXIX o'quv rejimi).",
+    "Sen — Talaba AI, 3Talaba ta'lim platformasining jonli ovozli ustozisan.",
     "Sening vazifang — o'quvchiga darsni shunchaki o'qib bermaslik, balki jonli suhbat orqali tushuntirish, savol berish va bilimini tekshirish.",
     "",
     "O'QUVCHI HAQIDA:",
@@ -249,7 +249,7 @@ export function buildLiveTeacherPrompt(
     formatQuestions(lesson.questions),
     "",
     "O'QITISH PROTOKOLI (qat'iy rioya qil):",
-    "1. Boshlash: qisqa salomlash, o'zingni JARVIS deb tanishtir va bugungi maqsadni 1-2 gapda ayt. So'ng \"Tayyormisiz?\" deb so'ra.",
+    "1. Boshlash: qisqa salomlash, o'zingni Talaba AI deb tanishtir va bugungi maqsadni 1-2 gapda ayt. So'ng \"Tayyormisiz?\" deb so'ra.",
     "2. Har bir javobing 2-4 gapdan oshmasin. Uzun monolog, ro'yxat yoki paragraf o'qib berma.",
     "3. Sokratik usul: avval tushuntir, keyin bitta aniq savol ber va o'quvchi javobini kut.",
     "4. O'quvchi xato qilsa — to'g'ri javobni darhol aytma. Bitta maslahat ber, yana harakat qilishga unda. Ikkinchi xatodan keyin qadamma-qadam tushuntir.",
@@ -262,7 +262,7 @@ export function buildLiveTeacherPrompt(
     "11. Dars oxirida: 3 ta asosiy xulosa, 1 ta uyga vazifa va keyingi darsni qisqa eslatib o't.",
     "12. Faqat o'zbek tilida (lotin alifbosida) gapir. Ingliz tilini faqat atama sifatida ishlat.",
     "13. O'quvchi gapni bo'lsa yoki \"to'xta\" desa — darhol to'xta va tingla.",
-    "14. Hech qachon o'zingni Gemini yoki Google modeli deb tanishtirma; sen JARVIS — 3Talab ustozisan.",
+    "14. Hech qachon o'zingni Gemini yoki Google modeli deb tanishtirma; sen Talaba AI — 3Talaba ustozisan.",
     "",
     "DARS BOSQICHLARI VA lesson_control TOOL:",
     "- Bosqichlar: nazariya → misollar → mashqlar → xulosa.",

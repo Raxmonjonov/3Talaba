@@ -254,7 +254,7 @@ export function JarvisLiveTeacher({
           if (nextPlayTimeRef.current - active.currentTime <= 0.02) setSpeaking(false);
         }, Math.max(240, (nextPlayTimeRef.current - ctx.currentTime) * 1000 + 200));
       } catch (err) {
-        console.error("JARVIS audio playback error", err);
+        console.error("Talaba AI audio playback error", err);
       }
     },
     [clearSpeakingTimer, ensurePlaybackContext],
@@ -307,7 +307,7 @@ export function JarvisLiveTeacher({
       }
 
       if (msg.error) {
-        setError(msg.error.message || "JARVIS sessiyasida xatolik yuz berdi.");
+        setError(msg.error.message || "Talaba AI sessiyasida xatolik yuz berdi.");
         setStatus("error");
         teardown();
         return;
@@ -414,7 +414,7 @@ export function JarvisLiveTeacher({
         | null;
 
       if (!res.ok || !payload?.token) {
-        throw new Error(payload?.error || "JARVIS sessiyasini boshlab bo'lmadi.");
+        throw new Error(payload?.error || "Talaba AI sessiyasini boshlab bo'lmadi.");
       }
 
       const config = payload;
@@ -464,7 +464,7 @@ export function JarvisLiveTeacher({
                   : String(event.data);
             handleServerMessage(JSON.parse(raw) as ServerMessage);
           } catch (err) {
-            console.error("JARVIS message parse error", err);
+            console.error("Talaba AI message parse error", err);
           }
         };
         void handle();
@@ -472,7 +472,7 @@ export function JarvisLiveTeacher({
 
       ws.onerror = () => {
         if (!activeRef.current) return;
-        setError("JARVIS bilan aloqa uzildi. Internetni tekshirib, qayta urinib ko'ring.");
+        setError("Talaba AI bilan aloqa uzildi. Internetni tekshirib, qayta urinib ko'ring.");
         setStatus("error");
         teardown();
       };
@@ -540,7 +540,7 @@ export function JarvisLiveTeacher({
           ? "Mikrofonga ruxsat berilmadi. Brauzer sozlamalaridan ruxsat bering."
           : err instanceof Error
             ? err.message
-            : "JARVIS sessiyasini boshlab bo'lmadi.";
+            : "Talaba AI sessiyasini boshlab bo'lmadi.";
       setError(message);
       setStatus("error");
     }
@@ -573,7 +573,7 @@ export function JarvisLiveTeacher({
   const isActive = status === "connecting" || status === "live";
   const statusText =
     status === "live" && speaking
-      ? "JARVIS gapirmoqda..."
+      ? "Talaba AI gapirmoqda..."
       : status === "live" && muted
         ? "Mikrofon o'chirilgan"
         : STATUS_LABELS[status];
@@ -590,7 +590,7 @@ export function JarvisLiveTeacher({
             void startSession();
           }
         }}
-        aria-label={isActive ? "JARVIS darsini yakunlash" : "JARVIS jonli ustoz bilan darsni boshlash"}
+        aria-label={isActive ? "Talaba AI darsini yakunlash" : "Talaba AI jonli ustoz bilan darsni boshlash"}
         className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
           isActive
             ? "border-neon bg-neon-soft text-neon shadow-neon"
@@ -604,7 +604,7 @@ export function JarvisLiveTeacher({
         ) : (
           <Sparkles className="h-3.5 w-3.5" />
         )}
-        <span>{isActive ? "JARVIS dars o'tmoqda" : "JARVIS jonli ustoz"}</span>
+        <span>{isActive ? "Talaba AI dars o'tmoqda" : "Talaba AI jonli ustoz"}</span>
       </button>
 
       {status !== "idle" && (
@@ -617,7 +617,7 @@ export function JarvisLiveTeacher({
                 />
               </span>
               <div>
-                <p className="text-xs font-extrabold tracking-wide text-fg">JARVIS</p>
+                <p className="text-xs font-extrabold tracking-wide text-fg">Talaba AI</p>
                 <p className="text-[10px] font-semibold text-neon">{statusText}</p>
               </div>
             </div>
@@ -672,7 +672,7 @@ export function JarvisLiveTeacher({
               <p className="min-h-[32px] line-clamp-3 text-[11px] leading-snug text-fg">
                 <span className="inline-flex items-center gap-1 font-bold text-neon">
                   <Volume2 className="h-3 w-3" />
-                  JARVIS:
+                  Talaba AI:
                 </span>{" "}
                 {jarvisCaption || "Dars boshlanmoqda..."}
               </p>

@@ -173,6 +173,39 @@
   filter: brightness(1.08);
 }
 
+/* AI Murabbiy ovozli o'qish to'lqini va natija kartalari uchun mikro-animatsiyalar */
+@keyframes coach-wave {
+  0%,
+  100% {
+    transform: scaleY(0.32);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.coach-wave-bar {
+  transform-origin: center bottom;
+  animation: coach-wave 1.05s ease-in-out infinite;
+}
+
+@keyframes coach-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.coach-fade-up {
+  animation: coach-fade-up 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* prefers-reduced-motion va "Animatsiyalarni kamaytirish" rejimi */
 @media (prefers-reduced-motion: reduce) {
   *,

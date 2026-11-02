@@ -20,9 +20,10 @@ import {
 import { useUIPreferences } from "@/components/providers/AppProviders";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 import { LEVEL_LABELS } from "@/lib/validations/onboarding";
-import type {
-  DailyTimeBreakdown,
-  MonthOverview,
+import {
+  generatePersonalizedRoadmap,
+  type DailyTimeBreakdown,
+  type MonthOverview,
 } from "@/lib/curriculum/roadmap-generator";
 
 interface RoadmapItemDTO {
@@ -75,6 +76,40 @@ const DAY_NAMES = [
   "Shanba",
 ];
 
+function createGuestRoadmap(dailyMinutes = 60): RoadmapApiResponse {
+  const generated = generatePersonalizedRoadmap({
+    startLevel: "BEGINNER",
+    dailyMinutes,
+    targetSatScore: 1500,
+    targetIeltsScore: 7.5,
+    targetUniversity: "Top 100 Grant Universitetlari",
+  });
+  return {
+    honorific: "Bo'lajak Talaba",
+    message: "12 oylik namunaviy reja. Shaxsiy profilingizni saqlash uchun tizimga kiring.",
+    profile: {
+      targetUniversity: "Top 100 Grant Universitetlari",
+      targetSatScore: 1500,
+      targetIeltsScore: 7.5,
+      xpTotal: 150,
+    },
+    roadmap: {
+      id: "guest-roadmap",
+      dailyMinutes,
+      startLevel: "BEGINNER",
+      targetSummary: `Top 100 Universitetlar • SAT 1500+ (Math 800) / IELTS 7.5+ • Kuniga ${dailyMinutes} daqiqa`,
+      items: generated.items.map((it, idx) => ({
+        ...it,
+        id: `guest-item-${idx}`,
+        isCompleted: idx < 2,
+      })),
+    },
+    months: generated.months,
+    timeBreakdown: generated.timeBreakdown,
+    annualStudyHours: generated.annualStudyHours,
+  };
+}
+
 export default function RoadmapPage() {
   const { reduceMotion } = useUIPreferences();
   const [data, setData] = useState<RoadmapApiResponse | null>(null);
@@ -95,15 +130,20 @@ export default function RoadmapPage() {
     fetch("/api/roadmap")
       .then((res) => (res.ok ? res.json() : null))
       .then((payload: RoadmapApiResponse | null) => {
-        if (payload) {
+        if (payload && payload.roadmap) {
           setData(payload);
           if (payload.roadmap.dailyMinutes > 120) {
             setCustomMinutesInput(String(payload.roadmap.dailyMinutes));
           }
+        } else {
+          setData(createGuestRoadmap(60));
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setData(createGuestRoadmap(60));
+        setLoading(false);
+      });
   }, []);
 
   // SVG 12 oylik chiziq va yillik soat sanalishi animatsiyasi
@@ -174,7 +214,13 @@ export default function RoadmapPage() {
           updated.message ??
             `Reja kunlik ${clamped} daqiqaga muvaffaqiyatli moslashtirildi!`,
         );
+      } else {
+        setData(createGuestRoadmap(clamped));
+        setStatusBanner(`Reja kunlik ${clamped} daqiqaga moslashtirildi!`);
       }
+    } catch {
+      setData(createGuestRoadmap(clamped));
+      setStatusBanner(`Reja kunlik ${clamped} daqiqaga moslashtirildi!`);
     } finally {
       setUpdatingTime(false);
     }
@@ -229,10 +275,19 @@ export default function RoadmapPage() {
       <div className="glass-card p-6 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
-              <Compass className="h-3.5 w-3.5" />
-              <span>12 OYLIK SHAXSIY YO&apos;L XARITASI (48 HAFTA)</span>
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3.5 py-1 text-xs font-bold text-neon">
+                <Compass className="h-3.5 w-3.5" />
+                <span>12 OYLIK SHAXSIY YO&apos;L XARITASI (48 HAFTA)</span>
+              </span>
+              <Link
+                href="/profile?tab=roadmap"
+                className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[11px] font-bold text-amber-300 hover:bg-amber-400/20 transition-all"
+              >
+                <span>Mening Profilimda ochish</span>
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
             <h1 className="mt-2 text-2xl font-extrabold text-fg sm:text-4xl">
               <span className="text-gold">{honorific}</span>, universitet sari 365 kunlik
               aniq rejangiz
@@ -247,7 +302,7 @@ export default function RoadmapPage() {
           <div className="flex flex-wrap items-center gap-3">
             <JarvisVoiceButton
               text={`12 oylik shaxsiy yo'l xaritangiz. Boshlang'ich nuqta: ${startLevelLabel}. Maqsadingiz: ${roadmap.targetSummary}. Yillik reja: ${data.annualStudyHours} sof o'quv soati.`}
-              label="JARVIS ovozida tinglash"
+              label="Talaba AI ovozida tinglash"
             />
             <div className="rounded-xl border border-neon/40 bg-neon-soft px-4 py-2.5 text-center">
               <span

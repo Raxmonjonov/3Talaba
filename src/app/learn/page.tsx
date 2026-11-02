@@ -106,7 +106,7 @@ export default function LearnIndexPage() {
             </h1>
             <p className="text-xs text-slate-300 sm:text-sm max-w-2xl leading-relaxed">
               Har bir dars: <strong>Mavzu → Qisqa nazariya → Hayotiy misollar → Mashqlar → Tahlil</strong>{" "}
-              ketma-ketligida tuzilgan. JARVIS ovozli agenti darsni tushuntirishga yordam beradi.
+              ketma-ketligida tuzilgan. Talaba AI ovozli agenti darsni tushuntirishga yordam beradi.
             </p>
           </div>
 
@@ -156,7 +156,7 @@ export default function LearnIndexPage() {
               Digital SAT (800)
             </span>
             <span className="glass-pill rounded-lg px-2.5 py-1 text-amber-300 font-bold">
-              IELTS Academic (8.5)
+              IELTS Academic (7.5+)
             </span>
             <span className="glass-pill rounded-lg px-2.5 py-1 text-cyan-300 font-bold">
               Algebra &amp; Geometriya
@@ -227,7 +227,7 @@ export default function LearnIndexPage() {
                       <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
                         <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                           <Brain className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>JARVIS audio &amp; {lesson._count.questions} ta mashq</span>
+                          <span>Talaba AI audio &amp; {lesson._count.questions} ta mashq</span>
                         </span>
                         <Link
                           href={`/learn/${lesson.slug}`}
