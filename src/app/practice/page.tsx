@@ -487,11 +487,11 @@ function PracticeCenterContent() {
         /* ====================================================================
             3. REAL EXAM BLUEBOOK SPLIT-SCREEN INTERFEYSI
             ==================================================================== */
-        <div className="grid gap-6 lg:grid-cols-12 items-start">
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-12 items-stretch">
           {/* ==================================================================
               CHAP TOMON: Masala sharti / Passage / Reference / Qoralama
               ================================================================== */}
-          <div className="lg:col-span-7 glass-card p-6 sm:p-7 space-y-5">
+          <div className="lg:col-span-7 glass-card p-6 sm:p-8 space-y-5 flex flex-col justify-between min-h-[500px]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-bold text-emerald-400 uppercase">
@@ -617,7 +617,7 @@ function PracticeCenterContent() {
           {/* ==================================================================
               O'NG TOMON: Variantlar, 50/50 Eliminatsiya va Yechim tahlili
               ================================================================== */}
-          <div className="lg:col-span-5 glass-card p-6 sm:p-7 space-y-6">
+          <div className="lg:col-span-5 glass-card p-6 sm:p-8 space-y-6 flex flex-col justify-between min-h-[500px]">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                 Javob variantlari

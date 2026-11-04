@@ -51,7 +51,7 @@ export function HeroSection() {
           </span>
         </h1>
 
-        <p className="max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+        <p className="max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
           Digital {TARGETS.sat}, {TARGETS.ielts} va chuqur Matematikani bosqichma-bosqich,{" "}
           {BRAND.aiName} murabbiyi bilan birga o&apos;rganing. {BRAND.fullName} — tushuntirishlar
           100% o&apos;zbek tilida.

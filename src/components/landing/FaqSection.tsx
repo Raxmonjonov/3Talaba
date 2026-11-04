@@ -31,7 +31,7 @@ export function FaqSection({ items }: { items: FaqItem[] }) {
         </h2>
       </div>
 
-      <div className="mx-auto max-w-5xl space-y-3">
+      <div className="mx-auto w-full max-w-6xl space-y-3">
         {items.map((item) => {
           const isOpen = openId === item.id;
           const buttonId = `faq-trigger-${item.id}`;

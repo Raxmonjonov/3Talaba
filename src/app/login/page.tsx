@@ -101,7 +101,7 @@ export default function LoginPage() {
     <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-12">
       <div
         ref={cardRef}
-        className="glass-card w-full max-w-md p-8 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)] space-y-6"
+        className="glass-card w-full max-w-lg p-8 sm:p-10 rounded-3xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)] space-y-6"
       >
         <div className="text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3.5 py-1 text-xs font-extrabold text-emerald-300">

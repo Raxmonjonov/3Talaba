@@ -18,7 +18,7 @@ export function LegalPage({
   sections: LegalSection[];
 }) {
   return (
-    <div className="relative z-10 mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="relative z-10 mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-10">
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-400 hover:text-emerald-300"

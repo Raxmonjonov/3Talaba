@@ -309,7 +309,7 @@ export default function OnboardingPage() {
   return (
     <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-4 py-8 sm:px-6">
       {/* Yuqori Qadam Navigatsiyasi (Page to Page) */}
-      <div className="w-full max-w-2xl mb-6">
+      <div className="w-full max-w-4xl mb-6">
         <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-300 mb-2.5">
           <span className="inline-flex items-center gap-1.5 text-emerald-400">
             <Sparkles className="h-4 w-4" />
@@ -334,7 +334,7 @@ export default function OnboardingPage() {
       {/* Shisha Karta (Glassmorphic Step Card) */}
       <div
         ref={stepCardRef}
-        className="w-full max-w-2xl rounded-3xl border border-white/15 bg-slate-900/55 p-6 sm:p-10 backdrop-blur-2xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]"
+        className="w-full max-w-4xl rounded-3xl border border-white/15 bg-slate-900/55 p-6 sm:p-10 backdrop-blur-2xl shadow-[0_24px_60px_-15px_rgba(0,0,0,0.7)]"
       >
         {errorMsg && (
           <div className="mb-6 rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm font-semibold text-red-300">
@@ -359,7 +359,7 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               {UNIVERSITY_OPTIONS.map((opt) => {
                 const isSelected = targetUniversity === opt.title;
                 return (

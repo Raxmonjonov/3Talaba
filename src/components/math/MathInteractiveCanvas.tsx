@@ -113,13 +113,13 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
         {/* ====================================================================
             SVG Chizma maydoni (7 ustun)
             ==================================================================== */}
-        <div className="lg:col-span-7 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#070e17] p-4 relative overflow-hidden shadow-inner">
+        <div className="lg:col-span-7 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#070e17] p-5 sm:p-6 min-h-[280px] lg:min-h-[360px] relative overflow-hidden shadow-inner">
           {/* Koordinata foni / to'ri */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
 
           {/* PARABOLA GRAFIGI */}
           {visualType === "parabola" && (
-            <svg viewBox="0 0 300 220" className="w-full h-56 sm:h-64 text-slate-500">
+            <svg viewBox="0 0 300 220" className="w-full h-64 sm:h-80 lg:h-[340px] text-slate-500">
               {/* O'qlar */}
               <line x1="150" y1="10" x2="150" y2="210" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
               <line x1="10" y1="110" x2="290" y2="110" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
@@ -164,7 +164,7 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
 
           {/* CHIZIQLI TENGLAMA GRAFIGI */}
           {visualType === "linear" && (
-            <svg viewBox="0 0 300 220" className="w-full h-56 sm:h-64 text-slate-500">
+            <svg viewBox="0 0 300 220" className="w-full h-64 sm:h-80 lg:h-[340px] text-slate-500">
               <line x1="150" y1="10" x2="150" y2="210" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
               <line x1="10" y1="110" x2="290" y2="110" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
               <text x="280" y="105" fontSize="11" fill="currentColor">x</text>
@@ -188,7 +188,7 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
 
           {/* PIFAGOR VA UCHBURCHAK */}
           {(visualType === "pythagoras" || visualType === "polygon") && (
-            <svg viewBox="0 0 300 220" className="w-full h-56 sm:h-64">
+            <svg viewBox="0 0 300 220" className="w-full h-64 sm:h-80 lg:h-[340px]">
               {/* Uchburchak: (50, 170) -> (50 + sideB*12, 170) -> (50, 170 - sideA*12) */}
               <polygon
                 points={`50,170 ${50 + sideB * 14},170 50,${170 - sideA * 12}`}
@@ -219,7 +219,7 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
 
           {/* DOIRA VA SEKTOR */}
           {visualType === "circle" && (
-            <svg viewBox="0 0 300 220" className="w-full h-56 sm:h-64">
+            <svg viewBox="0 0 300 220" className="w-full h-64 sm:h-80 lg:h-[340px]">
               <circle cx="150" cy="110" r={radius * 12} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
               {/* Sektor yoyi */}
               <path

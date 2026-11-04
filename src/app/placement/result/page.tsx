@@ -159,9 +159,9 @@ export default function PlacementResultPage() {
 
   if (!result) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <div className="glass-card p-8">
-          <h1 className="text-2xl font-extrabold text-fg">
+      <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center">
+        <div className="glass-card p-8 sm:p-10">
+          <h1 className="text-2xl font-extrabold text-fg sm:text-3xl">
             Hali saralash testi topshirilmagan
           </h1>
           <p className="mt-2 text-sm text-fg-muted">
@@ -184,7 +184,7 @@ export default function PlacementResultPage() {
   const targetIelts = data?.profile?.targetIeltsScore ?? 7.5;
 
   return (
-    <div className="classroom-grid-bg mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="classroom-grid-bg mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-6 lg:px-10">
       {/* Yuqori Natija Banneri */}
       <div className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
@@ -293,7 +293,7 @@ export default function PlacementResultPage() {
             <div className="mt-4 flex items-center justify-center">
               <svg
                 viewBox="0 0 300 285"
-                className="h-64 w-full max-w-[300px] overflow-visible"
+                className="h-72 w-full max-w-[340px] overflow-visible"
                 role="img"
                 aria-label="Fanlar kesimida radar grafigi"
               >

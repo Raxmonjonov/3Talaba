@@ -386,13 +386,13 @@ export default function PlacementTestPage() {
   };
 
   return (
-    <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
+    <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-6 lg:px-10">
       {/* ====================================================================
           1-BOSQICH: MAQSADNI SOZLASH (SETUP SCREEN)
           ==================================================================== */}
       {stage === "SETUP" && (
         <div className="glass-card space-y-8 p-6 sm:p-10">
-          <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3.5 py-1.5 text-xs font-extrabold text-emerald-300">
               <Sparkles className="h-4 w-4" />
               <span>3TALABA CAMPUS • ADAPTIV DIAGNOSTIKA</span>

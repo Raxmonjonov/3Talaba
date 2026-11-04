@@ -136,11 +136,11 @@ export default function MathAcademyPage() {
       {/* ====================================================================
           Asosiy Tuzilma: Chap Panel (15 ta Modul) + O'ng Oyna (6 Bosqich)
           ==================================================================== */}
-      <div className="grid gap-8 lg:grid-cols-12 items-start">
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-12 items-start">
         {/* ====================================================================
-            CHAP PANEL: 15 ta Modul Ro'yxati (4 Ustun)
+            CHAP PANEL: 15 ta Modul Ro'yxati (3-4 Ustun)
             ==================================================================== */}
-        <aside className="lg:col-span-4 glass-card p-4 sm:p-5 space-y-4">
+        <aside className="lg:col-span-4 xl:col-span-3 glass-card p-4 sm:p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
               O&apos;quv Dasturi (15 ta Modul)
@@ -148,7 +148,7 @@ export default function MathAcademyPage() {
             <span className="font-mono text-[11px] text-slate-400">1–3 Ochiq</span>
           </div>
 
-          <div className="space-y-2 max-h-[750px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[780px] overflow-y-auto pr-1">
             {MATH_15_MODULES.map((mod) => {
               const isSelected = mod.id === activeModuleId;
               const isDone = completedModules.includes(mod.id);
@@ -197,9 +197,9 @@ export default function MathAcademyPage() {
         </aside>
 
         {/* ====================================================================
-            O'NG OYNA: 6 Bosqichli Darslik Interfeysi (8 Ustun)
+            O'NG OYNA: 6 Bosqichli Darslik Interfeysi (8-9 Ustun)
             ==================================================================== */}
-        <main className="lg:col-span-8 glass-card p-6 sm:p-8 space-y-6">
+        <main className="lg:col-span-8 xl:col-span-9 glass-card p-6 sm:p-8 lg:p-10 space-y-6">
           {/* Modul Sarlavhasi va Pro Banneri (agar Pro bo'lsa) */}
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
             <div>

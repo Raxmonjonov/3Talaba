@@ -190,7 +190,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1480px] space-y-8 px-4 py-8 sm:px-6 lg:px-10">
       {/* Yuqori Sarlavha va Statistikalar */}
       <div className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">

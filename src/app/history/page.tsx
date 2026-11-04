@@ -331,7 +331,7 @@ export default function LessonHistoryPage() {
           Darslar tarixi yuklanmoqda...
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr]">
           {/* Chap ustun: Darslar ro'yxati */}
           <aside className="glass-card p-4 h-fit max-h-[820px] overflow-y-auto space-y-2.5">
             <div className="flex items-center justify-between px-2 pb-2 border-b border-white/10 text-xs font-bold text-fg-muted">
@@ -406,7 +406,7 @@ export default function LessonHistoryPage() {
                     <h2 className="mt-2 text-xl font-extrabold text-fg sm:text-3xl">
                       {activeLesson.titleUz}
                     </h2>
-                    <p className="mt-1 text-xs sm:text-sm text-fg-muted max-w-2xl">
+                    <p className="mt-1 text-xs sm:text-sm text-fg-muted max-w-4xl">
                       {activeLesson.summaryUz}
                     </p>
                   </div>

@@ -6,7 +6,7 @@ import type { MathVisual } from "@/lib/curriculum/math-deep-dive";
  * Ranglar currentColor va Tailwind tokenlari orqali mavzuga moslashadi.
  */
 export function MathVisualDiagram({ type }: { type: MathVisual }) {
-  const common = "h-56 w-full max-w-md text-fg";
+  const common = "h-64 sm:h-72 w-full max-w-xl text-fg";
   const neon = "var(--accent-neon)";
   const gold = "var(--accent-gold)";
   const grid = "currentColor";

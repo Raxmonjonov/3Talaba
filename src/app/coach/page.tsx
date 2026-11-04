@@ -712,7 +712,7 @@ export default function AICoachPage() {
 
         <div className="grid gap-0 lg:grid-cols-12">
           {/* Chap yon panel: fan, rejim, tezkor mashqlar va xavfsizlik */}
-          <aside className="space-y-4 border-b border-border/70 p-4 sm:p-5 lg:col-span-4 lg:border-b-0 lg:border-r">
+          <aside className="space-y-4 border-b border-border/70 p-4 sm:p-5 lg:col-span-4 xl:col-span-3 lg:border-b-0 lg:border-r">
             <section className="rounded-2xl border border-border bg-surface/70 p-4">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-xs font-extrabold uppercase tracking-wider text-neon">
@@ -891,7 +891,7 @@ export default function AICoachPage() {
           </aside>
 
           {/* Asosiy chat oynasi */}
-          <section className="flex min-h-[720px] flex-col lg:col-span-8">
+          <section className="flex min-h-[720px] flex-col lg:col-span-8 xl:col-span-9">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 px-4 py-3 sm:px-5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-neon/30 bg-neon-soft/20 px-2.5 py-1 text-[11px] font-bold text-neon">
@@ -1044,7 +1044,7 @@ export default function AICoachPage() {
                       )}
 
                       <div
-                        className={`max-w-[94%] rounded-2xl p-3.5 text-xs leading-relaxed sm:max-w-[90%] sm:p-4 sm:text-sm ${
+                        className={`max-w-[94%] rounded-2xl p-3.5 text-xs leading-relaxed sm:max-w-[88%] xl:max-w-[82%] sm:p-4 sm:text-sm ${
                           isUser
                             ? "rounded-br-md bg-neon font-semibold text-canvas shadow-[0_10px_30px_-12px_rgba(16,185,129,0.8)]"
                             : "rounded-bl-md border border-white/10 bg-surface/85 text-fg shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl"

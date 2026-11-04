@@ -247,7 +247,7 @@ export default function RegisterWizardPage() {
     <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-8 sm:px-6">
       <div
         ref={cardRef}
-        className="glass-card w-full max-w-xl p-8 sm:p-12 shadow-[0_24px_70px_-15px_rgba(0,0,0,0.7)]"
+        className="glass-card w-full max-w-2xl p-8 sm:p-12 shadow-[0_24px_70px_-15px_rgba(0,0,0,0.7)]"
       >
         {/* Yuqori bosqich va progress indikatori */}
         <div className="mb-8">
