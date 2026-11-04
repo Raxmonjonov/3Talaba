@@ -386,7 +386,7 @@ export default function PlacementTestPage() {
   };
 
   return (
-    <div className="relative z-10 mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
       {/* ====================================================================
           1-BOSQICH: MAQSADNI SOZLASH (SETUP SCREEN)
           ==================================================================== */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -13,6 +13,7 @@ import {
   Compass,
   LogOut,
   UserCheck,
+  User,
   Sparkles,
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
@@ -34,13 +35,37 @@ export function Navbar() {
   const { data: session } = useSession();
   const { theme, toggleTheme, reduceMotion, toggleReduceMotion } = useUIPreferences();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [localUserName, setLocalUserName] = useState<string | null>(null);
 
-  const navLinks = session?.user ? STUDENT_NAV_LINKS : GUEST_NAV_LINKS;
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("3talaba_user");
+      if (raw) {
+        const parsed = JSON.parse(raw) as { name?: string };
+        if (parsed?.name) setLocalUserName(parsed.name);
+      }
+    } catch {}
+  }, []);
+
+  const activeUserName = session?.user?.name ?? localUserName;
+  const navLinks = activeUserName ? STUDENT_NAV_LINKS : GUEST_NAV_LINKS;
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const handleSignOut = () => {
+    try {
+      localStorage.removeItem("3talaba_user");
+    } catch {}
+    setLocalUserName(null);
+    if (session?.user) {
+      signOut({ callbackUrl: "/" });
+    } else {
+      window.location.href = "/";
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-canvas/75 shadow-lg backdrop-blur-2xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1480px] items-center justify-between px-4 py-3 sm:px-6 lg:px-10">
         {/* Katta, Aniq va Yorqin Brend Logotipi */}
         <Link
           href="/"
@@ -103,7 +128,7 @@ export function Navbar() {
             {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
           </button>
 
-          {session?.user ? (
+          {activeUserName ? (
             <div className="flex items-center gap-2.5">
               <Link
                 href="/profile"
@@ -115,11 +140,11 @@ export function Navbar() {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
                 <UserCheck className="h-4 w-4" />
-                <span>{session.user.name?.split(" ")[0]} (Profil)</span>
+                <span>{activeUserName.split(" ")[0]} (Profil)</span>
               </Link>
               <button
                 type="button"
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={handleSignOut}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-colors hover:border-red-400/40 hover:text-red-400"
                 title="Hisobdan chiqish"
                 aria-label="Hisobdan chiqish"
@@ -129,6 +154,14 @@ export function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2.5">
+              <Link
+                href="/profile"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-bold text-emerald-300 transition-colors hover:bg-emerald-500/20"
+                title="Profil: 12 Oylik Xarita, Dars Tarixi, Savollar Banki"
+              >
+                <User className="h-4 w-4" />
+                <span>Profil</span>
+              </Link>
               <Link
                 href="/login"
                 className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-emerald-400/40 hover:text-emerald-400"
@@ -182,7 +215,7 @@ export function Navbar() {
             ))}
 
             <div className="mt-2 grid grid-cols-2 gap-2.5 border-t border-white/10 pt-2">
-              {session?.user ? (
+              {activeUserName ? (
                 <>
                   <Link
                     href="/profile"
@@ -194,7 +227,7 @@ export function Navbar() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={handleSignOut}
                     className="rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-white"
                   >
                     Chiqish
@@ -202,6 +235,13 @@ export function Navbar() {
                 </>
               ) : (
                 <>
+                  <Link
+                    href="/profile"
+                    onClick={closeMobileMenu}
+                    className="col-span-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 py-2.5 text-center text-sm font-bold text-emerald-300"
+                  >
+                    Profil (Xarita • Tarix • Savollar Banki)
+                  </Link>
                   <Link
                     href="/login"
                     onClick={closeMobileMenu}

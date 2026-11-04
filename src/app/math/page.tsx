@@ -94,7 +94,7 @@ export default function MathAcademyPage() {
   const progressPercent = Math.round((completedModules.length / MATH_15_MODULES.length) * 100);
 
   return (
-    <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-6 lg:px-10 space-y-8">
       {/* ====================================================================
           Yuqori Sarlavha va Umumiy Progress Bar
           ==================================================================== */}
@@ -108,7 +108,7 @@ export default function MathAcademyPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-white">
               6 Bosqichli Chuqur Matematika Metodi
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl">
+            <p className="text-xs sm:text-sm text-slate-300 max-w-3xl">
               15 ta modul orqali maktab algebrasidan tortib Digital SAT 800 darajasigacha bo&apos;lgan
               barcha formulalar isboti va vizual SVG modellari.
             </p>

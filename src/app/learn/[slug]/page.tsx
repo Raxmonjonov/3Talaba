@@ -240,12 +240,12 @@ export default function LessonRunnerPage({
   ];
 
   return (
-    <div className="mx-auto max-w-5xl px-3 py-3 sm:px-6">
-      {/* Tinch sinfxona sarlavhasi (Matrix oqimisiz, diqqatni jamlovchi muhit) */}
-      <div className="glass-card p-4 sm:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+    <div className="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-6 lg:px-10">
+      {/* Kengaytirilgan sinfxona sarlavhasi va asosiy dars maydoni */}
+      <div className="glass-card p-5 sm:p-7 lg:p-9">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-neon">
+            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-bold text-neon">
               <Link href="/learn" className="hover:underline">
                 ← Darslar katalogi
               </Link>
@@ -254,7 +254,7 @@ export default function LessonRunnerPage({
               <span>•</span>
               <span className="text-fg-muted">{lesson.topic.titleUz}</span>
             </div>
-            <h1 className="mt-1 text-lg font-extrabold text-fg sm:text-2xl">
+            <h1 className="mt-2 text-xl font-extrabold text-fg sm:text-3xl">
               {lesson.titleUz}
             </h1>
           </div>
@@ -274,19 +274,18 @@ export default function LessonRunnerPage({
                 }
               }}
             />
-            <span className="flex items-center gap-1 rounded-xl border border-border bg-elevated px-3 py-1.5 font-mono text-xs text-fg-muted">
+            <span className="flex items-center gap-1 rounded-xl border border-border bg-elevated px-3.5 py-2 font-mono text-xs text-fg-muted">
               <Clock className="h-3.5 w-3.5 text-neon" />
               {lesson.estMinutes} daq
             </span>
-            <span className="rounded-xl border border-gold/40 bg-gold-soft px-3 py-1.5 font-mono text-xs font-bold text-gold">
+            <span className="rounded-xl border border-gold/40 bg-gold-soft px-3.5 py-2 font-mono text-xs font-bold text-gold">
               +{lesson.xpReward} XP
             </span>
           </div>
         </div>
 
-        
         {/* 4 bosqichli dars navigatsiyasi: Nazariya -> Misollar -> Mashqlar -> Tahlil */}
-        <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
           {phasesList.map((item) => {
             const active = phase === item.id;
             return (
@@ -295,7 +294,7 @@ export default function LessonRunnerPage({
                 type="button"
                 data-phase-tab={item.id}
                 onClick={() => setPhase(item.id)}
-                className={`rounded-xl border px-3 py-2.5 text-left text-xs font-bold transition-all ${
+                className={`rounded-xl border px-4 py-3 text-left text-xs sm:text-sm font-bold transition-all ${
                   active
                     ? "border-neon bg-neon-soft text-neon shadow-neon"
                     : "border-border bg-surface text-fg-muted hover:text-fg"
@@ -311,10 +310,10 @@ export default function LessonRunnerPage({
         </div>
 
         {/* ====================================================================
-            1-BOSQICH: INTERAKTIV AI MURABBIY VA METOD KARTALARI (Xom matnsiz)
+            1-BOSQICH: INTERAKTIV TALABA AI VA METOD KARTALARI
             ==================================================================== */}
         {phase === "THEORY" && (
-          <div ref={stageCardRef} className="mt-3.5">
+          <div ref={stageCardRef} className="mt-6">
             <TheoryMethodCards
               theoryMarkdown={lesson.theoryMarkdown}
               lessonTitle={lesson.titleUz}
@@ -331,46 +330,50 @@ export default function LessonRunnerPage({
         {phase === "EXAMPLES" && (
           <div
             ref={stageCardRef}
-            className="mt-6 space-y-5 rounded-2xl border border-border bg-canvas/90 p-6 sm:p-8"
+            className="mt-6 space-y-6 rounded-2xl border border-border bg-canvas/90 p-6 sm:p-8"
           >
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold">
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-gold">
               <Lightbulb className="h-4 w-4" />
               <span>Bosqichma-Bosqich Yechilgan Namunaviy Misollar</span>
             </div>
 
-            {lesson.examples.map((ex, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl border border-border bg-surface p-5 space-y-3"
-              >
-                <div className="flex items-center justify-between">
-       <h3 className="text-base font-extrabold text-emerald-400">{ex.title}</h3>
-       <JarvisVoiceButton text={ex.problem + ". " + ex.stepByStepSolution.join(". ") + ". Xulosa: " + ex.takeaway} label="Misolni tinglash" />
-     </div>
-                <p className="rounded-xl border border-border bg-canvas p-3.5 text-sm font-semibold text-fg">
-                  📌 Masala: {ex.problem}
-                </p>
-                <div className="space-y-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-fg-muted">
-                    Qadamma-qadam yechim:
-                  </span>
-                  {ex.stepByStepSolution.map((stepText, sIdx) => (
-                    <div
-                      key={sIdx}
-                      className="flex items-start gap-2.5 text-xs leading-relaxed text-fg sm:text-sm"
-                    >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-neon-soft font-mono text-[11px] font-bold text-neon">
-                        {sIdx + 1}
-                      </span>
-                      <span>{stepText}</span>
+            <div className={`grid gap-5 ${lesson.examples.length >= 2 ? "lg:grid-cols-2" : "grid-cols-1"}`}>
+              {lesson.examples.map((ex, idx) => (
+                <div
+                  key={idx}
+                  className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 sm:p-6 space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-base sm:text-lg font-extrabold text-emerald-400">{ex.title}</h3>
+                      <JarvisVoiceButton text={ex.problem + ". " + ex.stepByStepSolution.join(". ") + ". Xulosa: " + ex.takeaway} label="Misolni tinglash" />
                     </div>
-                  ))}
+                    <p className="rounded-xl border border-border bg-canvas p-4 text-sm font-semibold text-fg">
+                      📌 Masala: {ex.problem}
+                    </p>
+                    <div className="space-y-2.5">
+                      <span className="text-xs font-bold uppercase tracking-wider text-fg-muted">
+                        Qadamma-qadam yechim:
+                      </span>
+                      {ex.stepByStepSolution.map((stepText, sIdx) => (
+                        <div
+                          key={sIdx}
+                          className="flex items-start gap-2.5 text-xs leading-relaxed text-fg sm:text-sm"
+                        >
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-neon-soft font-mono text-[11px] font-bold text-neon">
+                            {sIdx + 1}
+                          </span>
+                          <span>{stepText}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-gold/40 bg-gold-soft/20 px-4 py-3 text-xs sm:text-sm font-semibold text-gold">
+                    🔑 Xulosa: {ex.takeaway}
+                  </div>
                 </div>
-                <div className="rounded-xl border border-gold/40 bg-gold-soft/20 px-3.5 py-2.5 text-xs font-semibold text-gold">
-                  🔑 Xulosa: {ex.takeaway}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
 
             <div className="flex items-center justify-between border-t border-border pt-5">
               <button
@@ -442,7 +445,7 @@ export default function LessonRunnerPage({
               {currentQuestion.promptUz}
             </h2>
 
-            <div className="mt-5 grid gap-3">
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
               {currentQuestion.options.map((opt) => {
                 const isSelected = selectedOpt === opt.id;
                 const isRight = opt.id === currentQuestion.correctAnswer;

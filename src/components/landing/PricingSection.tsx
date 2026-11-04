@@ -70,7 +70,7 @@ export function PricingSection() {
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+      <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2">
         {PLANS.map((plan) => (
           <article
             key={plan.id}

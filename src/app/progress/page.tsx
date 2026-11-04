@@ -136,7 +136,7 @@ export default function ProgressDashboardPage() {
   const unlockedBadgesCount = badges.filter((b) => b.unlocked).length;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1480px] space-y-8 px-4 py-8 sm:px-6 lg:px-10">
       {/* ====================================================================
           1. GAMIFIKATSIYA HERO PANELI (XP, DARAJA, STREAK, NISHONLAR)
           ==================================================================== */}

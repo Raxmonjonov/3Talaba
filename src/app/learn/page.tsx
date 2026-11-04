@@ -92,7 +92,7 @@ export default function LearnIndexPage() {
   const completedCount = completedLessonIds.length;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-6 lg:px-10 space-y-8">
       {/* Yuqori sokin sinfxona peshlavhasi */}
       <div className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6">
@@ -104,7 +104,7 @@ export default function LearnIndexPage() {
             <h1 className="text-2xl font-black text-white sm:text-4xl tracking-tight">
               <span className="text-amber-300">{honorific}</span>, bugungi darslar rejasi
             </h1>
-            <p className="text-xs text-slate-300 sm:text-sm max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-300 sm:text-sm max-w-4xl leading-relaxed">
               Har bir dars: <strong>Mavzu → Qisqa nazariya → Hayotiy misollar → Mashqlar → Tahlil</strong>{" "}
               ketma-ketligida tuzilgan. Talaba AI ovozli agenti darsni tushuntirishga yordam beradi.
             </p>
@@ -164,7 +164,7 @@ export default function LearnIndexPage() {
           </div>
 
           <Link
-            href="/practice"
+            href="/profile?tab=questions"
             className="text-xs font-bold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5"
           >
             <Layers className="h-3.5 w-3.5" />
@@ -192,7 +192,7 @@ export default function LearnIndexPage() {
               </Link>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {subject.topics.map((topic) =>
                 topic.lessons.map((lesson) => {
                   const isDone = completedLessonIds.includes(lesson.id);
@@ -272,10 +272,10 @@ export default function LearnIndexPage() {
         </div>
 
         <Link
-          href="/roadmap"
+          href="/profile?tab=roadmap"
           className="btn-neon inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold"
         >
-          <span>Xaritaga o&apos;tish</span>
+          <span>Profil → Xaritaga o&apos;tish</span>
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>

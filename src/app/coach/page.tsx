@@ -645,7 +645,7 @@ export default function AICoachPage() {
       : currentSubject.practicePrompts;
 
   return (
-    <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-6 lg:px-10">
       <div className="glass-card overflow-hidden">
         {/* Yuqori sarlavha va umumiy ko'rsatkichlar */}
         <div className="border-b border-border/70 p-5 sm:p-7">

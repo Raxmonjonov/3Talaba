@@ -34,7 +34,7 @@ const faqJsonLd = {
 
 export default function HomePage() {
   return (
-    <div className="relative z-10 mx-auto max-w-7xl space-y-16 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="relative z-10 mx-auto w-full max-w-[1480px] space-y-16 px-4 py-8 sm:px-6 lg:px-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
