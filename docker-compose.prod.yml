@@ -22,7 +22,7 @@ services:
         condition: service_healthy
     networks:
       - edge_net
-      - internal_net
+      - app_net
     ulimits:
       nofile:
         soft: 65535
@@ -56,13 +56,14 @@ services:
       db:
         condition: service_healthy
     networks:
-      - internal_net
+      - app_net
+      - db_net
 
   db:
     image: postgres:16-alpine
     container_name: 3talaba_postgres
     restart: always
-    # DIQQAT: `ports` yo'q! Ma'lumotlar bazasi (5432) tashqi tarmoqdan to'liq uzilgan!
+    # DIQQAT: `ports` yo'q! Ma'lumotlar bazasi (5432) tashqi internetdan 100% uzilgan (`db_net` internal: true)!
     expose:
       - "5432"
     environment:
@@ -83,12 +84,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - internal_net
+      - db_net
 
 networks:
   edge_net:
     driver: bridge
-  internal_net:
+  app_net:
+    driver: bridge
+  db_net:
     driver: bridge
     internal: true
 

@@ -51,17 +51,22 @@ export async function middleware(req: NextRequest) {
   }
 
   // 2. Production muhitda faqat shifrlangan HTTPS (443/tcp) trafigiga ruxsat berish
-  const proto = req.headers.get("x-forwarded-proto");
-  const host = req.headers.get("host") || "";
+  const proto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const rawHost =
+    req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+  const primaryHost = rawHost.split(",")[0]?.trim() || "";
   const isLocal =
-    host.startsWith("localhost") ||
-    host.startsWith("127.0.0.1") ||
-    host.endsWith(".local");
+    !primaryHost ||
+    primaryHost.startsWith("localhost") ||
+    primaryHost.startsWith("127.0.0.1") ||
+    primaryHost.endsWith(".local");
 
   if (process.env.NODE_ENV === "production" && !isLocal && proto === "http") {
-    const httpsUrl = req.nextUrl.clone();
-    httpsUrl.protocol = "https:";
-    httpsUrl.port = "";
+    const cleanHost = primaryHost.replace(/:\d+$/, "");
+    const httpsUrl = new URL(
+      `${req.nextUrl.pathname}${req.nextUrl.search}`,
+      `https://${cleanHost}`,
+    );
     return applySecurityHeaders(NextResponse.redirect(httpsUrl, 308));
   }
 

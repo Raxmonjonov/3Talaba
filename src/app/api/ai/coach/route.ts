@@ -133,7 +133,11 @@ export async function POST(request: Request) {
     parsedLessonSlug = lessonSlug;
 
     const session = await getServerSession(authOptions);
-    const rateKey = session?.user?.id ?? "guest-coach";
+    const clientIp =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "local";
+    const rateKey = session?.user?.id ?? `guest-coach:${clientIp}`;
     const rateCheck = checkAIRateLimit(rateKey);
     if (!rateCheck.allowed) {
       return NextResponse.json(

@@ -1,5 +1,5 @@
 /**
- * 3Talab — Algebra va Geometriya: Chuqur O'rganish Metodi (6 bosqich)
+ * 3Talaba Campus — Algebra va Geometriya: Chuqur O'rganish Metodi (6 bosqich)
  *
  * Har bir mavzu bir xil 6 bosqichli metod asosida tuzilgan:
  * 1. TUSHUN   — intuitsiya: mavzu hayotda nimani anglatadi

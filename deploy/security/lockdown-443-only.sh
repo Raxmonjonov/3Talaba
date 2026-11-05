@@ -68,7 +68,7 @@ if command -v ufw >/dev/null 2>&1; then
   ufw --force enable
   ufw status verbose
 else
-  # UFW yo'q tizimlar uchun to'g'ridan-to'g'ri iptables qoidalari
+  # UFW yo'q tizimlar uchun to'g'ridan-to'g'ri iptables + ip6tables qoidalari
   iptables -F
   iptables -X
   iptables -P INPUT DROP
@@ -86,7 +86,20 @@ else
     iptables -A INPUT -p tcp -s "${ADMIN_SSH_IP}" --dport 22 -m conntrack --ctstate NEW -j ACCEPT
   fi
 
-  echo "[OK] iptables orqali faqat 443/tcp ochildi, qolgan barcha portlar yopildi."
+  # IPv6 uchun ham xuddi shunday qat'iy yopish (faqat 443/tcp ochiq)
+  if command -v ip6tables >/dev/null 2>&1; then
+    ip6tables -F
+    ip6tables -X
+    ip6tables -P INPUT DROP
+    ip6tables -P FORWARD DROP
+    ip6tables -P OUTPUT ACCEPT
+    ip6tables -A INPUT -i lo -j ACCEPT
+    ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+    ip6tables -A INPUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT
+  fi
+
+  echo "[OK] iptables va ip6tables orqali faqat 443/tcp ochildi, qolgan barcha portlar yopildi."
 fi
 
 echo "==> [3/3] Nginx kesh katalogi tayyorlanmoqda..."

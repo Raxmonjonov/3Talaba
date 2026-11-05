@@ -19,7 +19,8 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
 RUN npx prisma generate --schema=prisma/schema.postgresql.prisma
-RUN npm run build
+# `npm run build` standart SQLite sxemasini qayta generatsiya qilib yubormasligi uchun to'g'ridan-to'g'ri `next build` chaqiriladi:
+RUN npx next build
 
 # 3-Bosqich: Minimal Production Runtime (Non-root foydalanuvchi bilan)
 FROM base AS runner
