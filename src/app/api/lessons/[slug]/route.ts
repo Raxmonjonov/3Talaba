@@ -331,6 +331,40 @@ export async function POST(
       detailedResults,
     });
   } catch {
+    const fallback = buildSeedFallbackLesson(slug);
+    if (fallback) {
+      let correctCount = 0;
+      const detailedResults = parsed.data.answers.map((ans, idx) => {
+        const q =
+          fallback.lesson.questions.find((item) => item.id === ans.questionId) ??
+          fallback.lesson.questions[idx];
+        const given = ans.givenAnswer.toUpperCase();
+        const isCorrect = q ? q.correctAnswer === given : false;
+        if (isCorrect) correctCount += 1;
+        return {
+          questionId: q?.id ?? ans.questionId,
+          promptUz: q?.promptUz ?? "",
+          givenAnswer: given,
+          correctAnswer: q?.correctAnswer ?? "A",
+          isCorrect,
+          explanationUz: q?.explanationUz ?? "",
+        };
+      });
+      const totalQuestions = Math.max(1, detailedResults.length);
+      const accuracyPct = Math.round((correctCount / totalQuestions) * 100);
+      const xpEarned = fallback.lesson.xpReward + correctCount * 15;
+      return NextResponse.json({
+        correctCount,
+        totalQuestions,
+        accuracyPct,
+        xpEarned,
+        newXpTotal: 250 + xpEarned,
+        newLevel: 2,
+        unlockedBadges: [],
+        detailedResults,
+      });
+    }
+
     return NextResponse.json({
       correctCount: parsed.data.answers.length,
       totalQuestions: parsed.data.answers.length,

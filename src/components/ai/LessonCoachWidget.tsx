@@ -55,7 +55,15 @@ export function LessonCoachWidget({
             setHonorificUsed(data.assistantMessage.metadata.honorificUsed);
           }
         }
+      } else {
+        setReply(
+          `${honorific}, ushbu "${lessonTitle}" mavzusida avvalo asosiy formulani qo'llab, noma'lumlarni bir tomonga yig'ishdan boshlang. Qaysi qadamda ikkilanyapsiz?`
+        );
       }
+    } catch {
+      setReply(
+        `${honorific}, ushbu "${lessonTitle}" mavzusida masalani bosqichma-bosqich soddalashtirib ishlang.`
+      );
     } finally {
       setLoading(false);
     }
