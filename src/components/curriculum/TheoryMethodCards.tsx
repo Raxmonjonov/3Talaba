@@ -243,7 +243,7 @@ export function TheoryMethodCards({
                   {sec.formulas.map((f, fIdx) => (
                     <div
                       key={fIdx}
-                      className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2.5 text-center shadow-[0_0_12px_rgba(16,185,129,0.12)]"
+                      className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2.5 text-center shadow-[0_0_12px_rgba(198,244,50,0.12)]"
                     >
                       <span className="font-mono text-xs sm:text-sm font-black text-emerald-300">
                         {f}

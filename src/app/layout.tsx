@@ -59,7 +59,7 @@ export default function RootLayout({
       className={`${jakarta.variable} ${jetbrainsMono.variable} dark`}
       suppressHydrationWarning
     >
-      <body className="relative min-h-screen font-sans text-fg antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
+      <body className="relative min-h-screen bg-canvas font-sans text-fg antialiased selection:bg-[#c6f432] selection:text-[#0b0b0c]">
         <AppProviders>
           {/* O'quvchi tizimga kirganda yoki ro'yxatdan o'tganda avtomatik ravishda nurli sinfxona tusiga kiruvchi fon */}
           <DynamicAmbientBackground />

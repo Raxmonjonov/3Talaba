@@ -418,8 +418,8 @@ export function LandingExperience() {
                   >
                     <defs>
                       <linearGradient id="trajectoryGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#10B981" />
-                        <stop offset="60%" stopColor="#00E676" />
+                        <stop offset="0%" stopColor="#c6f432" />
+                        <stop offset="60%" stopColor="#d6f766" />
                         <stop offset="100%" stopColor="#F59E0B" />
                       </linearGradient>
                     </defs>
@@ -428,7 +428,7 @@ export function LandingExperience() {
                     <polygon
                       ref={morphPolygonRef}
                       points={MORPH_SHAPES[0]}
-                      fill="rgba(16, 185, 129, 0.07)"
+                      fill="rgba(198,244,50,0.07)"
                       stroke="rgba(245, 158, 11, 0.22)"
                       strokeWidth="1.2"
                     />
@@ -450,13 +450,13 @@ export function LandingExperience() {
 
                     {/* Bosqich nuqtalari */}
                     <g>
-                      <circle cx="28" cy="175" r="6" fill="#10B981" />
+                      <circle cx="28" cy="175" r="6" fill="#c6f432" />
                       <text x="18" y="198" fill="currentColor" className="text-[10px] font-mono opacity-80">
                         1-oy: Noldan
                       </text>
                     </g>
                     <g>
-                      <circle cx="190" cy="108" r="6" fill="#00E676" />
+                      <circle cx="190" cy="108" r="6" fill="#d6f766" />
                       <text x="152" y="132" fill="currentColor" className="text-[10px] font-mono opacity-85">
                         6-oy: B2 / 1320
                       </text>

@@ -69,13 +69,13 @@ export function Footer() {
 
           {/* O'quv asboblari */}
           <nav aria-label="O'quv asboblari">
-            <h4 className="mb-3 text-xs font-extrabold uppercase tracking-wider text-amber-300">
+            <h4 className="mb-3 text-xs font-extrabold uppercase tracking-wider text-white">
               O&apos;quv Asboblari
             </h4>
             <ul className="space-y-2 text-xs font-medium text-slate-300">
               {TOOL_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="transition-colors hover:text-amber-300">
+                  <Link href={link.href} className="transition-colors hover:text-[#c6f432]">
                     {link.label}
                   </Link>
                 </li>

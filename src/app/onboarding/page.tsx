@@ -325,7 +325,7 @@ export default function OnboardingPage() {
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-400 transition-all duration-400"
+            className="h-full rounded-full bg-gradient-to-r from-[#c6f432] via-[#dcfa72] to-[#ffffff] transition-all duration-400"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
@@ -373,7 +373,7 @@ export default function OnboardingPage() {
                     }}
                     className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left transition-all ${
                       isSelected
-                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/40"
+                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(198,244,50,0.25)] ring-1 ring-emerald-400/40"
                         : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
                     }`}
                   >
@@ -553,7 +553,7 @@ export default function OnboardingPage() {
                     onClick={() => setSelfAssessedLevel(lvl.id)}
                     className={`flex w-full items-start justify-between rounded-2xl border p-4 text-left transition-all ${
                       isSelected
-                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/40"
+                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(198,244,50,0.25)] ring-1 ring-emerald-400/40"
                         : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
                     }`}
                   >
@@ -616,7 +616,7 @@ export default function OnboardingPage() {
                     onClick={() => toggleSubject(sub.id)}
                     className={`flex w-full items-start justify-between rounded-2xl border p-4 text-left transition-all ${
                       isSelected
-                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/40"
+                        ? "border-emerald-400/80 bg-emerald-500/15 shadow-[0_0_20px_rgba(198,244,50,0.25)] ring-1 ring-emerald-400/40"
                         : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
                     }`}
                   >

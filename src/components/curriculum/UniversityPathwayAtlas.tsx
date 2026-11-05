@@ -318,7 +318,7 @@ export function UniversityPathwayAtlas({ compact = false }: { compact?: boolean 
       )}
 
       {/* 2-QISM: Xalqaro Universitet va Grant Yo'nalishlari Atlasi */}
-      <div className="rounded-2xl border border-white/10 bg-[#07111d]/90 p-5 sm:p-7 space-y-6">
+      <div className="rounded-2xl border border-white/10 bg-[#0b0b0c]/90 p-5 sm:p-7 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-amber-300">
@@ -341,7 +341,7 @@ export function UniversityPathwayAtlas({ compact = false }: { compact?: boolean 
                 onClick={() => setSelectedTrackId(track.id)}
                 className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all ${
                   active
-                    ? "border-emerald-400 bg-emerald-500/20 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                    ? "border-emerald-400 bg-emerald-500/20 text-white shadow-[0_0_20px_rgba(198,244,50,0.25)]"
                     : "border-white/10 bg-white/5 text-slate-300 hover:border-white/25 hover:text-white"
                 }`}
               >

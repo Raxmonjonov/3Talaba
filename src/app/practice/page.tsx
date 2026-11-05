@@ -405,7 +405,7 @@ function PracticeCenterContent() {
               value={writingEssay}
               onChange={(e) => setWritingEssay(e.target.value)}
               placeholder="Inshoni bu yerga yozing (masalan: While some argue that tertiary education is a fundamental public right, others contend that personal tuition fees foster student commitment...)"
-              className="w-full rounded-2xl border border-white/10 bg-[#070e17] p-4 text-sm text-slate-200 placeholder:text-slate-600 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              className="w-full rounded-2xl border border-white/10 bg-[#0b0b0c] p-4 text-sm text-slate-200 placeholder:text-slate-600 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -533,7 +533,7 @@ function PracticeCenterContent() {
 
             {/* SAT Math Reference Sheet Modali */}
             {showReferenceSheet && activeSubject === "sat-math" && (
-              <div className="rounded-2xl border border-emerald-400/40 bg-[#07131e] p-5 space-y-3">
+              <div className="rounded-2xl border border-emerald-400/40 bg-[#0b0b0c] p-5 space-y-3">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-xs font-extrabold uppercase text-emerald-400">
                     SAT Math Reference Sheet (Rasmiy formulalar)
@@ -555,7 +555,7 @@ function PracticeCenterContent() {
 
             {/* Qoralama / Scratchpad maydoni */}
             {showScratchpad && (
-              <div className="rounded-2xl border border-amber-400/40 bg-[#0d1624] p-4 space-y-2">
+              <div className="rounded-2xl border border-amber-400/40 bg-[#0b0b0c] p-4 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold text-amber-300">
                   <span>Qoralama (Scratchpad / Hisob-kitob)</span>
                   <button type="button" onClick={() => setShowScratchpad(false)} className="text-slate-400 hover:text-white">
@@ -574,7 +574,7 @@ function PracticeCenterContent() {
 
             {/* Agar Passage bo'lsa (SAT RW yoki IELTS) */}
             {currentQuestion?.passage && (
-              <div className="rounded-2xl border border-white/10 bg-[#070e17] p-5 text-sm leading-relaxed text-slate-200 font-serif space-y-3">
+              <div className="rounded-2xl border border-white/10 bg-[#0b0b0c] p-5 text-sm leading-relaxed text-slate-200 font-serif space-y-3">
                 <span className="text-[11px] font-sans uppercase font-bold text-slate-400 block tracking-wider">
                   Akademik Matn (Passage)
                 </span>
@@ -656,7 +656,7 @@ function PracticeCenterContent() {
                     cardClass = "border-white/5 bg-white/[0.02] text-slate-500 opacity-60";
                   }
                 } else if (isSelected) {
-                  cardClass = "border-emerald-400 bg-emerald-500/20 text-white font-bold shadow-[0_0_20px_rgba(16,185,129,0.25)]";
+                  cardClass = "border-emerald-400 bg-emerald-500/20 text-white font-bold shadow-[0_0_20px_rgba(198,244,50,0.25)]";
                 }
 
                 return (

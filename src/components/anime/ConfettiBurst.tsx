@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { animate } from "animejs";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 
-const COLORS = ["#10B981", "#00E676", "#F59E0B", "#FBBF24", "#38BDF8", "#A855F7"];
+const COLORS = ["#c6f432", "#d6f766", "#F59E0B", "#FBBF24", "#38BDF8", "#A855F7"];
 
 export function ConfettiBurst({ trigger }: { trigger: boolean }) {
   const containerRef = useRef<HTMLDivElement | null>(null);

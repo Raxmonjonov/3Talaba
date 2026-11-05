@@ -356,7 +356,7 @@ function ProfileContent() {
       <div className="glass-card relative overflow-hidden p-6 sm:p-8">
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4 sm:gap-6">
-            <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-3xl border-2 border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 via-slate-900 to-amber-500/20 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+            <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-3xl border-2 border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 via-slate-900 to-amber-500/20 shadow-[0_0_30px_rgba(198,244,50,0.3)]">
               <span className="font-mono text-2xl sm:text-3xl font-black text-amber-300">
                 {session?.user?.name ? session.user.name[0].toUpperCase() : "3T"}
               </span>
@@ -456,7 +456,7 @@ function ProfileContent() {
           onClick={() => switchTab("roadmap")}
           className={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition-all whitespace-nowrap ${
             activeTab === "roadmap"
-              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.35)]"
+              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(198,244,50,0.35)]"
               : "border border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:text-white"
           }`}
         >
@@ -469,7 +469,7 @@ function ProfileContent() {
           onClick={() => switchTab("history")}
           className={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition-all whitespace-nowrap ${
             activeTab === "history"
-              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.35)]"
+              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(198,244,50,0.35)]"
               : "border border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:text-white"
           }`}
         >
@@ -482,7 +482,7 @@ function ProfileContent() {
           onClick={() => switchTab("questions")}
           className={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition-all whitespace-nowrap ${
             activeTab === "questions"
-              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.35)]"
+              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(198,244,50,0.35)]"
               : "border border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:text-white"
           }`}
         >
@@ -495,7 +495,7 @@ function ProfileContent() {
           onClick={() => switchTab("progress")}
           className={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition-all whitespace-nowrap ${
             activeTab === "progress"
-              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(16,185,129,0.35)]"
+              ? "bg-emerald-500 text-slate-950 shadow-[0_0_24px_rgba(198,244,50,0.35)]"
               : "border border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:text-white"
           }`}
         >
@@ -558,7 +558,7 @@ function ProfileContent() {
                     onClick={() => handleUpdateDailyMinutes(preset.m)}
                     className={`rounded-xl border p-3 text-left transition-all ${
                       dailyMinutes === preset.m
-                        ? "border-emerald-400 bg-emerald-500/20 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                        ? "border-emerald-400 bg-emerald-500/20 text-white shadow-[0_0_20px_rgba(198,244,50,0.25)]"
                         : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40"
                     }`}
                   >
@@ -582,7 +582,7 @@ function ProfileContent() {
                     onClick={() => setSelectedMonth(monthNum)}
                     className={`rounded-xl border py-2.5 text-center transition-all ${
                       selectedMonth === monthNum
-                        ? "border-emerald-400 bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                        ? "border-emerald-400 bg-emerald-500 text-slate-950 font-black shadow-[0_0_15px_rgba(198,244,50,0.4)]"
                         : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:text-white font-bold"
                     } text-xs`}
                   >

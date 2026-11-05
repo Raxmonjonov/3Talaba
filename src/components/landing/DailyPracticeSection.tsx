@@ -124,7 +124,7 @@ export function DailyPracticeSection() {
             if (answered) {
               if (isCorrect) {
                 optionClass =
-                  "border-emerald-400 bg-emerald-500/20 text-emerald-300 font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)]";
+                  "border-emerald-400 bg-emerald-500/20 text-emerald-300 font-bold shadow-[0_0_20px_rgba(198,244,50,0.3)]";
               } else if (isChosen) {
                 optionClass = "border-red-400 bg-red-500/20 text-red-300";
               } else {

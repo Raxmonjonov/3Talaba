@@ -347,8 +347,8 @@ export default function PlacementResultPage() {
                 <polygon
                   ref={radarPolygonRef}
                   points="150,145 150,145 150,145 150,145 150,145"
-                  fill="rgba(16, 185, 129, 0.28)"
-                  stroke="#00E676"
+                  fill="rgba(198,244,50,0.28)"
+                  stroke="#d6f766"
                   strokeWidth="2.5"
                 />
               </svg>

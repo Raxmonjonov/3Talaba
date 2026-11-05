@@ -257,7 +257,7 @@ export default function RegisterWizardPage() {
 
           <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-[#c6f432] via-[#dcfa72] to-[#ffffff] transition-all duration-500 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -340,7 +340,7 @@ export default function RegisterWizardPage() {
                 }}
                 className={`group flex flex-col items-center justify-center rounded-3xl border p-6 text-center transition-all ${
                   gender === "MALE"
-                    ? "border-emerald-400 bg-emerald-500/20 shadow-[0_0_25px_rgba(16,185,129,0.3)]"
+                    ? "border-emerald-400 bg-emerald-500/20 shadow-[0_0_25px_rgba(198,244,50,0.3)]"
                     : "border-white/10 bg-white/5 hover:border-emerald-400/40 hover:bg-white/10"
                 }`}
               >
@@ -398,7 +398,7 @@ export default function RegisterWizardPage() {
             </div>
 
             <div className="flex flex-col items-center justify-center py-4">
-              <div className="font-mono text-6xl font-black text-emerald-400 drop-shadow-[0_0_25px_rgba(16,185,129,0.5)]">
+              <div className="font-mono text-6xl font-black text-emerald-400 drop-shadow-[0_0_25px_rgba(198,244,50,0.5)]">
                 {age} <span className="text-2xl text-slate-300">yosh</span>
               </div>
 
@@ -479,7 +479,7 @@ export default function RegisterWizardPage() {
                   }}
                   className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
                     grade === g
-                      ? "border-emerald-400 bg-emerald-500/20 text-white font-bold shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                      ? "border-emerald-400 bg-emerald-500/20 text-white font-bold shadow-[0_0_20px_rgba(198,244,50,0.25)]"
                       : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:bg-white/10"
                   }`}
                 >
@@ -530,7 +530,7 @@ export default function RegisterWizardPage() {
                   }}
                   className={`flex items-center gap-2 rounded-xl border p-3 text-left transition-all ${
                     region === r
-                      ? "border-emerald-400 bg-emerald-500/20 text-emerald-300 font-bold shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                      ? "border-emerald-400 bg-emerald-500/20 text-emerald-300 font-bold shadow-[0_0_15px_rgba(198,244,50,0.25)]"
                       : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:bg-white/10"
                   }`}
                 >
@@ -704,7 +704,7 @@ export default function RegisterWizardPage() {
                 let btnStyle = "border-white/15 bg-white/5 text-white hover:border-emerald-400/50 hover:bg-white/10";
                 if (isSelected) {
                   btnStyle = mathFeedback
-                    ? "border-emerald-400 bg-emerald-500/25 text-emerald-300 font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                    ? "border-emerald-400 bg-emerald-500/25 text-emerald-300 font-bold shadow-[0_0_20px_rgba(198,244,50,0.3)]"
                     : "border-red-400 bg-red-500/25 text-red-300 font-bold";
                 }
 
@@ -772,7 +772,7 @@ export default function RegisterWizardPage() {
                 let btnStyle = "border-white/15 bg-white/5 text-white hover:border-amber-400/50 hover:bg-white/10";
                 if (isSelected) {
                   btnStyle = rwFeedback
-                    ? "border-emerald-400 bg-emerald-500/25 text-emerald-300 font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                    ? "border-emerald-400 bg-emerald-500/25 text-emerald-300 font-bold shadow-[0_0_20px_rgba(198,244,50,0.3)]"
                     : "border-red-400 bg-red-500/25 text-red-300 font-bold";
                 }
 
@@ -811,7 +811,7 @@ export default function RegisterWizardPage() {
             ==================================================================== */}
         {page === 10 && (
           <div className="text-center space-y-6 py-4">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 shadow-[0_0_35px_rgba(16,185,129,0.4)]">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400 shadow-[0_0_35px_rgba(198,244,50,0.4)]">
               <CheckCircle2 className="h-10 w-10" />
             </div>
 

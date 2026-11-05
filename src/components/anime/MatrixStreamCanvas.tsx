@@ -90,7 +90,7 @@ export function MatrixStreamCanvas() {
         if (theme === "dark") {
           ctx.fillStyle = isGoldAccent
             ? "rgba(245, 158, 11, 0.20)"
-            : "rgba(16, 185, 129, 0.16)";
+            : "rgba(198,244,50,0.16)";
         } else {
           ctx.fillStyle = isGoldAccent
             ? "rgba(217, 119, 6, 0.16)"

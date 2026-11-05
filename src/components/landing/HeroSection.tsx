@@ -46,7 +46,7 @@ export function HeroSection() {
           className="text-3xl font-black leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl"
         >
           Top Universitetlar Sari{" "}
-          <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#c6f432] via-[#dcfa72] to-[#ffffff] bg-clip-text text-transparent">
             Tizimli Tayyorgarlik
           </span>
         </h1>

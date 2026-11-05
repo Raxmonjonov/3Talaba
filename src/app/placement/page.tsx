@@ -431,7 +431,7 @@ export default function PlacementTestPage() {
                       onClick={() => setCurrentLevel(item.id)}
                       className={`relative flex flex-col justify-between rounded-2xl border p-4 text-left transition-all ${
                         isSelected
-                          ? "border-emerald-400 bg-emerald-500/15 text-white shadow-[0_0_24px_rgba(16,185,129,0.3)]"
+                          ? "border-emerald-400 bg-emerald-500/15 text-white shadow-[0_0_24px_rgba(198,244,50,0.3)]"
                           : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:bg-white/10"
                       }`}
                     >
@@ -554,7 +554,7 @@ export default function PlacementTestPage() {
           {/* Progress chizig'i */}
           <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-[#c6f432] via-[#dcfa72] to-[#ffffff] transition-all duration-300"
               style={{
                 width: `${((currentIndex + 1) / DIAGNOSTIC_QUESTIONS.length) * 100}%`,
               }}
@@ -585,7 +585,7 @@ export default function PlacementTestPage() {
                     onClick={() => handleSelectOption(opt.id)}
                     className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
                       isSelected
-                        ? "border-emerald-400 bg-emerald-500/20 text-white font-bold shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                        ? "border-emerald-400 bg-emerald-500/20 text-white font-bold shadow-[0_0_20px_rgba(198,244,50,0.25)]"
                         : "border-white/10 bg-white/5 text-slate-200 hover:border-emerald-400/50 hover:bg-white/10"
                     }`}
                   >
@@ -637,7 +637,7 @@ export default function PlacementTestPage() {
         <div className="glass-card space-y-8 p-6 sm:p-10">
           {/* Yuqori tabrik va umumiy xulosa */}
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/50 bg-emerald-500/20 text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.35)]">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/50 bg-emerald-500/20 text-emerald-400 shadow-[0_0_30px_rgba(198,244,50,0.35)]">
               <Trophy className="h-7 w-7" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white">

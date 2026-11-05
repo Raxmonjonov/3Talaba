@@ -237,7 +237,7 @@ function FormulaBlock({ formula }: { formula: string }) {
   return (
     <div
       dir="ltr"
-      className="my-2 overflow-x-auto rounded-xl border border-neon/25 bg-[#071521] px-4 py-3 text-center font-mono text-[13px] font-semibold tracking-wide text-emerald-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:text-sm"
+      className="my-2 overflow-x-auto rounded-xl border border-neon/25 bg-[#0b0b0c] px-4 py-3 text-center font-mono text-[13px] font-semibold tracking-wide text-emerald-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:text-sm"
     >
       <span className="whitespace-nowrap">{normalizeMath(formula)}</span>
     </div>
@@ -292,7 +292,7 @@ export function StructuredMessage({
       blocks.push(
         <pre
           key={key}
-          className="overflow-x-auto rounded-xl border border-white/10 bg-[#071521] p-3 font-mono text-[11px] leading-relaxed text-emerald-300 sm:text-xs"
+          className="overflow-x-auto rounded-xl border border-white/10 bg-[#0b0b0c] p-3 font-mono text-[11px] leading-relaxed text-emerald-300 sm:text-xs"
         >
           <code>{codeLines.join("\n")}</code>
         </pre>
@@ -410,7 +410,7 @@ export function StructuredMessage({
               key={`${key}-b-${itemIndex}`}
               className="flex items-start gap-2 text-xs leading-relaxed text-fg sm:text-sm"
             >
-              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-neon shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-neon shadow-[0_0_8px_rgba(198,244,50,0.8)]" />
               <span>{renderInline(item, `${key}-b-${itemIndex}`)}</span>
             </li>
           ))}

@@ -76,12 +76,12 @@ export function PricingSection() {
             key={plan.id}
             className={`glass-card relative flex flex-col p-6 sm:p-8 ${
               plan.highlighted
-                ? "border-emerald-400/60 shadow-[0_0_48px_-12px_rgba(16,185,129,0.55)]"
+                ? "border-emerald-400/60 shadow-[0_0_48px_-12px_rgba(198,244,50,0.55)]"
                 : ""
             }`}
           >
             {plan.highlighted && (
-              <span className="absolute -top-3 right-6 inline-flex items-center gap-1 rounded-full border border-amber-300/60 bg-gradient-to-r from-amber-400 to-amber-500 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-950 shadow-gold">
+              <span className="absolute -top-3 right-6 inline-flex items-center gap-1 rounded-full border border-[#c6f432] bg-[#c6f432] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-950 shadow-gold">
                 <Crown className="h-3.5 w-3.5" />
                 Eng mashhur
               </span>

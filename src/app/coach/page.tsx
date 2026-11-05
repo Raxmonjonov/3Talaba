@@ -1068,7 +1068,7 @@ export default function AICoachPage() {
                       <div
                         className={`max-w-[94%] rounded-2xl p-3.5 text-xs leading-relaxed sm:max-w-[88%] xl:max-w-[82%] sm:p-4 sm:text-sm ${
                           isUser
-                            ? "rounded-br-md bg-neon font-semibold text-canvas shadow-[0_10px_30px_-12px_rgba(16,185,129,0.8)]"
+                            ? "rounded-br-md bg-neon font-semibold text-canvas shadow-[0_10px_30px_-12px_rgba(198,244,50,0.8)]"
                             : "rounded-bl-md border border-white/10 bg-surface/85 text-fg shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl"
                         }`}
                       >

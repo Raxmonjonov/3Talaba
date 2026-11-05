@@ -114,7 +114,7 @@ export default function MathAcademyPage() {
             </div>
             <div className="h-2.5 w-full sm:w-48 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full bg-gradient-to-r from-emerald-400 to-amber-300 transition-all duration-300"
+                className="h-full bg-gradient-to-r from-[#c6f432] to-[#ffffff] transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -150,7 +150,7 @@ export default function MathAcademyPage() {
                   onClick={() => handleSelectModule(mod)}
                   className={`w-full flex items-start justify-between gap-3 p-3.5 rounded-xl border text-left transition-all ${
                     isSelected
-                      ? "border-emerald-400 bg-emerald-500/20 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                      ? "border-emerald-400 bg-emerald-500/20 text-white shadow-[0_0_20px_rgba(198,244,50,0.25)]"
                       : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:bg-white/10"
                   }`}
                 >
@@ -313,7 +313,7 @@ export default function MathAcademyPage() {
               {/* Asosiy formulalar qutisi */}
               <div className="grid gap-3 sm:grid-cols-2">
                 {currentModule.proof.mainFormulas.map((f, idx) => (
-                  <div key={idx} className="rounded-xl border border-white/10 bg-[#07131e] p-4 font-mono">
+                  <div key={idx} className="rounded-xl border border-white/10 bg-[#0b0b0c] p-4 font-mono">
                     <span className="text-[10px] text-emerald-400 uppercase font-bold block">{f.label}</span>
                     <div className="text-base font-black text-white mt-1">{f.formula}</div>
                     <span className="text-[11px] text-slate-400 mt-1 block font-sans">{f.note}</span>

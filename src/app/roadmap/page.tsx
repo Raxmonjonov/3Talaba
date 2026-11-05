@@ -341,8 +341,8 @@ export default function RoadmapPage() {
             />
             <defs>
               <linearGradient id="roadmapLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#10B981" />
-                <stop offset="55%" stopColor="#00E676" />
+                <stop offset="0%" stopColor="#c6f432" />
+                <stop offset="55%" stopColor="#d6f766" />
                 <stop offset="100%" stopColor="#F59E0B" />
               </linearGradient>
             </defs>
@@ -359,8 +359,8 @@ export default function RoadmapPage() {
                     cx={cx}
                     cy={42}
                     r={isSelected ? 11 : 7}
-                    fill={isSelected ? "#F59E0B" : "#10B981"}
-                    stroke="#050A0E"
+                    fill={isSelected ? "#F59E0B" : "#c6f432"}
+                    stroke="#0b0b0c"
                     strokeWidth="2.5"
                   />
                   <text
@@ -660,7 +660,7 @@ export default function RoadmapPage() {
                       onClick={() => handleToggleTask(task)}
                       className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition-all ${
                         task.isCompleted
-                          ? "border-neon bg-neon text-white"
+                          ? "border-neon bg-neon text-[#0b0b0c]"
                           : "border-border bg-surface text-fg hover:border-neon"
                       }`}
                     >

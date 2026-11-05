@@ -113,7 +113,7 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
         {/* ====================================================================
             SVG Chizma maydoni (7 ustun)
             ==================================================================== */}
-        <div className="lg:col-span-7 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#070e17] p-5 sm:p-6 min-h-[280px] lg:min-h-[360px] relative overflow-hidden shadow-inner">
+        <div className="lg:col-span-7 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#0b0b0c] p-5 sm:p-6 min-h-[280px] lg:min-h-[360px] relative overflow-hidden shadow-inner">
           {/* Koordinata foni / to'ri */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
 
@@ -131,7 +131,7 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
                 <polyline
                   points={parabolaData.points}
                   fill="none"
-                  stroke="var(--accent-neon, #10b981)"
+                  stroke="var(--accent-neon, #c6f432)"
                   strokeWidth="3.5"
                   className="transition-all duration-75"
                 />
@@ -176,7 +176,7 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
                 y1={110 - (-10 * slope + intercept) * 10}
                 x2={150 + 10 * 10}
                 y2={110 - (10 * slope + intercept) * 10}
-                stroke="var(--accent-neon, #10b981)"
+                stroke="var(--accent-neon, #c6f432)"
                 strokeWidth="3.5"
               />
               <circle cx="150" cy={110 - intercept * 10} r="5" fill="var(--accent-gold, #f59e0b)" />
@@ -192,8 +192,8 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
               {/* Uchburchak: (50, 170) -> (50 + sideB*12, 170) -> (50, 170 - sideA*12) */}
               <polygon
                 points={`50,170 ${50 + sideB * 14},170 50,${170 - sideA * 12}`}
-                fill="rgba(16,185,129,0.15)"
-                stroke="var(--accent-neon, #10b981)"
+                fill="rgba(198,244,50,0.15)"
+                stroke="var(--accent-neon, #c6f432)"
                 strokeWidth="3"
               />
               {/* To'g'ri burchak kvadratchasi */}
@@ -235,7 +235,7 @@ export function MathInteractiveCanvas({ visualType, title }: MathInteractiveCanv
               <text x="150" y="105" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--accent-gold, #f59e0b)">
                 {angle}°
               </text>
-              <text x="150" y="210" textAnchor="middle" fontSize="11" fill="var(--accent-neon, #10b981)">
+              <text x="150" y="210" textAnchor="middle" fontSize="11" fill="var(--accent-neon, #c6f432)">
                 r = {radius} birlik
               </text>
             </svg>

@@ -106,7 +106,7 @@ export const SEED_CURRICULUM: SeedSubjectBundle[] = [
     nameUz: "SAT Matematika",
     descriptionUz: "Digital SAT Math (800 ballgacha): Algebra, funksiyalar, geometriya va ma'lumotlar tahlili.",
     icon: "Calculator",
-    color: "#10B981",
+    color: "#c6f432",
     order: 1,
     topic: {
       slug: "sat-math-linear",
@@ -335,7 +335,7 @@ Ko'pincha SAT savolida $x$ ning o'zini emas, balki $3x + 2$ kabi ifodani topish 
     nameUz: "IELTS Academic",
     descriptionUz: "IELTS 7.5–8.5+: Reading, Listening, Writing Task 1/2 va Speaking strategiyalari.",
     icon: "Globe2",
-    color: "#00E676",
+    color: "#d6f766",
     order: 3,
     topic: {
       slug: "ielts-reading",

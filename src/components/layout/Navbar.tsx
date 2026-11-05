@@ -21,15 +21,15 @@ import { useUIPreferences } from "@/components/providers/AppProviders";
 import { BRAND, GUEST_NAV_LINKS, STUDENT_NAV_LINKS, type NavLinkItem } from "@/lib/site-config";
 
 const DESKTOP_TONE_CLASSES: Record<NonNullable<NavLinkItem["tone"]>, string> = {
-  default: "text-sm font-semibold text-slate-300 transition-colors hover:text-emerald-400",
-  gold: "text-sm font-bold text-amber-300 transition-colors hover:text-emerald-400",
-  neon: "text-sm font-bold text-emerald-400 transition-colors hover:text-amber-300",
+  default: "text-sm font-semibold text-white/80 transition-colors hover:text-[#c6f432]",
+  gold: "text-sm font-bold text-white transition-colors hover:text-[#c6f432]",
+  neon: "text-sm font-bold text-[#c6f432] transition-colors hover:text-white",
 };
 
 const MOBILE_TONE_CLASSES: Record<NonNullable<NavLinkItem["tone"]>, string> = {
   default: "rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5",
-  gold: "rounded-xl px-3 py-2 text-sm font-semibold text-amber-300 hover:bg-white/5",
-  neon: "rounded-xl px-3 py-2 text-sm font-semibold text-emerald-400 hover:bg-white/5",
+  gold: "rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/5",
+  neon: "rounded-xl px-3 py-2 text-sm font-semibold text-[#c6f432] hover:bg-white/5",
 };
 
 export function Navbar() {
@@ -66,11 +66,11 @@ export function Navbar() {
           className="group flex items-center gap-3.5 focus:outline-none"
           aria-label={`${BRAND.fullName} Bosh sahifa`}
         >
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/25 via-slate-900/90 to-amber-500/25 shadow-[0_0_24px_rgba(16,185,129,0.35)] backdrop-blur-xl transition-transform duration-200 group-hover:scale-105">
-            <span className="font-mono text-2xl font-black text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.6)]">
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-[#c6f432]/50 bg-[#0b0b0c] shadow-[0_0_24px_rgba(198,244,50,0.3)] backdrop-blur-xl transition-transform duration-200 group-hover:scale-105">
+            <span className="font-mono text-2xl font-black text-[#c6f432] drop-shadow-[0_2px_10px_rgba(198,244,50,0.45)]">
               3
             </span>
-            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-slate-950 ring-2 ring-slate-950">
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#c6f432] text-[10px] font-black text-[#0b0b0c] ring-2 ring-[#0b0b0c]">
               ✦
             </span>
           </div>
@@ -103,7 +103,7 @@ export function Navbar() {
             onClick={toggleReduceMotion}
             className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
               reduceMotion
-                ? "border-amber-400/60 bg-amber-400/15 text-amber-300"
+                ? "border-[#c6f432]/60 bg-[#c6f432]/15 text-[#c6f432]"
                 : "border-white/10 bg-white/5 text-slate-300 hover:text-white"
             }`}
             title={reduceMotion ? "Animatsiyalar o'chiq" : "Animatsiyalarni kamaytirish"}
@@ -115,11 +115,11 @@ export function Navbar() {
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-colors hover:border-emerald-400/40 hover:text-emerald-400"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-colors hover:border-[#c6f432]/50 hover:text-[#c6f432]"
             aria-label={theme === "dark" ? "Yorug' rejimga o'tish" : "Qorong'u rejimga o'tish"}
             title={theme === "dark" ? "Yorug' rejim" : "Qorong'u rejim"}
           >
-            {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
+            {theme === "dark" ? <Sun className="h-4 w-4 text-[#c6f432]" /> : <Moon className="h-4 w-4 text-[#0b0b0c]" />}
           </button>
 
           {activeUserName ? (

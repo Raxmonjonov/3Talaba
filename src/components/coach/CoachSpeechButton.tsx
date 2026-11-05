@@ -22,7 +22,7 @@ export function CoachSpeechButton({
       data-speech-btn
       className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
         active
-          ? "border-neon bg-neon-soft text-neon shadow-[0_0_18px_-4px_rgba(16,185,129,0.7)]"
+          ? "border-neon bg-neon-soft text-neon shadow-[0_0_18px_-4px_rgba(198,244,50,0.7)]"
           : "border-border bg-elevated/70 text-fg-muted hover:border-neon/50 hover:text-neon"
       }`}
     >

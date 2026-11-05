@@ -205,7 +205,7 @@ export default function LearnIndexPage() {
                       key={lesson.id}
                       className={`flex flex-col justify-between rounded-2xl border p-5 transition-all backdrop-blur-xl ${
                         isDone
-                          ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+                          ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_20px_rgba(198,244,50,0.15)]"
                           : "border-white/10 bg-white/[0.03] hover:border-emerald-400/40 hover:bg-white/[0.06]"
                       }`}
                     >
