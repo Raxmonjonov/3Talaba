@@ -12,6 +12,7 @@ import {
   Eraser,
   Feather,
   Globe2,
+  GraduationCap,
   HelpCircle,
   ListOrdered,
   Search,
@@ -179,6 +180,26 @@ const COACH_SUBJECTS: CoachSubjectConfig[] = [
       {
         label: "⭕ Aylana sektori va yoyi",
         text: "Radiusi 10 bo'lgan aylanada 72° li sektor yuzi va yoy uzunligini chuqur tushuntirib bering.",
+      },
+    ],
+  },
+  {
+    id: "admissions",
+    label: "Universitet & 100% Grant Yo'li",
+    shortLabel: "OTM & Grant",
+    icon: GraduationCap,
+    accent: "neon",
+    tagline: "Common App, Personal Statement, CSS Profile va Xalqaro Grantlar",
+    greeting:
+      "Top universitetlar va 100% grant (AQSH Full-Ride, KAIST, Stipendium Hungaricum, El-Yurt Umidi) bo'yicha shaxsiy qabul strategiyangizni, portfoliongizni va insholaringizni birgalikda quramiz.",
+    practicePrompts: [
+      {
+        label: "🎓 100% Full-Ride Grant strategiyasi",
+        text: "AQSH, Koreya (KAIST) va Yevropa universitetlaridan 100% grant yutish uchun 0 dan qanday qadamlar qo'yishim kerak?",
+      },
+      {
+        label: "✍️ Common App Personal Statement (650 so'z)",
+        text: "Top universitetlar qabul komissiyasini hayratda qoldiradigan Common App Personal Statement inshosini qanday tuzaman?",
       },
     ],
   },
@@ -724,9 +745,10 @@ export default function AICoachPage() {
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
-                {COACH_SUBJECTS.map((subject) => {
+                {COACH_SUBJECTS.map((subject, idx) => {
                   const SubjectIcon = subject.icon;
                   const active = subject.id === subjectId;
+                  const isFullSpan = idx === COACH_SUBJECTS.length - 1 && COACH_SUBJECTS.length % 2 === 1;
                   const activeClass =
                     subject.accent === "gold"
                       ? "border-gold bg-gold-soft/25 shadow-gold"
@@ -738,7 +760,7 @@ export default function AICoachPage() {
                       type="button"
                       onClick={() => handleSubjectChange(subject.id)}
                       data-subject-id={subject.id}
-                      className={`rounded-xl border p-3 text-left transition-all ${
+                      className={`${isFullSpan ? "col-span-2" : ""} rounded-xl border p-3 text-left transition-all ${
                         active
                           ? activeClass
                           : "border-border bg-canvas/70 hover:border-neon/40"

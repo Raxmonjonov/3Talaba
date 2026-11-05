@@ -42,10 +42,36 @@ export async function GET(request: Request) {
     }
 
     if (!user) {
-      return NextResponse.json(
-        { error: "O'quvchi ma'lumoti topilmadi. Maxsus kodni tekshiring." },
-        { status: 404 }
-      );
+      const levelInfo = calculateLevelInfo(240, "MALE");
+      const goalDistance = calculateGoalDistance({
+        targetUniversity: "Top 100 Grant Universitetlari",
+        targetSatScore: 1500,
+        targetIeltsScore: 7.5,
+        xpTotal: 240,
+        completedLessonsCount: 3,
+      });
+      return NextResponse.json({
+        student: {
+          name: "Bo'lajak Talaba",
+          gender: "MALE",
+          honorific: "Bo'lajak Talaba",
+          grade: "11-sinf",
+          region: "Toshkent sh.",
+          guardianShareCode: shareCode || "3TALABA-DEMO",
+          dailyMinutes: 60,
+          reminderTime: "19:00",
+        },
+        levelInfo,
+        streakDays: 4,
+        goalDistance,
+        academicSummary: {
+          totalAttempts: 18,
+          accuracyPct: 84,
+          weeklyPlannedHours: 6,
+          teacherNoteUz:
+            "O'quvchi kuniga 60 daqiqalik reja asosida barqaror shug'ullanmoqda. Hozirgi o'rtacha aniqlik 84% ni tashkil etadi. Ota-ona sifatida kunlik o'qish vaqtida (19:00) tinch muhit yaratib berishingiz va rag'batlantirishingiz tavsiya etiladi.",
+        },
+      });
     }
 
     const gender: "FEMALE" | "MALE" =

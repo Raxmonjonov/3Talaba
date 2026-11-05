@@ -14,6 +14,7 @@ import {
   FileText,
   Brain,
 } from "lucide-react";
+import { UniversityPathwayAtlas } from "@/components/curriculum/UniversityPathwayAtlas";
 
 interface LessonSummary {
   id: string;
@@ -172,6 +173,9 @@ export default function LearnIndexPage() {
           </Link>
         </div>
       </div>
+
+      {/* 0 dan Universitet va 100% Grantgacha 6 Bosqichli Yo'l Xaritasi va Grantlar Atlasi */}
+      <UniversityPathwayAtlas />
 
       {/* Fanlar va Darslar Ro'yxati */}
       <div className="space-y-8">

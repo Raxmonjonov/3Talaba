@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 import { SegmentLoading } from "@/components/layout/SegmentLoading";
+import { UniversityPathwayAtlas } from "@/components/curriculum/UniversityPathwayAtlas";
 import { TARGETS } from "@/lib/site-config";
 import {
   generatePersonalizedRoadmap,
@@ -668,6 +669,9 @@ function ProfileContent() {
               </Link>
             </div>
           </div>
+
+          {/* Xalqaro Universitet va Grantlar Talablari Atlasi */}
+          <UniversityPathwayAtlas compact />
         </div>
       )}
 

@@ -391,17 +391,70 @@ function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): s
     ].join("\n");
   }
 
+  // Universitet va 100% Grant bo'yicha savollar tahlili
+  if (
+    /(universitet|grant|full-ride|common app|personal statement|css profile|kaist|harvard|mit|stipendium|el-yurt|portfolio|motivatsion)/i.test(
+      q
+    )
+  ) {
+    return [
+      `🎓 **${honorific}, Top Universitet va 100% Grant strategiyasi:**`,
+      ``,
+      `**1-bosqich — Akademik Maqsadlar:**`,
+      `• **Digital SAT:** 1500+ (ayniqsa Math 790–800 texnik va iqtisodiy yo'nalishlar uchun hal qiluvchi).`,
+      `• **IELTS Academic:** Band 7.5+ (Writing va Speaking kamida 7.0 bo'lishi maqsadga muvofiq).`,
+      `• **Maktab GPA:** 4.8+ / 5.0 (9–11-sinf baholar transkripti).`,
+      ``,
+      `**2-bosqich — Personal Statement & Motivatsion Insho:**`,
+      `Qabul komissiyasi yutuqlar ro'yxatini emas, **sizning shaxsiy o'sish hikoyangizni** o'qiydi: *Muammo/Qiziqish → Amaliy Harakat/Loyiha → Xulosa va Universitetda kutilayotgan natija*.`,
+      ``,
+      `**3-bosqich — 100% Grant Manbalari:**`,
+      `• **AQSH (Full-Ride):** Common App + CSS Profile (muddat: Early Action 1-Noyabr, Regular 1-Yanvar).`,
+      `• **Janubiy Koreya & Osiyo:** KAIST, UNIST, HKUST — 100% kontrakt + oylik stipendiya.`,
+      `• **Yevropa & Milliy Grantlar:** Stipendium Hungaricum (15-Yanvar) hamda "El-Yurt Umidi" jamg'armasi.`,
+      ``,
+      `**Keyingi qadam:** Tanlagan yo'nalishingiz va hozirgi sinfingizni yozing — birgalikda shaxsiy qabul rejangizni tuzamiz!`,
+    ].join("\n");
+  }
+
+  // Viyeta va Kvadrat tenglama savollari tahlili
+  if (/(viyet|vieta|kvadrat tenglama|diskriminant)/i.test(q)) {
+    return [
+      `📐 **${honorific}, Kvadrat tenglama va Viyet teoremasi qoidasi:**`,
+      ``,
+      `Standart kvadrat tenglama $ax^2 + bx + c = 0$ uchun:`,
+      `• **Diskriminant:** $D = b^2 - 4ac$ ($D > 0$: 2 ta ildiz, $D = 0$: 1 ta ildiz, $D < 0$: haqiqiy ildiz yo'q).`,
+      `• **Viyet teoremasi:**`,
+      `$$x_1 + x_2 = -\\frac{b}{a}, \\qquad x_1 \\cdot x_2 = \\frac{c}{a}$$`,
+      ``,
+      `**SAT 10-soniyalik usul:** Agar masalada ildizlar yig'indisi so'ralsa, tenglamani yechib o'tirmasdan darhol $-b/a$ ni hisoblang!`,
+    ].join("\n");
+  }
+
+  // IELTS Writing / Speaking savollari tahlili
+  if (/(ielts|writing|task 2|speaking|band 7)/i.test(q)) {
+    return [
+      `📝 **${honorific}, IELTS Band 7.5+ Tizimli Qolipi:**`,
+      ``,
+      `**1-bosqich (Introduction — 2 gap):** Savolni sinonimlar bilan parafraz qiling + aniq Thesis Statement bering (*"This essay argues that..."*).`,
+      `**2-bosqich (Body Paragraph 1 & 2 — PEEL usuli):** *Point (Asosiy fikr) → Explain (Nega shunday?) → Example (Aniq misol) → Link (Mavzuga bog'lash)*.`,
+      `**3-bosqich (Conclusion — 1-2 gap):** Yangi g'oya qo'shmasdan, asosiy pozitsiyani xulosalang.`,
+      ``,
+      `Tayyor inshongiz bo'lsa, **Writing tekshiruvi** rejimida yuboring — Band ballingizni hisoblab beraman!`,
+    ].join("\n");
+  }
+
   // Umumiy ma'lumotlar / savollar bo'yicha aniq javoblar
   return [
-    `Salom, **${honorific}**! Savolingizni o'qib chiqdim:`,
+    `Salom, **${honorific}**! Savolingizni diqqat bilan tahlil qildim:`,
     ``,
     `> *«${q}»*`,
     ``,
-    `Ushbu savol bo'yicha asosiy va aniq ma'lumot:`,
-    `1. Har qanday akademik mavzuda asosiy qoidaga diqqat qaratish kerak.`,
-    `2. Agar bu masala yoki test savoli bo'lsa, uning aniq shartini yoki variantlarini yuboring, birma-bir to'liq hisoblab beraman.`,
+    `**1-bosqich — Asosiy yondashuv:**`,
+    `Har bir akademik savolda avvalo berilgan shartni va topilishi kerak bo'lgan maqsadni aniq ajratib olamiz.`,
     ``,
-    `Qaysi qismini chuqurroq ko'rib chiqaylik?`,
+    `**2-bosqich — Amaliy qadam:**`,
+    `Agar aniq matematik misol, ingliz tili savoli, insho matni yoki maqsadli universitetingiz nomini yozsangiz, uni **formulalar va aniq qadamlar** bilan to'liq yechib beraman!`,
   ].join("\n");
 }
 
@@ -420,29 +473,28 @@ function buildSystemPrompt(req: AICoachRequest, honorific: string): string {
   };
 
   return [
-    `Sen "3Talaba" o'quv platformasining bilimdon va samimiy AI Murabbiyisan.`,
+    `Sen "3Talaba Campus" platformasining bosh AI Ustozi va Xalqaro Universitet/Grant Mentorisan ("Talaba AI").`,
+    `VAZIFANG: O'quvchini 0 dan boshlab Matematika, Digital SAT 1500+ (Math 800), IELTS Academic 7.5+ hamda Top Universitetlarga 100% grant (Full-Ride, KAIST, Stipendium Hungaricum, El-Yurt Umidi) asosida kirishigacha shaxsan yetaklash.`,
     `MUHIM QOIDALAR:`,
     `1. FOYDALANUVCHINING ANIQ SAVOLIGA QARAB JAVOB BER. Bir xil shablon gaplarni takrorlama!`,
-    `2. Har doim toza o'zbek tilida (lotin alifbosida), hurmat bilan javob yoz.`,
-    `3. Murojaat: "${honorific}".`,
+    `2. Har doim toza o'zbek tilida (lotin alifbosida), hurmat va ustozona g'amxo'rlik bilan javob yoz.`,
+    `3. Murojaat: "${honorific}".${req.lessonContextTitle ? ` Joriy dars mavzusi: "${req.lessonContextTitle}".` : ""}`,
     `4. METOD: ${modeGuidance[req.mode] || modeGuidance.STEP_BY_STEP}`,
-    `5. Javobing aniq, tushunarli, dalillarga asoslangan va foydali bo'lsin. Formulalarni LaTeX yoki sodda formatda ko'rsat.`,
+    `5. Javobing aniq, tushunarli, dalillarga asoslangan va amaliy qadamlar bilan bo'lsin. Matematik formulalarni aniq ko'rsat.`,
   ].join("\n");
 }
 
 type ChatTurn = { role: "user" | "assistant"; content: string };
 
 /**
- * Neyron LLM Dvigateli (Bepul & Cheksiz - Har qanday savolni tushunadi va aniq o'zbekcha javob beradi)
+ * Neyron LLM Dvigateli (Gemini / OpenAI / AI Gateway + tezkor neyron fallback)
  */
 async function callNeuralAI(systemPrompt: string, history: ChatTurn[], userText: string): Promise<string | null> {
   // Unit tests must stay deterministic and offline — the Socratic fallback is
   // what we assert against, so never reach out to a provider under Vitest.
   if (process.env.VITEST) return null;
 
-  const signal = AbortSignal.timeout(18_000);
-
-  // 1. Agar OpenAI / Gemini / Claude kalitlari bo'lsa
+  // 1. Google Gemini API (yoki Netlify Gemini AI Gateway)
   if (process.env.GEMINI_API_KEY) {
     try {
       const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -450,7 +502,7 @@ async function callNeuralAI(systemPrompt: string, history: ChatTurn[], userText:
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
         {
           method: "POST",
-          signal,
+          signal: AbortSignal.timeout(12_000),
           headers: {
             "Content-Type": "application/json",
             "x-goog-api-key": process.env.GEMINI_API_KEY,
@@ -472,15 +524,44 @@ async function callNeuralAI(systemPrompt: string, history: ChatTurn[], userText:
     } catch {}
   }
 
-  // 2. Pollinations Universal Neural LLM (Kalitsiz, doimo ishlaydi, real vaqtda matnni o'qiydi)
+  // 2. OpenAI API (yoki Netlify OpenAI AI Gateway)
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
+      const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+      const res = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        signal: AbortSignal.timeout(12_000),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...history,
+            { role: "user", content: userText },
+          ],
+        }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        const out = data.choices?.[0]?.message?.content?.trim();
+        if (out) return out;
+      }
+    } catch {}
+  }
+
+  // 3. Kalitsiz tezkor neyron provayder (qisqa timeout bilan, hech qachon osilib qolmaydi)
   try {
     const combinedPrompt = `${systemPrompt}\n\nO'quvchi savoli: ${userText}\nIltimos, yuqoridagi savolga to'liq, aniq va tushunarli javob yoz:`;
     const url = `https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}?model=openai`;
 
-    const res = await fetch(url, { signal });
+    const res = await fetch(url, { signal: AbortSignal.timeout(6_500) });
     if (res.ok) {
       const text = await res.text();
-      if (text && text.trim().length > 10) {
+      if (text && text.trim().length > 15 && !text.includes("<!DOCTYPE html>")) {
         return text.trim();
       }
     }

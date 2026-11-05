@@ -4,7 +4,12 @@ import type {
   WritingRubricBreakdown,
 } from "@/lib/ai";
 
-export type CoachSubjectId = "sat-math" | "sat-rw" | "ielts" | "deep-math";
+export type CoachSubjectId =
+  | "sat-math"
+  | "sat-rw"
+  | "ielts"
+  | "deep-math"
+  | "admissions";
 
 export interface SmartFallbackParams {
   subjectId: CoachSubjectId;
@@ -126,6 +131,35 @@ const SUBJECT_GUIDES: Record<CoachSubjectId, SubjectGuide> = {
       "$4 + 3 = 7$ va $4 \\cdot 3 = 12$ — javob to'g'ri.",
       "",
       "💡 **Chuqur tushuncha:** Viyeta teoremasi ildizlarni topmasdan ham ularning yig'indisi va ko'paytmasini beradi. SAT'da aynan shu xossa vaqtni tejaydi.",
+    ].join("\n"),
+  },
+  admissions: {
+    firstQuestion:
+      "qaysi davlat universitetini (AQSH Full-Ride, Janubiy Koreya KAIST, Yevropa Stipendium Hungaricum yoki El-Yurt Umidi) va qaysi mutaxassislikni maqsad qilgansiz?",
+    hint:
+      "Top universitetlar faqat SAT va IELTS balliga emas, balki sizning shaxsiy hikoyangiz (Personal Statement), intellektual qiziqishingiz va jamiyatga foydali loyihalaringizga (Extracurriculars) qarab 100% grant ajratadi.",
+    stepTitle: "0 dan Top Universitet va 100% Grantgacha 5 Qadamli Strategiya",
+    stepExample: [
+      "**1-qadam — Akademik ko'rsatkichlar (GPA + SAT + IELTS):**",
+      "• Maktab/litsey baholari (GPA): **4.8+ / 5.0** bo'lishi shart.",
+      "• Digital SAT: **1500+ (Math 800)** — akademik salohiyat isboti.",
+      "• IELTS Academic: **Band 7.5+** (har bir bo'lim kamida 6.5–7.0).",
+      "",
+      "**2-qadam — Extracurricular Portfolio (Darsdan tashqari faoliyat):**",
+      "10 ta tarqoq to'garakdan ko'ra, tanlagan sohangizga oid **2–3 ta chuqur loyiha** kuchliroq: fan olimpiadasi, shaxsiy IT/ilmiy loyiha, maqola yoki ijtimoiy volontyorlik tashabbusi.",
+      "",
+      "**3-qadam — Common App & Personal Statement (650 so'z):**",
+      "• **Hook (Kirish):** O'quvchini jalb qiluvchi hayotiy lahza yoki muammo.",
+      "• **Growth (Rivojlanish):** Qiyinchilikni qanday yengganingiz va nimani anglaganingiz.",
+      "• **Impact & Vision (Maqsad):** Universitet resurslari orqali kelajakda qanday muammoni hal qilmoqchisiz.",
+      "",
+      "**4-qadam — Tavsiyanomalar (Recommendation Letters):**",
+      "Sizni yaqindan taniydigan 2 nafar fan ustozi (masalan, Matematika va Ingliz tili) hamda maktab maslahatchisidan aniq misollarga boy tavsiyanoma oling.",
+      "",
+      "**5-qadam — Moliyaviy Grant (CSS Profile / Need-Blind / Stipendiya):**",
+      "• **AQSH:** Early Action/Decision (1-Noyabr) va CSS Profile orqali 100% Full-Ride.",
+      "• **Koreya & Osiyo:** KAIST / UNIST / HKUST ichki grant arizasi (100% kontrakt + stipendiya).",
+      "• **Yevropa & O'zbekiston:** Stipendium Hungaricum (15-Yanvar) va \"El-Yurt Umidi\" jamg'armasi.",
     ].join("\n"),
   },
 };
@@ -507,6 +541,32 @@ export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackRe
         learnedHonorific,
         mode === "SOCRATIC_TUTOR" ? "GUIDING_QUESTION" : "STEP_BY_STEP"
       ),
+    };
+  }
+
+  if (
+    subjectId === "admissions" ||
+    /(universitet|grant|full-ride|common app|personal statement|css profile|kaist|harvard|mit|stipendium|el-yurt|portfolio|motivatsion)/i.test(
+      lower
+    )
+  ) {
+    if (mode === "SOCRATIC_TUTOR" && turnIndex === 0) {
+      return buildSocraticOpening(honorific, "admissions", "Universitet & Grant Yo'li");
+    }
+    const admGuide = SUBJECT_GUIDES.admissions;
+    const reply = [
+      `🎓 **${learnedHonorific}, Universitet va 100% Grant Mentori tahlili:**`,
+      "",
+      `**${admGuide.stepTitle}**`,
+      "",
+      admGuide.stepExample,
+      "",
+      `**Amaliy keyingi qadam:**`,
+      `Hozirgi sinfingiz, taxminiy SAT/IELTS darajangiz va qiziqqan sohangizni (masalan: *Computer Science, Iqtisodiyot, Muhandislik, Tibbiyot*) yozing — men siz uchun mos Top-5 universitetlar ro'yxati va Personal Statement g'oyasini tuzib beraman!`,
+    ].join("\n");
+    return {
+      reply,
+      metadata: buildMetadata(mode, learnedHonorific, "STEP_BY_STEP"),
     };
   }
 

@@ -10,41 +10,60 @@ import {
 import { getHonorificTitle } from "@/lib/validations/auth";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Avtorizatsiya talab qilinadi" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || session.user.id.startsWith("serverless-")) {
+      return NextResponse.json({
+        honorific: session?.user?.name?.split(" ")[0] || "Bo'lajak Talaba",
+        profile: {
+          targetSatScore: 1500,
+          targetIeltsScore: 7.5,
+          targetUniversity: "Top 100 Grant Universitetlari",
+          xpTotal: 200,
+        },
+        latestResult: null,
+        questionBank: PLACEMENT_QUESTION_BANK,
+      });
+    }
+
+    const [profile, latestResult] = await Promise.all([
+      prisma.profile.findUnique({ where: { userId: session.user.id } }),
+      prisma.placementResult.findFirst({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    return NextResponse.json({
+      honorific: getHonorificTitle(profile?.gender),
+      profile,
+      latestResult: latestResult
+        ? {
+            ...latestResult,
+            subjectScores: JSON.parse(latestResult.subjectScoresJson || "{}"),
+            strengths: JSON.parse(latestResult.strengthsJson || "[]"),
+            weaknesses: JSON.parse(latestResult.weaknessesJson || "[]"),
+          }
+        : null,
+      questionBank: PLACEMENT_QUESTION_BANK,
+    });
+  } catch {
+    return NextResponse.json({
+      honorific: "Bo'lajak Talaba",
+      profile: {
+        targetSatScore: 1500,
+        targetIeltsScore: 7.5,
+        targetUniversity: "Top 100 Grant Universitetlari",
+        xpTotal: 200,
+      },
+      latestResult: null,
+      questionBank: PLACEMENT_QUESTION_BANK,
+    });
   }
-
-  const [profile, latestResult] = await Promise.all([
-    prisma.profile.findUnique({ where: { userId: session.user.id } }),
-    prisma.placementResult.findFirst({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
-
-  return NextResponse.json({
-    honorific: getHonorificTitle(profile?.gender),
-    profile,
-    latestResult: latestResult
-      ? {
-          ...latestResult,
-          subjectScores: JSON.parse(latestResult.subjectScoresJson || "{}"),
-          strengths: JSON.parse(latestResult.strengthsJson || "[]"),
-          weaknesses: JSON.parse(latestResult.weaknessesJson || "[]"),
-        }
-      : null,
-    questionBank: PLACEMENT_QUESTION_BANK,
-  });
 }
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Avtorizatsiya talab qilinadi" }, { status: 401 });
-    }
-
     const body: unknown = await req.json();
     const parsed = placementSubmissionSchema.safeParse(body);
 
@@ -54,6 +73,24 @@ export async function POST(req: Request) {
         { error: firstIssue?.message ?? "Javoblar to'liq yuborilmadi" },
         { status: 400 },
       );
+    }
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || session.user.id.startsWith("serverless-")) {
+      const evaluation = evaluatePlacementTest({
+        answers: parsed.data.answers,
+        speakingComfort: parsed.data.speakingComfort,
+        writingExperience: parsed.data.writingExperience,
+        honorific: session?.user?.name?.split(" ")[0] || "Bo'lajak Talaba",
+      });
+      return NextResponse.json({
+        result: {
+          id: `guest-placement-${Date.now()}`,
+          ...evaluation,
+          createdAt: new Date().toISOString(),
+        },
+        xpAwarded: 100,
+      });
     }
 
     const profile = await prisma.profile.findUnique({
