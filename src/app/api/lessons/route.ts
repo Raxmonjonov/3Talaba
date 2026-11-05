@@ -60,13 +60,24 @@ export async function GET() {
         },
       });
 
-      return NextResponse.json({
-        honorific: "Bo'lajak Talaba",
-        profile: null,
-        subjects: subjects.length > 0 ? subjects : buildFallbackSubjects(),
-        completedLessonIds: [],
-        earnedBadges: [],
-      });
+      return NextResponse.json(
+        {
+          honorific: "Bo'lajak Talaba",
+          profile: null,
+          subjects: subjects.length > 0 ? subjects : buildFallbackSubjects(),
+          completedLessonIds: [],
+          earnedBadges: [],
+        },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=30, stale-while-revalidate=120",
+            "Netlify-CDN-Cache-Control":
+              "public, durable, s-maxage=60, stale-while-revalidate=300",
+            "Netlify-Vary":
+              "cookie=next-auth.session-token|__Secure-next-auth.session-token",
+          },
+        },
+      );
     }
 
     const [profile, subjects, attempts, userBadges] = await Promise.all([

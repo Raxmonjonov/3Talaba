@@ -1,0 +1,97 @@
+# ==============================================================================
+# 3Talaba Campus — High-Traffic & Strict 443/TCP Only Production Stack
+# Tashqi internetga FAQAT Nginx'ning 443/tcp porti ochiq!
+# Next.js (3000) va PostgreSQL (5432) yopiq ichki tarmoqda (internal_net) ishlaydi.
+# ==============================================================================
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: 3talaba_nginx_tls
+    restart: always
+    # FAQAT 443/tcp porti tashqariga ochiladi — 80 va boshqa barcha portlar YOPIQ!
+    ports:
+      - "443:443/tcp"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx/conf.d/3talaba.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/ssl:/etc/nginx/ssl:ro
+      - nginx_microcache:/var/cache/nginx/3talaba
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - edge_net
+      - internal_net
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 3talaba_nextjs_app
+    restart: always
+    # DIQQAT: `ports` yo'q! Tashqaridan 3000-portga hech kim ulana olmaydi!
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal_net
+
+  db:
+    image: postgres:16-alpine
+    container_name: 3talaba_postgres
+    restart: always
+    # DIQQAT: `ports` yo'q! Ma'lumotlar bazasi (5432) tashqi tarmoqdan to'liq uzilgan!
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-talaba}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD talab qilinadi}
+      POSTGRES_DB: ${POSTGRES_DB:-3talaba_prod}
+    command: >
+      postgres
+      -c max_connections=300
+      -c shared_buffers=512MB
+      -c effective_cache_size=1536MB
+      -c work_mem=8MB
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-talaba} -d $${POSTGRES_DB:-3talaba_prod}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal_net
+
+networks:
+  edge_net:
+    driver: bridge
+  internal_net:
+    driver: bridge
+    internal: true
+
+volumes:
+  pg_data:
+  nginx_microcache:
