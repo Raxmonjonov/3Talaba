@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { loadSecureLocal } from "@/lib/security/client-storage";
 import {
   Compass,
   History as HistoryIcon,
@@ -219,12 +220,15 @@ function ProfileContent() {
   } | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("3talaba_placement_result");
-      if (saved) {
-        setPlacementResult(JSON.parse(saved));
-      }
-    } catch {}
+    const saved = loadSecureLocal<{
+      estimatedSat?: string;
+      estimatedIelts?: string;
+      compositePercent?: number;
+      recommendedTrack?: string;
+    }>("3talaba_placement_result");
+    if (saved) {
+      setPlacementResult(saved);
+    }
   }, []);
 
   // ---------------------------------------------------------------------------

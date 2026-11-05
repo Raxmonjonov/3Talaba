@@ -101,11 +101,26 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
+const useSecureCookies = process.env.NODE_ENV === "production";
+
 export const authOptions: NextAuthOptions = {
   providers,
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 kun
+    maxAge: 30 * 24 * 60 * 60, // 30 kun (A256GCM shifrlangan JWE token)
+  },
+  cookies: {
+    sessionToken: {
+      name: useSecureCookies
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
   },
   pages: {
     signIn: "/login",

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { loadSecureLocal, saveSecureLocal } from "@/lib/security/client-storage";
 import {
   ArrowLeft,
   ArrowRight,
@@ -45,18 +46,11 @@ export default function MathAcademyPage() {
   const [practiceAnswers, setPracticeAnswers] = useState<Record<string, "A" | "B" | "C" | "D">>({});
   const [showPracticeSolution, setShowPracticeSolution] = useState<Record<string, boolean>>({});
 
-  // LocalStoragedan progressni yuklash
+  // Shifrlangan LocalStoragedan progressni yuklash
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setCompletedModules(parsed);
-        }
-      }
-    } catch {
-      // ignore
+    const parsed = loadSecureLocal<number[]>(STORAGE_KEY);
+    if (Array.isArray(parsed)) {
+      setCompletedModules(parsed);
     }
   }, []);
 
@@ -69,11 +63,7 @@ export default function MathAcademyPage() {
   const handleMarkCompleted = (modId: number) => {
     const updated = Array.from(new Set([...completedModules, modId]));
     setCompletedModules(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
+    saveSecureLocal(STORAGE_KEY, updated);
   };
 
   // Modul tanlanganda

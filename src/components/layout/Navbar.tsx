@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { loadSecureLocal, removeSecureLocal } from "@/lib/security/client-storage";
 import {
   Sun,
   Moon,
@@ -38,13 +39,8 @@ export function Navbar() {
   const [localUserName, setLocalUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("3talaba_user");
-      if (raw) {
-        const parsed = JSON.parse(raw) as { name?: string };
-        if (parsed?.name) setLocalUserName(parsed.name);
-      }
-    } catch {}
+    const parsed = loadSecureLocal<{ name?: string }>("3talaba_user");
+    if (parsed?.name) setLocalUserName(parsed.name);
   }, []);
 
   const activeUserName = session?.user?.name ?? localUserName;
@@ -52,9 +48,7 @@ export function Navbar() {
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   const handleSignOut = () => {
-    try {
-      localStorage.removeItem("3talaba_user");
-    } catch {}
+    removeSecureLocal("3talaba_user");
     setLocalUserName(null);
     if (session?.user) {
       signOut({ callbackUrl: "/" });

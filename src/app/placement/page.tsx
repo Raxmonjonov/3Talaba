@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { loadSecureLocal, saveSecureLocal } from "@/lib/security/client-storage";
 import {
   ArrowRight,
   Award,
@@ -229,18 +230,11 @@ export default function PlacementTestPage() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   }, [timerSeconds]);
 
-  // LocalStoragedan oldingi natijani tekshirish (ixtiyoriy)
+  // Shifrlangan LocalStoragedan oldingi natijani tekshirish (ixtiyoriy)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("3talaba_placement_result");
-      if (saved) {
-        const parsed = JSON.parse(saved) as DiagnosticResultRecord;
-        if (parsed && typeof parsed.totalScore === "number") {
-          // agar foydalanuvchi to'g'ridan-to'g'ri ko'rmoqchi bo'lsa state'da saqlab turamiz
-        }
-      }
-    } catch {
-      // ignore
+    const parsed = loadSecureLocal<DiagnosticResultRecord>("3talaba_placement_result");
+    if (parsed && typeof parsed.totalScore === "number") {
+      // agar foydalanuvchi to'g'ridan-to'g'ri ko'rmoqchi bo'lsa state'da saqlab turamiz
     }
   }, []);
 
@@ -350,12 +344,8 @@ export default function PlacementTestPage() {
     setResultRecord(record);
     setStage("RESULT");
 
-    // LocalStorage ga saqlaymiz
-    try {
-      localStorage.setItem("3talaba_placement_result", JSON.stringify(record));
-    } catch {
-      // ignore
-    }
+    // Shifrlangan holda LocalStorage ga saqlaymiz
+    saveSecureLocal("3talaba_placement_result", record);
 
     // Backend API ga ham xotirjamlik bilan yuboramiz (agar tizimga kirgan bo'lsa profiliga yoziladi)
     fetch("/api/placement", {

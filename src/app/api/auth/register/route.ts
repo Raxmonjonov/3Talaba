@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await bcrypt.hash(password, 12);
       const todayKey = new Date().toISOString().slice(0, 10);
 
       const user = await prisma.user.create({

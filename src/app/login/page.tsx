@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import { animate } from "animejs";
 import { Mail, Lock, ArrowRight, AlertCircle, Sparkles, UserCheck } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
+import { saveSecureLocal } from "@/lib/security/client-storage";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,19 +39,12 @@ export default function LoginPage() {
   };
 
   const handleLoginSuccess = (userEmail: string) => {
-    try {
-      localStorage.setItem(
-        "3talaba_user",
-        JSON.stringify({
-          email: userEmail,
-          name: userEmail.split("@")[0],
-          isLoggedIn: true,
-          loggedInAt: new Date().toISOString(),
-        })
-      );
-    } catch {
-      // ignore
-    }
+    saveSecureLocal("3talaba_user", {
+      email: userEmail,
+      name: userEmail.split("@")[0],
+      isLoggedIn: true,
+      loggedInAt: new Date().toISOString(),
+    });
     router.push("/roadmap");
     router.refresh();
   };

@@ -3,6 +3,7 @@ import {
   type PlacementQuestionItem,
   type SkillLevelCode,
 } from "@/lib/curriculum/placement-engine";
+import { loadSecureLocal, saveSecureLocal } from "@/lib/security/client-storage";
 
 export type DiagnosticLevelId = "FOUNDATION" | "INTERMEDIATE" | "ADVANCED";
 export type DiagnosticGoalId = "SAT_1450" | "IELTS_75" | "COMPLEX";
@@ -481,24 +482,14 @@ export function saveDiagnosticResult(
     })),
   };
 
-  try {
-    window.localStorage.setItem(DIAGNOSTIC_STORAGE_KEY, JSON.stringify(stored));
-    return stored;
-  } catch {
-    return null;
-  }
+  saveSecureLocal(DIAGNOSTIC_STORAGE_KEY, stored);
+  return stored;
 }
 
 export function loadDiagnosticResult(): StoredDiagnosticResult | null {
   if (typeof window === "undefined") return null;
 
-  try {
-    const raw = window.localStorage.getItem(DIAGNOSTIC_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<StoredDiagnosticResult>;
-    if (parsed.version !== 1 || !parsed.result) return null;
-    return parsed as StoredDiagnosticResult;
-  } catch {
-    return null;
-  }
+  const parsed = loadSecureLocal<Partial<StoredDiagnosticResult>>(DIAGNOSTIC_STORAGE_KEY);
+  if (!parsed || parsed.version !== 1 || !parsed.result) return null;
+  return parsed as StoredDiagnosticResult;
 }

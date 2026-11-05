@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { saveSecureLocal } from "@/lib/security/client-storage";
 import { animate } from "animejs";
 import {
   Sparkles,
@@ -203,20 +204,13 @@ export default function RegisterWizardPage() {
     } catch {
       // Agar serverda xatolik bo'lsa ham (masalan, offline yoki DB cheklovi),
       // foydalanuvchi qulayligi uchun lokal saqlab davom ettiramiz
-      try {
-        localStorage.setItem(
-          "3talaba_user",
-          JSON.stringify({
-            email: email.trim().toLowerCase(),
-            name: name.trim(),
-            grade,
-            region,
-            isLoggedIn: true,
-          })
-        );
-      } catch {
-        // ignore
-      }
+      saveSecureLocal("3talaba_user", {
+        email: email.trim().toLowerCase(),
+        name: name.trim(),
+        grade,
+        region,
+        isLoggedIn: true,
+      });
       setRegistered(true);
       setLoading(false);
       setPage(8);
