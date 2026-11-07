@@ -15,6 +15,7 @@ import {
   Brain,
 } from "lucide-react";
 import { UniversityPathwayAtlas } from "@/components/curriculum/UniversityPathwayAtlas";
+import { useLearningAdaptation } from "@/lib/learning/easy-adaptation";
 
 interface LessonSummary {
   id: string;
@@ -58,8 +59,10 @@ interface LessonsCatalogResponse {
 }
 
 export default function LearnIndexPage() {
+  const { pace, setPace, activeOption, options } = useLearningAdaptation();
   const [data, setData] = useState<LessonsCatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedSubjectSlug, setSelectedSubjectSlug] = useState<string>("all");
 
   useEffect(() => {
     fetch("/api/lessons")
@@ -149,28 +152,79 @@ export default function LearnIndexPage() {
           </div>
         </div>
 
-        {/* Tezkor Filtrlar va Asboblar */}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-400">Yo&apos;nalishlar:</span>
-            <span className="glass-pill rounded-lg px-2.5 py-1 text-emerald-300 font-bold">
-              Digital SAT (800)
-            </span>
-            <span className="glass-pill rounded-lg px-2.5 py-1 text-amber-300 font-bold">
-              IELTS Academic (7.5+)
-            </span>
-            <span className="glass-pill rounded-lg px-2.5 py-1 text-cyan-300 font-bold">
-              Algebra &amp; Geometriya
-            </span>
+        {/* Tezkor Filtrlar va Tushuntirish Moslagichi */}
+        <div className="mt-5 space-y-4 border-t border-white/10 pt-5">
+          <div className="grid gap-3 md:grid-cols-3 rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c] p-4 text-xs">
+            <div>
+              <span className="font-mono font-black text-[#c6f432] block">1-QADAM: REJIM TANLANG</span>
+              <p className="mt-1 text-slate-300">
+                Agar endi boshlagan bo&apos;lsangiz, <strong className="text-white">«0 dan Sodda Tilda»</strong> rejimini yoqing.
+              </p>
+            </div>
+            <div>
+              <span className="font-mono font-black text-[#c6f432] block">2-QADAM: DARSNI OCHING</span>
+              <p className="mt-1 text-slate-300">
+                Har bir dars <strong className="text-white">Qoida → Namuna → Mashq → Tahlil</strong> bo&apos;yicha yetaklaydi.
+              </p>
+            </div>
+            <div>
+              <span className="font-mono font-black text-[#c6f432] block">3-QADAM: OVOZ VA AI YORDAM</span>
+              <p className="mt-1 text-slate-300">
+                Dars ichida <strong className="text-white">«Tinglash»</strong> va <strong className="text-white">«Sodda tushuntir»</strong> tugmalarini bosing.
+              </p>
+            </div>
           </div>
 
-          <Link
-            href="/profile?tab=questions"
-            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5"
-          >
-            <Layers className="h-3.5 w-3.5" />
-            <span>Savollar Bankiga o&apos;tish →</span>
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+            {/* Fan filtri */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-semibold text-slate-400 mr-1">Yo&apos;nalish filtri:</span>
+              <button
+                type="button"
+                onClick={() => setSelectedSubjectSlug("all")}
+                className={`rounded-lg px-3 py-1.5 font-bold transition-all ${
+                  selectedSubjectSlug === "all"
+                    ? "bg-[#c6f432] text-[#0b0b0c]"
+                    : "glass-pill text-slate-300 hover:text-white"
+                }`}
+              >
+                Barcha fanlar ({subjects.length})
+              </button>
+              {subjects.map((subj) => (
+                <button
+                  key={subj.slug}
+                  type="button"
+                  onClick={() => setSelectedSubjectSlug(subj.slug)}
+                  className={`rounded-lg px-3 py-1.5 font-bold transition-all ${
+                    selectedSubjectSlug === subj.slug
+                      ? "bg-[#c6f432] text-[#0b0b0c]"
+                      : "glass-pill text-slate-300 hover:text-white"
+                  }`}
+                >
+                  {subj.nameUz}
+                </button>
+              ))}
+            </div>
+
+            {/* Tushuntirish darajasi */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-slate-400 font-semibold">Uslub ({activeOption.badge}):</span>
+              {options.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setPace(opt.id)}
+                  className={`rounded-lg px-2.5 py-1 font-bold transition-all ${
+                    pace === opt.id
+                      ? "border border-[#c6f432] bg-[#c6f432]/20 text-[#c6f432]"
+                      : "border border-white/10 bg-white/5 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {opt.title}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -179,7 +233,9 @@ export default function LearnIndexPage() {
 
       {/* Fanlar va Darslar Ro'yxati */}
       <div className="space-y-8">
-        {subjects.map((subject) => (
+        {subjects
+          .filter((s) => selectedSubjectSlug === "all" || s.slug === selectedSubjectSlug)
+          .map((subject) => (
           <div key={subject.id} className="glass-card p-6 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>

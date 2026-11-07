@@ -35,6 +35,7 @@ import {
   buildSmartFallback,
   type CoachSubjectId,
 } from "@/lib/coach/smart-fallback";
+import { useLearningAdaptation } from "@/lib/learning/easy-adaptation";
 import { useBrowserSpeech } from "@/lib/voice/useBrowserSpeech";
 
 interface ChatMsgItem {
@@ -402,6 +403,7 @@ export default function AICoachPage() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const streamTimerRef = useRef<number | null>(null);
   const { speak, stop } = useBrowserSpeech("uz-UZ");
+  const { pace, setPace, activeOption, options } = useLearningAdaptation();
 
   const currentSubject =
     COACH_SUBJECTS.find((subject) => subject.id === subjectId) ??
@@ -437,7 +439,19 @@ export default function AICoachPage() {
         if (payload.activeSession && !openedFromLink) {
           setSessionId(payload.activeSession.id);
           setMode(payload.activeSession.mode ?? "SOCRATIC_TUTOR");
-          setMessages(payload.activeSession.messages);
+          setMessages(
+            payload.activeSession.messages.map((msg) =>
+              msg.role === "USER"
+                ? {
+                    ...msg,
+                    content: msg.content.replace(
+                      /^\[O'quvchi darajasi:\s*[^\]]+\]:\s*/i,
+                      ""
+                    ),
+                  }
+                : msg
+            )
+          );
         }
       } catch {
         // Offline yoki avtorizatsiya yo'q — sahifa lokal rejimda ishlashda davom etadi.
@@ -571,6 +585,7 @@ export default function AICoachPage() {
         message: text,
         honorific: warmAddress,
         turnIndex,
+        pace,
       });
 
       const assistantId = `local-${Date.now()}-${Math.random()
@@ -589,7 +604,7 @@ export default function AICoachPage() {
       setXpTotal((previous) => previous + 10);
       streamMessage(assistantId, fallback.reply);
     },
-    [currentSubject, subjectId, streamMessage, warmAddress]
+    [currentSubject, pace, subjectId, streamMessage, warmAddress]
   );
 
   const handleSendMessage = async (
@@ -614,13 +629,18 @@ export default function AICoachPage() {
 
     setMessages((previous) => [...previous, userMessage]);
     const turnIndex = messages.filter((message) => message.role === "ASSISTANT").length;
+    const payloadMessage =
+      activeMode === "WRITING_REVIEW" ||
+      textToSend.startsWith("[O'quvchi darajasi:")
+        ? textToSend
+        : `${activeOption.aiPromptPrefix}${textToSend}`;
 
     try {
       const res = await fetch("/api/ai/coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: textToSend,
+          message: payloadMessage,
           mode: activeMode,
           sessionId,
         }),
@@ -644,7 +664,7 @@ export default function AICoachPage() {
       // Server javobi ham jonli "yozilayotgan" effekt bilan chiqadi.
       setMessages((previous) => [
         ...previous.filter((message) => message.id !== tempId),
-        result.userMessage,
+        { ...result.userMessage, content: textToSend },
         { ...result.assistantMessage, content: "" },
       ]);
       streamMessage(result.assistantMessage.id, result.assistantMessage.content);
@@ -727,6 +747,43 @@ export default function AICoachPage() {
                 <Compass className="h-4 w-4 text-gold" />
                 <span>12 Oylik Xarita</span>
               </Link>
+            </div>
+          </div>
+
+          {/* Oson Yo'l-Yo'riq va Tushuntirish Darajasini Moslash */}
+          <div className="mt-5 rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c]/85 p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-1">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-extrabold uppercase tracking-wider text-[#c6f432]">
+                  🧭 TALABA AI YO&apos;L-YO&apos;RIG&apos;I (TEZ MOSLASHISH)
+                </span>
+                <p className="text-xs leading-relaxed text-white/80">
+                  <strong className="text-white">1.</strong> Chapdan fanni tanlang →{" "}
+                  <strong className="text-white">2.</strong> O&apos;ngdan tushuntirish darajasini belgilang →{" "}
+                  <strong className="text-white">3.</strong> Savol yoki yecholmagan misolingizni yozing →{" "}
+                  <strong className="text-white">4.</strong> Javobni ovozli tinglang!
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {options.map((opt) => {
+                  const isActive = pace === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setPace(opt.id)}
+                      className={`rounded-xl border px-3 py-2 text-[11px] font-extrabold transition-all ${
+                        isActive
+                          ? "border-[#c6f432] bg-[#c6f432] text-[#0b0b0c] shadow-[0_0_18px_rgba(198,244,50,0.3)]"
+                          : "border-white/15 bg-white/[0.04] text-white/80 hover:border-[#c6f432]/50 hover:text-white"
+                      }`}
+                    >
+                      {opt.title}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -1184,6 +1241,53 @@ export default function AICoachPage() {
               }}
               className="border-t border-border/70 p-4 sm:p-5"
             >
+              {messages.length > 0 && mode !== "WRITING_REVIEW" && (
+                <div className="mb-2.5 flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-fg-muted">
+                    Tez yordam:
+                  </span>
+                  <button
+                    type="button"
+                    disabled={sending}
+                    onClick={() =>
+                      void handleSendMessage(
+                        "Iltimos, shu tushuntirishni mutlaqo 0 dan boshlagan o'quvchi uchun hayotiy o'xshatish va juda sodda misol bilan tushuntirib ber.",
+                        "STEP_BY_STEP"
+                      )
+                    }
+                    className="rounded-lg border border-[#c6f432]/35 bg-[#c6f432]/10 px-2.5 py-1 text-[11px] font-bold text-[#c6f432] transition-all hover:bg-[#c6f432] hover:text-[#0b0b0c] disabled:opacity-50"
+                  >
+                    🪜 Yanada soddaroq tushuntir
+                  </button>
+                  <button
+                    type="button"
+                    disabled={sending}
+                    onClick={() =>
+                      void handleSendMessage(
+                        "Shu mavzuni mustahkamlash uchun menga 1 ta oson mashq savoli ber, o'zim yechib ko'raman.",
+                        "SOCRATIC_TUTOR"
+                      )
+                    }
+                    className="rounded-lg border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[11px] font-bold text-white/85 transition-all hover:border-[#c6f432]/50 hover:text-[#c6f432] disabled:opacity-50"
+                  >
+                    ✏️ 1 ta oson mashq ber
+                  </button>
+                  <button
+                    type="button"
+                    disabled={sending}
+                    onClick={() =>
+                      void handleSendMessage(
+                        "Shu turdagi savolni imtihonda 10 soniyada yechish siri va eng ko'p uchraydigan tuzoq nima?",
+                        "FAST_SOLUTION"
+                      )
+                    }
+                    className="rounded-lg border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[11px] font-bold text-white/85 transition-all hover:border-[#c6f432]/50 hover:text-[#c6f432] disabled:opacity-50"
+                  >
+                    ⚡ 10 soniyalik imtihon siri
+                  </button>
+                </div>
+              )}
+
               {mode === "WRITING_REVIEW" && (
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-fg-muted">
                   <span>

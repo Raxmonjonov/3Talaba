@@ -346,6 +346,26 @@ function PracticeCenterContent() {
           </div>
         </div>
 
+        {/* Savol yechishning oson 4 qadamli yo'l-yo'rig'i */}
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4 rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c] p-4 text-xs">
+          <div>
+            <span className="font-mono font-black text-[#c6f432] block">1. SHART OXIRINI O&apos;QING</span>
+            <p className="mt-0.5 text-slate-300">Avval aynan nima so&apos;ralganini aniqlang (masalan: x emas, 2x+1 so&apos;ralgan bo&apos;lishi mumkin).</p>
+          </div>
+          <div>
+            <span className="font-mono font-black text-[#c6f432] block">2. 50/50 USULINI BOSING</span>
+            <p className="mt-0.5 text-slate-300">Ikkilansangiz «❌ 50/50» tugmasi bilan 2 ta aniq xato javobni olib tashlang.</p>
+          </div>
+          <div>
+            <span className="font-mono font-black text-[#c6f432] block">3. MASLAHAT OLING</span>
+            <p className="mt-0.5 text-slate-300">«💡 Maslahat» tugmasi javobni aytmay, birinchi qadam formulasini eslatadi.</p>
+          </div>
+          <div>
+            <span className="font-mono font-black text-[#c6f432] block">4. XATONI OVOZLI TINGLANG</span>
+            <p className="mt-0.5 text-slate-300">Javobni tekshirgach, batafsil izohni o&apos;qing yoki ovozli eshitib mustahkamlang.</p>
+          </div>
+        </div>
+
         {/* IELTS ichida: Reading va Writing Tabs */}
         {activeSubject === "ielts" && (
           <div className="flex items-center gap-2 border-t border-white/10 pt-4">
@@ -389,6 +409,37 @@ function PracticeCenterContent() {
             <p className="text-xs text-slate-400">
               Kamida 250 ta so&apos;z yozing. Inshoyingizni kiritgach, Talaba AI sizning Band Score ingizni 4 ta mezon bo&apos;yicha tekshirib beradi.
             </p>
+
+            {/* Boshlovchi va yuqori daraja uchun tayyor 4-abzas insho qoliplari */}
+            <div className="rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c] p-4 space-y-2.5">
+              <span className="text-xs font-extrabold text-[#c6f432] block">
+                📝 Nimadan boshlashni bilmayapsizmi? 1 bosishda tayyor 4-abzas qolipini yuklang:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWritingEssay(
+                      `Introduction (Kirish — mavzuni o'z so'zingiz bilan ayting + shaxsiy fikringiz):\nNowadays, people have different views about whether university education should be free for all students. While some argue that free tuition creates equal opportunities, I believe that sharing the cost encourages stronger academic responsibility.\n\nBody Paragraph 1 (1-tomon fikri + aniq misol):\nOn the one hand, making higher education free allows talented students from low-income families to enter top universities. For example, in several European countries, state-funded universities help build a skilled workforce.\n\nBody Paragraph 2 (2-tomon va sizning fikringiz + sabab):\nOn the other hand, completely free education places a heavy financial burden on taxpayers. Moreover, when students invest in their own studies or compete for merit scholarships, they tend to value their classes more seriously.\n\nConclusion (Xulosa — 1-2 gapda yakuniy fikr):\nIn conclusion, although free tuition supports social equality, a balanced system with targeted scholarships for hardworking students is far more sustainable.`,
+                    )
+                  }
+                  className="rounded-xl border border-[#c6f432]/50 bg-[#c6f432]/15 px-3 py-1.5 text-xs font-bold text-[#c6f432] hover:bg-[#c6f432] hover:text-[#0b0b0c] transition-all"
+                >
+                  ✨ Band 7.5+ Tayyor Namuna va Qolipni Yuklash
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWritingEssay(
+                      `1) Introduction: People have different opinions about [mavzu]. While some think that [...], I believe that [...].\n\n2) Body 1: On the one hand, the main advantage of [...] is that [...]. For example, [...].\n\n3) Body 2: On the other hand, I support the view that [...] because [...]. For instance, [...].\n\n4) Conclusion: In conclusion, although both views have strong points, it seems to me that [...].`,
+                    )
+                  }
+                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-bold text-white hover:border-[#c6f432]/50 transition-all"
+                >
+                  🪜 0 dan Boshlovchilar Uchun Bo&apos;sh Shablon
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Yozish maydoni */}

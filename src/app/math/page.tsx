@@ -29,12 +29,16 @@ import {
 import { MATH_15_MODULES, type MathModuleLesson } from "@/lib/curriculum/math-modules-data";
 import { MathInteractiveCanvas } from "@/components/math/MathInteractiveCanvas";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
+import { useLearningAdaptation } from "@/lib/learning/easy-adaptation";
 
 const STORAGE_KEY = "3talaba_math_completed_modules";
 
 export default function MathAcademyPage() {
+  const { pace, setPace, activeOption, options } = useLearningAdaptation();
+
   // Tanlangan modul id si (default: 1-modul)
   const [activeModuleId, setActiveModuleId] = useState<number>(1);
+  const [tierFilter, setTierFilter] = useState<"ALL" | "FOUNDATION" | "MID" | "ADV">("ALL");
 
   // 6 ta tabdan qaysi biri ochiq: 1..6
   const [activeTab, setActiveTab] = useState<number>(1);
@@ -121,6 +125,32 @@ export default function MathAcademyPage() {
             <span className="text-[11px] font-mono text-slate-400">{progressPercent}% o&apos;zlashtirildi</span>
           </div>
         </div>
+
+        {/* Oson o'rganish yo'l-yo'rig'i va tushuntirish darajasi */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c] p-4 text-xs">
+          <div className="flex items-center gap-2.5 text-slate-200">
+            <Compass className="h-4 w-4 shrink-0 text-[#c6f432]" />
+            <span>
+              <strong className="text-[#c6f432]">Oson Yo&apos;l-Yo&apos;riq:</strong> Chapdan darajangizga mos modulni tanlang → 1 dan 6 gacha qadamlarni ketma-ket o&apos;ting (3-qadamda slayderlarni surib grafikni jonlantiring!).
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {options.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setPace(opt.id)}
+                className={`rounded-lg px-2.5 py-1 font-extrabold transition-all ${
+                  pace === opt.id
+                    ? "bg-[#c6f432] text-[#0b0b0c]"
+                    : "border border-white/10 bg-white/5 text-slate-300 hover:text-white"
+                }`}
+              >
+                {opt.title}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ====================================================================
@@ -131,17 +161,49 @@ export default function MathAcademyPage() {
             CHAP PANEL: 15 ta Modul Ro'yxati (3-4 Ustun)
             ==================================================================== */}
         <aside className="lg:col-span-4 xl:col-span-3 glass-card p-4 sm:p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
-              O&apos;quv Dasturi (15 ta Modul)
-            </span>
-            <span className="font-mono text-[11px] text-slate-400">1–3 Ochiq</span>
+          <div className="space-y-2.5 border-b border-white/10 pb-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
+                O&apos;quv Dasturi (15 ta Modul)
+              </span>
+              <span className="font-mono text-[11px] text-[#c6f432]">Barchasi ochiq</span>
+            </div>
+
+            {/* Daraja bo'yicha saralash */}
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+              {[
+                { id: "ALL" as const, label: "Barchasi (15)" },
+                { id: "FOUNDATION" as const, label: "0 dan Poydevor (1–5)" },
+                { id: "MID" as const, label: "O'rta SAT (6–10)" },
+                { id: "ADV" as const, label: "SAT 800 (11–15)" },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTierFilter(t.id)}
+                  className={`rounded-lg px-2 py-1.5 font-bold transition-all ${
+                    tierFilter === t.id
+                      ? "bg-[#c6f432] text-[#0b0b0c]"
+                      : "border border-white/10 bg-[#0b0b0c] text-slate-300 hover:text-white"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2 max-h-[780px] overflow-y-auto pr-1">
-            {MATH_15_MODULES.map((mod) => {
+            {MATH_15_MODULES.filter((mod) => {
+              if (tierFilter === "FOUNDATION") return mod.id <= 5;
+              if (tierFilter === "MID") return mod.id >= 6 && mod.id <= 10;
+              if (tierFilter === "ADV") return mod.id >= 11;
+              return true;
+            }).map((mod) => {
               const isSelected = mod.id === activeModuleId;
               const isDone = completedModules.includes(mod.id);
+              const levelTag =
+                mod.id <= 5 ? "Poydevor" : mod.id <= 10 ? "O'rta" : "SAT 800";
 
               return (
                 <button
@@ -169,14 +231,9 @@ export default function MathAcademyPage() {
                       >
                         <CheckCircle2 className="h-3 w-3" />
                       </span>
-                    ) : mod.isFree ? (
-                      <span className="rounded-md bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-400/30">
-                        Ochiq
-                      </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-400/30">
-                        <Lock className="h-2.5 w-2.5" />
-                        Pro
+                      <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] font-bold text-[#c6f432] border border-[#c6f432]/30">
+                        {levelTag}
                       </span>
                     )}
                   </div>
@@ -264,9 +321,26 @@ export default function MathAcademyPage() {
               ================================================================== */}
           {activeTab === 1 && (
             <div className="space-y-6">
+              {/* 0 dan boshlovchilar uchun eng avval hayotiy o'xshatish va 30-soniyalik xotira qoidasi chiqadi */}
+              {pace === "SODDA" && (
+                <div className="rounded-2xl border border-[#c6f432]/50 bg-[#0b0b0c] p-5 space-y-2.5">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-[#c6f432] px-2.5 py-0.5 text-[11px] font-black text-[#0b0b0c]">
+                    0 DAN SODDA TUSHUNTIRISH: AVVAL TASAVVUR QILING
+                  </span>
+                  <p className="text-sm text-white leading-relaxed">
+                    {currentModule.theory.realWorldAnalogy}
+                  </p>
+                  {currentModule.aiSummary.quickRules[0] && (
+                    <p className="border-t border-white/10 pt-2 text-xs text-[#c6f432] font-bold">
+                      🔑 30 soniyalik oltin qoida: {currentModule.aiSummary.quickRules[0]}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">
-                  Asosiy g&apos;oya
+                  Asosiy g&apos;oya ({activeOption.title})
                 </span>
                 <h3 className="mt-1 text-lg font-bold text-white">{currentModule.theory.headline}</h3>
                 <p className="mt-2 text-sm text-slate-200 leading-relaxed">{currentModule.theory.intuition}</p>
@@ -280,10 +354,28 @@ export default function MathAcademyPage() {
                 ))}
               </div>
 
-              <div className="glass-pill rounded-xl p-4 border-l-4 border-l-amber-400">
-                <span className="text-xs font-bold uppercase text-amber-300 block">Hayotiy o&apos;xshatish:</span>
-                <p className="mt-1 text-xs text-slate-300 leading-relaxed">{currentModule.theory.realWorldAnalogy}</p>
-              </div>
+              {pace !== "SODDA" && (
+                <div className="glass-pill rounded-xl p-4 border-l-4 border-l-[#c6f432]">
+                  <span className="text-xs font-bold uppercase text-[#c6f432] block">Hayotiy o&apos;xshatish:</span>
+                  <p className="mt-1 text-xs text-slate-300 leading-relaxed">{currentModule.theory.realWorldAnalogy}</p>
+                </div>
+              )}
+
+              {pace === "TEZKOR" && (
+                <div className="rounded-2xl border border-[#c6f432]/40 bg-[#0b0b0c] p-4 space-y-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#c6f432] block">
+                    ⚡ Imtihonda 10 soniyada ishlatiladigan tezkor qoidalar:
+                  </span>
+                  <ul className="space-y-1 text-xs text-white">
+                    {currentModule.aiSummary.quickRules.map((rule, rIdx) => (
+                      <li key={rIdx} className="flex items-start gap-2">
+                        <span className="text-[#c6f432] font-black">•</span>
+                        <span>{rule}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="flex justify-end pt-2">
                 <button

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 import { BRAND, GUEST_NAV_LINKS, STUDENT_NAV_LINKS, type NavLinkItem } from "@/lib/site-config";
+import { QuickGuideButton } from "@/components/learning/QuickGuideModal";
 
 const DESKTOP_TONE_CLASSES: Record<NonNullable<NavLinkItem["tone"]>, string> = {
   default: "text-sm font-semibold text-white/80 transition-colors hover:text-[#c6f432]",
@@ -97,7 +98,9 @@ export function Navbar() {
         </nav>
 
         {/* Sozlamalar va Profil */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2.5 md:flex">
+          <QuickGuideButton />
+
           <button
             type="button"
             onClick={toggleReduceMotion}
@@ -172,6 +175,7 @@ export function Navbar() {
 
         {/* Mobil menyu tugmasi */}
         <div className="flex items-center gap-2 lg:hidden">
+          <QuickGuideButton />
           <button
             type="button"
             onClick={toggleTheme}

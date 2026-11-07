@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
+import { useLearningAdaptation } from "@/lib/learning/easy-adaptation";
 
 // ============================================================================
 // TIP VA MA'LUMOTLAR STRUKTURASI
@@ -188,6 +189,7 @@ const DIAGNOSTIC_QUESTIONS: DiagnosticQuestion[] = [
 
 export default function PlacementTestPage() {
   const { reduceMotion } = useUIPreferences();
+  const { activeOption, setPace } = useLearningAdaptation();
 
   // Bosqich holati
   const [stage, setStage] = useState<PlacementStage>("SETUP");
@@ -240,6 +242,13 @@ export default function PlacementTestPage() {
 
   // 1-bosqichdan 2-bosqichga o'tish
   const handleStartTest = () => {
+    setPace(
+      currentLevel === "FOUNDATION"
+        ? "SODDA"
+        : currentLevel === "INTERMEDIATE"
+          ? "STANDART"
+          : "TEZKOR"
+    );
     setStage("QUIZ");
     setCurrentIndex(0);
     setSelectedAnswers({});
@@ -344,6 +353,11 @@ export default function PlacementTestPage() {
     setResultRecord(record);
     setStage("RESULT");
 
+    // Natijaga qarab butun platformaning tushuntirish darajasini avtomatik moslaymiz
+    const recommendedPace =
+      totalScore <= 2 ? "SODDA" : totalScore <= 4 ? "STANDART" : "TEZKOR";
+    setPace(recommendedPace);
+
     // Shifrlangan holda LocalStorage ga saqlaymiz
     saveSecureLocal("3talaba_placement_result", record);
 
@@ -383,23 +397,41 @@ export default function PlacementTestPage() {
       {stage === "SETUP" && (
         <div className="glass-card space-y-8 p-6 sm:p-10">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3.5 py-1.5 text-xs font-extrabold text-emerald-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#c6f432]/40 bg-[#c6f432]/15 px-3.5 py-1.5 text-xs font-extrabold text-[#c6f432]">
               <Sparkles className="h-4 w-4" />
               <span>3TALABA CAMPUS • ADAPTIV DIAGNOSTIKA</span>
             </div>
             <h1 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl">
               12 Oylik Shaxsiy Rejangizni Tuzamiz
             </h1>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+            <p className="mt-2 text-sm leading-relaxed text-white/75">
               Ushbu 6 ta tezkor savoldan iborat diagnostika testi yordamida hozirgi darajangizni
-              aniqlab, kuchli va zaif nuqtalaringizga mos traektoriya quramiz.
+              aniqlab, butun platformadagi dars va metodlarni sizga moslashtiramiz.
             </p>
+          </div>
+
+          {/* Tez moslashish yo'l-yo'rig'i */}
+          <div className="rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c]/85 p-4 sm:p-5">
+            <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-[#c6f432]">
+              🧭 YO&apos;L-YO&apos;RIQ: BU QANDAY ISHLAYDI?
+            </span>
+            <div className="mt-2.5 grid gap-3 sm:grid-cols-3 text-xs text-white/85">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <strong className="text-[#c6f432]">1-Qadam:</strong> Hozirgi holatingiz va maqsadingizni tanlang — hech qanday ro&apos;yxatdan o&apos;tish shart emas.
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <strong className="text-[#c6f432]">2-Qadam:</strong> 6 ta savolga bilganingizcha javob bering (savolni ovozli tinglash tugmasi ham bor).
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <strong className="text-[#c6f432]">3-Qadam:</strong> Tizim butun saytdagi metodlarni sizning darajangizga avtomatik sozlab, 1-darsga olib kiradi!
+              </div>
+            </div>
           </div>
 
           <div className="space-y-6">
             {/* 1. Hozirgi holat tanlash */}
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-emerald-400">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#c6f432]">
                 1. Hozirgi darajangiz qanday?
               </label>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -408,19 +440,19 @@ export default function PlacementTestPage() {
                     id: "FOUNDATION" as CurrentLevelChoice,
                     title: "Boshlang'ich (Foundation)",
                     desc: "Maktab algebrasini va ingliz tili grammatikasini noldan mustahkamlashim kerak.",
-                    badge: "Noldan",
+                    badge: "0 dan Sodda Tilda",
                   },
                   {
                     id: "INTERMEDIATE" as CurrentLevelChoice,
                     title: "O'rta (Intermediate)",
                     desc: "Asosiy mavzularni bilaman, lekin SAT va IELTS imtihon tuzoqlariga tayyorman.",
-                    badge: "Tavsiya etiladi",
+                    badge: "Bosqichma-Bosqich",
                   },
                   {
                     id: "ADVANCED" as CurrentLevelChoice,
                     title: "Yuqori (Advanced)",
                     desc: "SAT Math 800 va IELTS 7.5+ uchun eng qiyin misollar va tezlik ustida ishlayman.",
-                    badge: "1500+ Maqsad",
+                    badge: "10 Soniyalik Usul",
                   },
                 ].map((item) => {
                   const isSelected = currentLevel === item.id;
@@ -428,21 +460,30 @@ export default function PlacementTestPage() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setCurrentLevel(item.id)}
+                      onClick={() => {
+                        setCurrentLevel(item.id);
+                        setPace(
+                          item.id === "FOUNDATION"
+                            ? "SODDA"
+                            : item.id === "INTERMEDIATE"
+                              ? "STANDART"
+                              : "TEZKOR"
+                        );
+                      }}
                       className={`relative flex flex-col justify-between rounded-2xl border p-4 text-left transition-all ${
                         isSelected
-                          ? "border-emerald-400 bg-emerald-500/15 text-white shadow-[0_0_24px_rgba(198,244,50,0.3)]"
-                          : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:bg-white/10"
+                          ? "border-[#c6f432] bg-[#c6f432]/15 text-white shadow-[0_0_24px_rgba(198,244,50,0.3)]"
+                          : "border-white/10 bg-white/5 text-white/75 hover:border-[#c6f432]/40 hover:bg-white/10"
                       }`}
                     >
                       <div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-bold text-white">{item.title}</span>
-                          {isSelected && <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
+                          {isSelected && <CheckCircle2 className="h-4 w-4 text-[#c6f432]" />}
                         </div>
-                        <p className="mt-2 text-xs text-slate-300 leading-relaxed">{item.desc}</p>
+                        <p className="mt-2 text-xs text-white/75 leading-relaxed">{item.desc}</p>
                       </div>
-                      <span className="mt-4 inline-block font-mono text-[10px] font-extrabold uppercase text-emerald-400">
+                      <span className="mt-4 inline-block font-mono text-[10px] font-extrabold uppercase text-[#c6f432]">
                         {item.badge}
                       </span>
                     </button>
@@ -453,7 +494,7 @@ export default function PlacementTestPage() {
 
             {/* 2. Asosiy maqsad tanlash */}
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-amber-300">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-white">
                 2. Asosiy akademik maqsadingiz:
               </label>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -482,15 +523,15 @@ export default function PlacementTestPage() {
                       onClick={() => setTargetGoal(item.id)}
                       className={`rounded-2xl border p-4 text-left transition-all ${
                         isSelected
-                          ? "border-amber-400 bg-amber-500/15 text-white shadow-[0_0_24px_rgba(245,158,11,0.25)]"
-                          : "border-white/10 bg-white/5 text-slate-300 hover:border-amber-400/40 hover:bg-white/10"
+                          ? "border-[#c6f432] bg-[#c6f432]/15 text-white shadow-[0_0_24px_rgba(198,244,50,0.25)]"
+                          : "border-white/10 bg-white/5 text-white/75 hover:border-[#c6f432]/40 hover:bg-white/10"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-white">{item.title}</span>
-                        {isSelected && <CheckCircle2 className="h-4 w-4 text-amber-300" />}
+                        {isSelected && <CheckCircle2 className="h-4 w-4 text-[#c6f432]" />}
                       </div>
-                      <p className="mt-2 text-xs text-slate-300 leading-relaxed">{item.desc}</p>
+                      <p className="mt-2 text-xs text-white/75 leading-relaxed">{item.desc}</p>
                     </button>
                   );
                 })}
@@ -499,9 +540,9 @@ export default function PlacementTestPage() {
           </div>
 
           <div className="flex flex-col items-center justify-center gap-3 pt-4 border-t border-white/10 sm:flex-row sm:justify-between">
-            <div className="flex items-center gap-3 text-xs text-slate-400">
-              <Clock className="h-4 w-4 text-emerald-400" />
-              <span>O'rtacha vaqt: 4–6 daqiqa • 6 ta sifatli savol</span>
+            <div className="flex items-center gap-3 text-xs text-white/70">
+              <Clock className="h-4 w-4 text-[#c6f432]" />
+              <span>O&apos;rtacha vaqt: 4–6 daqiqa • 6 ta sifatli savol</span>
             </div>
 
             <button
@@ -637,56 +678,107 @@ export default function PlacementTestPage() {
         <div className="glass-card space-y-8 p-6 sm:p-10">
           {/* Yuqori tabrik va umumiy xulosa */}
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/50 bg-emerald-500/20 text-emerald-400 shadow-[0_0_30px_rgba(198,244,50,0.35)]">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#c6f432]/50 bg-[#c6f432]/20 text-[#c6f432] shadow-[0_0_30px_rgba(198,244,50,0.35)]">
               <Trophy className="h-7 w-7" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white">
               Diagnostika Muvaffaqiyatli Yakunlandi!
             </h1>
-            <p className="text-sm text-slate-300">
+            <p className="text-sm text-white/80">
               Siz 6 ta savoldan{" "}
-              <strong className="text-emerald-400 font-bold font-mono">
+              <strong className="text-[#c6f432] font-bold font-mono">
                 {resultRecord.totalScore} tasiga
               </strong>{" "}
               to&apos;g&apos;ri javob berdingiz ({Math.round((resultRecord.totalScore / 6) * 100)}%).
-              Vaqt: <span className="font-mono text-amber-300">{formattedTime}</span>.
+              Vaqt: <span className="font-mono text-[#c6f432]">{formattedTime}</span>.
             </p>
+          </div>
+
+          {/* Avtomatik yoqilgan O'rganish Rejimi va Hoziroq Boshlanadigan 3 Qadam */}
+          <div className="rounded-2xl border border-[#c6f432]/40 bg-[#c6f432]/10 p-5 sm:p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-[#c6f432]">
+                  ✨ AVTOMATIK MOSLASHTIRILDI
+                </span>
+                <h2 className="text-base sm:text-lg font-extrabold text-white mt-0.5">
+                  Butun sayt siz uchun «{activeOption.title}» rejimiga sozlandi!
+                </h2>
+              </div>
+              <span className="rounded-full bg-[#c6f432] px-3 py-1 font-mono text-[11px] font-extrabold text-[#0b0b0c]">
+                {activeOption.badge}
+              </span>
+            </div>
+            <p className="text-xs leading-relaxed text-white/85">
+              {activeOption.summary} <strong className="text-[#c6f432]">Kunlik norma:</strong> {activeOption.dailyPlan}.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3 pt-1">
+              <Link
+                href="/math"
+                className="rounded-xl border border-white/15 bg-[#0b0b0c]/85 p-3.5 transition-all hover:border-[#c6f432]"
+              >
+                <span className="font-mono text-[10px] font-extrabold text-[#c6f432]">1-QADAM (BUGUN)</span>
+                <span className="mt-1 block text-xs font-bold text-white">
+                  {resultRecord.mathScore < 3
+                    ? "Matematikani 1-moduldan sodda grafik bilan boshlash"
+                    : "SAT Math 800 modullarini ko'rib chiqish"}
+                </span>
+              </Link>
+              <Link
+                href="/learn"
+                className="rounded-xl border border-white/15 bg-[#0b0b0c]/85 p-3.5 transition-all hover:border-[#c6f432]"
+              >
+                <span className="font-mono text-[10px] font-extrabold text-[#c6f432]">2-QADAM (20 DAQIQA)</span>
+                <span className="mt-1 block text-xs font-bold text-white">
+                  Ovozli qoida kartalari va yechilgan misollarni ochish
+                </span>
+              </Link>
+              <Link
+                href="/practice"
+                className="rounded-xl border border-white/15 bg-[#0b0b0c]/85 p-3.5 transition-all hover:border-[#c6f432]"
+              >
+                <span className="font-mono text-[10px] font-extrabold text-[#c6f432]">3-QADAM (AMALIYOT)</span>
+                <span className="mt-1 block text-xs font-bold text-white">
+                  50/50 va Maslahat yordamida savollar ishlash
+                </span>
+              </Link>
+            </div>
           </div>
 
           {/* Taxminiy Boshlang'ich Daraja Kartochkalari */}
           <div className="grid gap-4 sm:grid-cols-2">
             {/* SAT Matematika */}
-            <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-emerald-400 flex items-center justify-between">
+            <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-[#c6f432] flex items-center justify-between">
               <div>
-                <span className="text-xs font-extrabold uppercase text-emerald-400">
+                <span className="text-xs font-extrabold uppercase text-[#c6f432]">
                   Taxminiy SAT Matematika
                 </span>
                 <h3 className="text-2xl font-black text-white font-mono mt-1">
                   {resultRecord.estimatedSat} / 800
                 </h3>
-                <span className="text-xs text-slate-300 mt-1 block">
+                <span className="text-xs text-white/75 mt-1 block">
                   Matematikadan: {resultRecord.mathScore} / 4 ta to&apos;g&apos;ri
                 </span>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#c6f432]/20 text-[#c6f432]">
                 <Sigma className="h-6 w-6" />
               </div>
             </div>
 
             {/* IELTS / Akademik Ingliz tili */}
-            <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-amber-400 flex items-center justify-between">
+            <div className="glass-pill rounded-2xl p-5 border-l-4 border-l-white flex items-center justify-between">
               <div>
-                <span className="text-xs font-extrabold uppercase text-amber-300">
+                <span className="text-xs font-extrabold uppercase text-white">
                   Taxminiy Ingliz Tili Darajasi
                 </span>
                 <h3 className="text-2xl font-black text-white font-mono mt-1">
                   {resultRecord.estimatedIelts}
                 </h3>
-                <span className="text-xs text-slate-300 mt-1 block">
+                <span className="text-xs text-white/75 mt-1 block">
                   Reading &amp; Writing: {resultRecord.englishScore} / 2 ta to&apos;g&apos;ri
                 </span>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 text-amber-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white">
                 <Brain className="h-6 w-6" />
               </div>
             </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { EasyOnboardingGuideSection } from "@/components/learning/EasyOnboardingGuideSection";
 import { ProgramsSection } from "@/components/landing/ProgramsSection";
 import { RoadmapSection } from "@/components/landing/RoadmapSection";
 import { AiCoachSection } from "@/components/landing/AiCoachSection";
@@ -40,6 +41,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <HeroSection />
+      <EasyOnboardingGuideSection />
       <ProgramsSection />
       <RoadmapSection />
       <AiCoachSection />

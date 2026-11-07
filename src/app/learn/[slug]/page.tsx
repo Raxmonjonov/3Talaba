@@ -117,6 +117,8 @@ export default function LessonRunnerPage({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [completionResult, setCompletionResult] =
     useState<CompletionResultPayload | null>(null);
+  const [stepByStepExamples, setStepByStepExamples] = useState<boolean>(true);
+  const [visibleExampleSteps, setVisibleExampleSteps] = useState<Record<number, number>>({});
 
   const stageCardRef = useRef<HTMLDivElement | null>(null);
   const xpEarnedSpanRef = useRef<HTMLSpanElement | null>(null);
@@ -309,6 +311,26 @@ export default function LessonRunnerPage({
           })}
         </div>
 
+        {/* Joriy bosqich uchun aniq yo'l-yo'riq ko'rsatkichi */}
+        <div className="mt-4 rounded-xl border border-[#c6f432]/35 bg-[#0b0b0c] px-4 py-3 text-xs sm:text-sm text-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <strong className="text-[#c6f432] mr-1.5">
+              {phase === "THEORY" && "📍 1-Bosqich Yo'l-Yo'rig'i:"}
+              {phase === "EXAMPLES" && "📍 2-Bosqich Yo'l-Yo'rig'i:"}
+              {phase === "EXERCISES" && "📍 3-Bosqich Yo'l-Yo'rig'i:"}
+              {phase === "ANALYSIS" && "📍 4-Bosqich Yo'l-Yo'rig'i:"}
+            </strong>
+            {phase === "THEORY" &&
+              "Qoidalarni shoshilmay o'qing yoki «Tinglash» tugmasini bosing. Tushunmagan joyingizda «💡 Sodda tushuntir» ni bosing."}
+            {phase === "EXAMPLES" &&
+              "Har bir namunaviy masalada yechim qanday qurilganini qadam-baqadam ochib ko'ring va yakuniy xulosani eslab qoling."}
+            {phase === "EXERCISES" &&
+              "Qiynalsangiz darhol tasodifiy belgilamang — «Socratic maslahat olish» tugmasini bosib, o'zingiz topishga harakat qiling."}
+            {phase === "ANALYSIS" &&
+              "Xato bo'lgan savollar izohini ko'rib chiqing va ertangi tavsiya etilgan darsga o'ting."}
+          </div>
+        </div>
+
         {/* ====================================================================
             1-BOSQICH: INTERAKTIV TALABA AI VA METOD KARTALARI
             ==================================================================== */}
@@ -332,13 +354,36 @@ export default function LessonRunnerPage({
             ref={stageCardRef}
             className="mt-6 space-y-6 rounded-2xl border border-border bg-canvas/90 p-6 sm:p-8"
           >
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-gold">
-              <Lightbulb className="h-4 w-4" />
-              <span>Bosqichma-Bosqich Yechilgan Namunaviy Misollar</span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-gold">
+                <Lightbulb className="h-4 w-4 text-[#c6f432]" />
+                <span>Bosqichma-Bosqich Yechilgan Namunaviy Misollar</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setStepByStepExamples((prev) => !prev)}
+                className={`rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all ${
+                  stepByStepExamples
+                    ? "border-[#c6f432] bg-[#c6f432]/15 text-[#c6f432]"
+                    : "border-white/15 bg-white/5 text-slate-300 hover:text-white"
+                }`}
+              >
+                {stepByStepExamples
+                  ? "✓ Qadamma-qadam ochish rejimi (Oson)"
+                  : "Barcha qadamlarni birvarakay ko'rsatish"}
+              </button>
             </div>
 
             <div className={`grid gap-5 ${lesson.examples.length >= 2 ? "lg:grid-cols-2" : "grid-cols-1"}`}>
-              {lesson.examples.map((ex, idx) => (
+              {lesson.examples.map((ex, idx) => {
+                const totalSteps = ex.stepByStepSolution.length;
+                const shownCount = stepByStepExamples
+                  ? Math.min(totalSteps, visibleExampleSteps[idx] ?? 1)
+                  : totalSteps;
+                const allRevealed = shownCount >= totalSteps;
+
+                return (
                 <div
                   key={idx}
                   className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 sm:p-6 space-y-4"
@@ -353,9 +398,9 @@ export default function LessonRunnerPage({
                     </p>
                     <div className="space-y-2.5">
                       <span className="text-xs font-bold uppercase tracking-wider text-fg-muted">
-                        Qadamma-qadam yechim:
+                        Qadamma-qadam yechim ({shownCount} / {totalSteps}):
                       </span>
-                      {ex.stepByStepSolution.map((stepText, sIdx) => (
+                      {ex.stepByStepSolution.slice(0, shownCount).map((stepText, sIdx) => (
                         <div
                           key={sIdx}
                           className="flex items-start gap-2.5 text-xs leading-relaxed text-fg sm:text-sm"
@@ -366,13 +411,32 @@ export default function LessonRunnerPage({
                           <span>{stepText}</span>
                         </div>
                       ))}
+
+                      {!allRevealed && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setVisibleExampleSteps((prev) => ({
+                              ...prev,
+                              [idx]: shownCount + 1,
+                            }))
+                          }
+                          className="mt-1 inline-flex items-center gap-1.5 rounded-xl border border-[#c6f432]/50 bg-[#c6f432]/15 px-3.5 py-2 text-xs font-extrabold text-[#c6f432] hover:bg-[#c6f432] hover:text-[#0b0b0c] transition-all"
+                        >
+                          <span>Keyingi ({shownCount + 1}-) qadamni ochish</span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <div className="rounded-xl border border-gold/40 bg-gold-soft/20 px-4 py-3 text-xs sm:text-sm font-semibold text-gold">
-                    🔑 Xulosa: {ex.takeaway}
-                  </div>
+                  {allRevealed && (
+                    <div className="rounded-xl border border-[#c6f432]/40 bg-[#c6f432]/10 px-4 py-3 text-xs sm:text-sm font-semibold text-white">
+                      🔑 <strong className="text-[#c6f432]">Eslab qolish siri:</strong> {ex.takeaway}
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex items-center justify-between border-t border-border pt-5">

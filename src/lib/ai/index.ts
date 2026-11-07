@@ -341,9 +341,54 @@ export function evaluateAcademicWriting(
   };
 }
 
-// ── 6. O'zbek tilidagi aniq savol-javob dvigateli ────────────────────────────
+// ── 6. O'quvchi darajasi prefiksini ajratish va aniq savol-javob dvigateli ──
+export function extractPaceDirective(rawMessage: string): {
+  coreQuestion: string;
+  paceHint: "SODDA" | "STANDART" | "TEZKOR" | null;
+  directiveText: string | null;
+} {
+  const match = rawMessage.match(/^\[O'quvchi darajasi:\s*([^\]]+)\]:\s*([\s\S]*)$/i);
+  if (!match) {
+    return { coreQuestion: rawMessage.trim(), paceHint: null, directiveText: null };
+  }
+  const directive = match[1].trim();
+  const coreQuestion = match[2].trim() || rawMessage.trim();
+  const lowerDir = directive.toLowerCase();
+  let paceHint: "SODDA" | "STANDART" | "TEZKOR" = "STANDART";
+  if (lowerDir.includes("0 dan") || lowerDir.includes("sodda")) {
+    paceHint = "SODDA";
+  } else if (lowerDir.includes("yuqori") || lowerDir.includes("tezkor")) {
+    paceHint = "TEZKOR";
+  }
+  return { coreQuestion, paceHint, directiveText: directive };
+}
+
+function appendPaceTail(
+  baseReply: string,
+  paceHint: "SODDA" | "STANDART" | "TEZKOR" | null
+): string {
+  if (paceHint === "SODDA") {
+    return [
+      baseReply,
+      "",
+      `🪜 **0 dan Sodda Eslatma (Oson Moslashish):**`,
+      `• Formulani yodlashga shoshilmang: avval **1-bosqichni** oddiy sonlar bilan daftarga yozib ko'ring.`,
+      `• Agar birorta atama tushunarsiz bo'lsa, pastda **«Yanada soddaroq tushuntir»** tugmasini bosing — hayotiy misol bilan tushuntiraman!`,
+    ].join("\n");
+  }
+  if (paceHint === "TEZKOR") {
+    return [
+      baseReply,
+      "",
+      `⚡ **10 Soniyalik Imtihon Siri (Tezkor Usul):**`,
+      `• Real SAT/IELTS testida avval **savolning oxirgi jumlasini** o'qing va **50/50 usuli** bilan 2 ta mantiqsiz variantni darhol chiqarib tashlang.`,
+    ].join("\n");
+  }
+  return baseReply;
+}
+
 function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): string {
-  const q = req.userMessage.trim();
+  const { coreQuestion: q, paceHint } = extractPaceDirective(req.userMessage);
 
   // Socratic suhbatning keyingi qadamida tenglama oldingi xabarda qoladi —
   // shu sabab avval joriy savolga, keyin suhbat tarixiga qarab izlaymiz.
@@ -352,7 +397,7 @@ function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): s
     ...[...(req.history ?? [])]
       .reverse()
       .filter((m) => m.role === "USER")
-      .map((m) => m.content),
+      .map((m) => extractPaceDirective(m.content).coreQuestion),
   ];
   const equationSource =
     equationCandidates.find((text) =>
@@ -371,24 +416,33 @@ function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): s
     const rightSide = sign === "+" ? c - b : c + b;
     const solution = rightSide / a;
 
-    return [
-      `🎯 **${honorific}, tenglamangizni aniq ko'rib chiqamiz:**`,
-      ``,
-      `**Berilgan masala:** $${a}${variable} ${sign} ${b} = ${c}$`,
-      ``,
-      `**1-bosqich (Ozod hadni o'tkazish):**`,
-      `Tenglikning ikkala tomonidan $${b}$ ni ${sign === "+" ? "ayiramiz" : "qo'shamiz"}:`,
-      `$$${a}${variable} = ${c} ${sign === "+" ? "-" : "+"} ${b}$$`,
-      `$$${a}${variable} = ${rightSide}$$`,
-      ``,
-      `**2-bosqich (${variable} ni topish):**`,
-      `Ikkala tomonni $${a}$ ga bo'lamiz:`,
-      `$$${variable} = \\frac{${rightSide}}{${a}} = ${solution}$$`,
-      ``,
-      `✅ **Aniq Yechim:** $${variable} = ${solution}$`,
-      ``,
-      `**Tekshirish:** $${a} \\cdot (${solution}) ${sign} ${b} = ${a * solution} ${sign} ${b} = ${c}$ (To'g'ri!)`,
-    ].join("\n");
+    return appendPaceTail(
+      [
+        `🎯 **${honorific}, tenglamangizni aniq ko'rib chiqamiz:**`,
+        ``,
+        `**Berilgan masala:** $${a}${variable} ${sign} ${b} = ${c}$`,
+        ...(paceHint === "SODDA"
+          ? [
+              ``,
+              `💡 **Hayotiy tasavvur:** Tenglamani **ikki pallali tarozi** deb o'ylang: chap palladan nimani olsangiz, o'ng palladan ham xuddi shuni olasiz.`,
+            ]
+          : []),
+        ``,
+        `**1-bosqich (Ozod hadni o'tkazish):**`,
+        `Tenglikning ikkala tomonidan $${b}$ ni ${sign === "+" ? "ayiramiz" : "qo'shamiz"}:`,
+        `$$${a}${variable} = ${c} ${sign === "+" ? "-" : "+"} ${b}$$`,
+        `$$${a}${variable} = ${rightSide}$$`,
+        ``,
+        `**2-bosqich (${variable} ni topish):**`,
+        `Ikkala tomonni $${a}$ ga bo'lamiz:`,
+        `$$${variable} = \\frac{${rightSide}}{${a}} = ${solution}$$`,
+        ``,
+        `✅ **Aniq Yechim:** $${variable} = ${solution}$`,
+        ``,
+        `**Tekshirish:** $${a} \\cdot (${solution}) ${sign} ${b} = ${a * solution} ${sign} ${b} = ${c}$ (To'g'ri!)`,
+      ].join("\n"),
+      paceHint
+    );
   }
 
   // Universitet va 100% Grant bo'yicha savollar tahlili
@@ -397,65 +451,77 @@ function buildPreciseFallbackResponse(req: AICoachRequest, honorific: string): s
       q
     )
   ) {
-    return [
-      `🎓 **${honorific}, Top Universitet va 100% Grant strategiyasi:**`,
-      ``,
-      `**1-bosqich — Akademik Maqsadlar:**`,
-      `• **Digital SAT:** 1500+ (ayniqsa Math 790–800 texnik va iqtisodiy yo'nalishlar uchun hal qiluvchi).`,
-      `• **IELTS Academic:** Band 7.5+ (Writing va Speaking kamida 7.0 bo'lishi maqsadga muvofiq).`,
-      `• **Maktab GPA:** 4.8+ / 5.0 (9–11-sinf baholar transkripti).`,
-      ``,
-      `**2-bosqich — Personal Statement & Motivatsion Insho:**`,
-      `Qabul komissiyasi yutuqlar ro'yxatini emas, **sizning shaxsiy o'sish hikoyangizni** o'qiydi: *Muammo/Qiziqish → Amaliy Harakat/Loyiha → Xulosa va Universitetda kutilayotgan natija*.`,
-      ``,
-      `**3-bosqich — 100% Grant Manbalari:**`,
-      `• **AQSH (Full-Ride):** Common App + CSS Profile (muddat: Early Action 1-Noyabr, Regular 1-Yanvar).`,
-      `• **Janubiy Koreya & Osiyo:** KAIST, UNIST, HKUST — 100% kontrakt + oylik stipendiya.`,
-      `• **Yevropa & Milliy Grantlar:** Stipendium Hungaricum (15-Yanvar) hamda "El-Yurt Umidi" jamg'armasi.`,
-      ``,
-      `**Keyingi qadam:** Tanlagan yo'nalishingiz va hozirgi sinfingizni yozing — birgalikda shaxsiy qabul rejangizni tuzamiz!`,
-    ].join("\n");
+    return appendPaceTail(
+      [
+        `🎓 **${honorific}, Top Universitet va 100% Grant strategiyasi:**`,
+        ``,
+        `**1-bosqich — Akademik Maqsadlar:**`,
+        `• **Digital SAT:** 1500+ (ayniqsa Math 790–800 texnik va iqtisodiy yo'nalishlar uchun hal qiluvchi).`,
+        `• **IELTS Academic:** Band 7.5+ (Writing va Speaking kamida 7.0 bo'lishi maqsadga muvofiq).`,
+        `• **Maktab GPA:** 4.8+ / 5.0 (9–11-sinf baholar transkripti).`,
+        ``,
+        `**2-bosqich — Personal Statement & Motivatsion Insho:**`,
+        `Qabul komissiyasi yutuqlar ro'yxatini emas, **sizning shaxsiy o'sish hikoyangizni** o'qiydi: *Muammo/Qiziqish → Amaliy Harakat/Loyiha → Xulosa va Universitetda kutilayotgan natija*.`,
+        ``,
+        `**3-bosqich — 100% Grant Manbalari:**`,
+        `• **AQSH (Full-Ride):** Common App + CSS Profile (muddat: Early Action 1-Noyabr, Regular 1-Yanvar).`,
+        `• **Janubiy Koreya & Osiyo:** KAIST, UNIST, HKUST — 100% kontrakt + oylik stipendiya.`,
+        `• **Yevropa & Milliy Grantlar:** Stipendium Hungaricum (15-Yanvar) hamda "El-Yurt Umidi" jamg'armasi.`,
+        ``,
+        `**Keyingi qadam:** Tanlagan yo'nalishingiz va hozirgi sinfingizni yozing — birgalikda shaxsiy qabul rejangizni tuzamiz!`,
+      ].join("\n"),
+      paceHint
+    );
   }
 
   // Viyeta va Kvadrat tenglama savollari tahlili
   if (/(viyet|vieta|kvadrat tenglama|diskriminant)/i.test(q)) {
-    return [
-      `📐 **${honorific}, Kvadrat tenglama va Viyet teoremasi qoidasi:**`,
-      ``,
-      `Standart kvadrat tenglama $ax^2 + bx + c = 0$ uchun:`,
-      `• **Diskriminant:** $D = b^2 - 4ac$ ($D > 0$: 2 ta ildiz, $D = 0$: 1 ta ildiz, $D < 0$: haqiqiy ildiz yo'q).`,
-      `• **Viyet teoremasi:**`,
-      `$$x_1 + x_2 = -\\frac{b}{a}, \\qquad x_1 \\cdot x_2 = \\frac{c}{a}$$`,
-      ``,
-      `**SAT 10-soniyalik usul:** Agar masalada ildizlar yig'indisi so'ralsa, tenglamani yechib o'tirmasdan darhol $-b/a$ ni hisoblang!`,
-    ].join("\n");
+    return appendPaceTail(
+      [
+        `📐 **${honorific}, Kvadrat tenglama va Viyet teoremasi qoidasi:**`,
+        ``,
+        `Standart kvadrat tenglama $ax^2 + bx + c = 0$ uchun:`,
+        `• **Diskriminant:** $D = b^2 - 4ac$ ($D > 0$: 2 ta ildiz, $D = 0$: 1 ta ildiz, $D < 0$: haqiqiy ildiz yo'q).`,
+        `• **Viyet teoremasi:**`,
+        `$$x_1 + x_2 = -\\frac{b}{a}, \\qquad x_1 \\cdot x_2 = \\frac{c}{a}$$`,
+        ``,
+        `**SAT 10-soniyalik usul:** Agar masalada ildizlar yig'indisi so'ralsa, tenglamani yechib o'tirmasdan darhol $-b/a$ ni hisoblang!`,
+      ].join("\n"),
+      paceHint
+    );
   }
 
   // IELTS Writing / Speaking savollari tahlili
   if (/(ielts|writing|task 2|speaking|band 7)/i.test(q)) {
-    return [
-      `📝 **${honorific}, IELTS Band 7.5+ Tizimli Qolipi:**`,
-      ``,
-      `**1-bosqich (Introduction — 2 gap):** Savolni sinonimlar bilan parafraz qiling + aniq Thesis Statement bering (*"This essay argues that..."*).`,
-      `**2-bosqich (Body Paragraph 1 & 2 — PEEL usuli):** *Point (Asosiy fikr) → Explain (Nega shunday?) → Example (Aniq misol) → Link (Mavzuga bog'lash)*.`,
-      `**3-bosqich (Conclusion — 1-2 gap):** Yangi g'oya qo'shmasdan, asosiy pozitsiyani xulosalang.`,
-      ``,
-      `Tayyor inshongiz bo'lsa, **Writing tekshiruvi** rejimida yuboring — Band ballingizni hisoblab beraman!`,
-    ].join("\n");
+    return appendPaceTail(
+      [
+        `📝 **${honorific}, IELTS Band 7.5+ Tizimli Qolipi:**`,
+        ``,
+        `**1-bosqich (Introduction — 2 gap):** Savolni sinonimlar bilan parafraz qiling + aniq Thesis Statement bering (*"This essay argues that..."*).`,
+        `**2-bosqich (Body Paragraph 1 & 2 — PEEL usuli):** *Point (Asosiy fikr) → Explain (Nega shunday?) → Example (Aniq misol) → Link (Mavzuga bog'lash)*.`,
+        `**3-bosqich (Conclusion — 1-2 gap):** Yangi g'oya qo'shmasdan, asosiy pozitsiyani xulosalang.`,
+        ``,
+        `Tayyor inshongiz bo'lsa, **Writing tekshiruvi** rejimida yuboring — Band ballingizni hisoblab beraman!`,
+      ].join("\n"),
+      paceHint
+    );
   }
 
   // Umumiy ma'lumotlar / savollar bo'yicha aniq javoblar
-  return [
-    `Salom, **${honorific}**! Savolingizni diqqat bilan tahlil qildim:`,
-    ``,
-    `> *«${q}»*`,
-    ``,
-    `**1-bosqich — Asosiy yondashuv:**`,
-    `Har bir akademik savolda avvalo berilgan shartni va topilishi kerak bo'lgan maqsadni aniq ajratib olamiz.`,
-    ``,
-    `**2-bosqich — Amaliy qadam:**`,
-    `Agar aniq matematik misol, ingliz tili savoli, insho matni yoki maqsadli universitetingiz nomini yozsangiz, uni **formulalar va aniq qadamlar** bilan to'liq yechib beraman!`,
-  ].join("\n");
+  return appendPaceTail(
+    [
+      `Salom, **${honorific}**! Savolingizni diqqat bilan tahlil qildim:`,
+      ``,
+      `> *«${q}»*`,
+      ``,
+      `**1-bosqich — Asosiy yondashuv:**`,
+      `Har bir akademik savolda avvalo berilgan shartni va topilishi kerak bo'lgan maqsadni aniq ajratib olamiz.`,
+      ``,
+      `**2-bosqich — Amaliy qadam:**`,
+      `Agar aniq matematik misol, ingliz tili savoli, insho matni yoki maqsadli universitetingiz nomini yozsangiz, uni **formulalar va aniq qadamlar** bilan to'liq yechib beraman!`,
+    ].join("\n"),
+    paceHint
+  );
 }
 
 // ── 7. Tashqi LLM Provayderlar va Neyron Tarmoq Integratsiyasi ───────────────
@@ -655,7 +721,8 @@ export async function generateAICoachResponse(
     !(req.history ?? []).some((m) => m.role === "ASSISTANT");
 
   if (isOpeningSocraticTurn) {
-    const equation = cleanText.match(/(-?\d*)\s*([a-zA-Z])\s*([+-])\s*(\d+)\s*=\s*(-?\d+)/);
+    const { coreQuestion, paceHint } = extractPaceDirective(cleanText);
+    const equation = coreQuestion.match(/(-?\d*)\s*([a-zA-Z])\s*([+-])\s*(\d+)\s*=\s*(-?\d+)/);
     const guide = equation
       ? [
           `**Yo'naltiruvchi savol:** tenglamada $${equation[2]}$ ni yolg'iz qoldirish uchun birinchi bo'lib qaysi amalni bajarish kerak deb o'ylaysiz?`,
@@ -667,15 +734,18 @@ export async function generateAICoachResponse(
         ];
 
     return {
-      reply: [
-        `🧭 **${honorific}, bu savolni birgalikda ochamiz!**`,
-        ``,
-        `Men sizga tayyor javobni darhol berib qo'ymayman — avval siz o'ylab ko'rasiz, keyin birgalikda tekshiramiz.`,
-        ``,
-        ...guide,
-        ``,
-        `Javobingizni yozing — keyin har bir qadamni birgalikda ko'rib chiqamiz! ✨`,
-      ].join("\n"),
+      reply: appendPaceTail(
+        [
+          `🧭 **${honorific}, bu savolni birgalikda ochamiz!**`,
+          ``,
+          `Men sizga tayyor javobni darhol berib qo'ymayman — avval siz o'ylab ko'rasiz, keyin birgalikda tekshiramiz.`,
+          ``,
+          ...guide,
+          ``,
+          `Javobingizni yozing — keyin har bir qadamni birgalikda ko'rib chiqamiz! ✨`,
+        ].join("\n"),
+        paceHint
+      ),
       metadata: {
         providerUsed: "local",
         mode: req.mode,

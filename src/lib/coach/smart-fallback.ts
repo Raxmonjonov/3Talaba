@@ -1,7 +1,8 @@
-import type {
-  AICoachMetadata,
-  AICoachMode,
-  WritingRubricBreakdown,
+import {
+  extractPaceDirective,
+  type AICoachMetadata,
+  type AICoachMode,
+  type WritingRubricBreakdown,
 } from "@/lib/ai";
 
 export type CoachSubjectId =
@@ -18,6 +19,7 @@ export interface SmartFallbackParams {
   message: string;
   honorific: string;
   turnIndex: number;
+  pace?: "SODDA" | "STANDART" | "TEZKOR";
 }
 
 export interface SmartFallbackResult {
@@ -463,9 +465,39 @@ function buildSocraticOpening(
   };
 }
 
+function withPaceNote(
+  result: SmartFallbackResult,
+  pace?: "SODDA" | "STANDART" | "TEZKOR" | null
+): SmartFallbackResult {
+  if (pace === "SODDA") {
+    return {
+      ...result,
+      reply: [
+        result.reply,
+        "",
+        `🪜 **0 dan Sodda Xulosa:** Avval 1-qadamni daftarga yozib ko'ring — birorta joyi tushunarsiz bo'lsa, pastdagi **«Yanada soddaroq tushuntir»** tugmasini bosing!`,
+      ].join("\n"),
+    };
+  }
+  if (pace === "TEZKOR") {
+    return {
+      ...result,
+      reply: [
+        result.reply,
+        "",
+        `⚡ **10 Soniyalik Imtihon Siri:** Real testda avval savol oxirini o'qing va 50/50 usuli bilan 2 ta mantiqsiz variantni chiqarib tashlang.`,
+      ].join("\n"),
+    };
+  }
+  return result;
+}
+
 export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackResult {
-  const { subjectId, subjectLabel, mode, message, honorific, turnIndex } = params;
-  const lower = message.toLowerCase();
+  const { subjectId, subjectLabel, mode, message, honorific, turnIndex, pace } = params;
+  const parsed = extractPaceDirective(message);
+  const cleanMessage = parsed.coreQuestion;
+  const effectivePace = pace ?? parsed.paceHint;
+  const lower = cleanMessage.toLowerCase();
   const learnedHonorific = turnIndex > 0 ? `Bilimdon ${honorific}` : honorific;
   const isFatigue =
     /(charcha|charchadim|boshim og|bosh og|tanaffus|dam ol|uyqum|kuchim yo)/i.test(
@@ -473,7 +505,7 @@ export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackRe
     );
 
   if (mode === "WRITING_REVIEW") {
-    return buildWritingReview(message, learnedHonorific);
+    return buildWritingReview(cleanMessage, learnedHonorific);
   }
 
   if (mode === "MOTIVATION" || isFatigue) {
@@ -490,58 +522,58 @@ export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackRe
     /(xato|adash|noto'g'ri yech|qayerda xato)/i.test(lower)
   ) {
     const isSocratic = mode === "SOCRATIC_TUTOR";
-    return {
+    return withPaceNote({
       reply: buildErrorAnalysis(learnedHonorific, subjectLabel),
       metadata: buildMetadata(
         mode,
         learnedHonorific,
         isSocratic ? "GUIDING_QUESTION" : "STEP_BY_STEP"
       ),
-    };
+    }, effectivePace);
   }
 
   if (/(viyet|vieta|ildizlar yig|ildizlar ko'payt)/i.test(lower)) {
-    return {
+    return withPaceNote({
       reply: buildVietaAnswer(learnedHonorific, subjectLabel),
       metadata: buildMetadata(
         mode,
         learnedHonorific,
         mode === "SOCRATIC_TUTOR" ? "GUIDING_QUESTION" : "STEP_BY_STEP"
       ),
-    };
+    }, effectivePace);
   }
 
   if (/(kvadrat|quadratic)/i.test(lower) && /(qiyin|hard|savol|sinab)/i.test(lower)) {
-    return {
+    return withPaceNote({
       reply: buildHardQuadratic(learnedHonorific),
       metadata: buildMetadata(
         mode,
         learnedHonorific,
         mode === "SOCRATIC_TUTOR" ? "GUIDING_QUESTION" : "STEP_BY_STEP"
       ),
-    };
+    }, effectivePace);
   }
 
   if (/command of evidence|dalilga asos|dalil savol/i.test(lower)) {
-    return {
+    return withPaceNote({
       reply: buildCommandOfEvidence(learnedHonorific),
       metadata: buildMetadata(
         mode,
         learnedHonorific,
         mode === "SOCRATIC_TUTOR" ? "GUIDING_QUESTION" : "STEP_BY_STEP"
       ),
-    };
+    }, effectivePace);
   }
 
   if (/(introduction|kirish|writing task 2|qolip)/i.test(lower)) {
-    return {
+    return withPaceNote({
       reply: buildIeltsIntro(learnedHonorific),
       metadata: buildMetadata(
         mode,
         learnedHonorific,
         mode === "SOCRATIC_TUTOR" ? "GUIDING_QUESTION" : "STEP_BY_STEP"
       ),
-    };
+    }, effectivePace);
   }
 
   if (
@@ -551,7 +583,10 @@ export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackRe
     )
   ) {
     if (mode === "SOCRATIC_TUTOR" && turnIndex === 0) {
-      return buildSocraticOpening(honorific, "admissions", "Universitet & Grant Yo'li");
+      return withPaceNote(
+        buildSocraticOpening(honorific, "admissions", "Universitet & Grant Yo'li"),
+        effectivePace
+      );
     }
     const admGuide = SUBJECT_GUIDES.admissions;
     const reply = [
@@ -564,14 +599,17 @@ export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackRe
       `**Amaliy keyingi qadam:**`,
       `Hozirgi sinfingiz, taxminiy SAT/IELTS darajangiz va qiziqqan sohangizni (masalan: *Computer Science, Iqtisodiyot, Muhandislik, Tibbiyot*) yozing — men siz uchun mos Top-5 universitetlar ro'yxati va Personal Statement g'oyasini tuzib beraman!`,
     ].join("\n");
-    return {
+    return withPaceNote({
       reply,
       metadata: buildMetadata(mode, learnedHonorific, "STEP_BY_STEP"),
-    };
+    }, effectivePace);
   }
 
   if (mode === "SOCRATIC_TUTOR" && turnIndex === 0) {
-    return buildSocraticOpening(honorific, subjectId, subjectLabel);
+    return withPaceNote(
+      buildSocraticOpening(honorific, subjectId, subjectLabel),
+      effectivePace
+    );
   }
 
   if (mode === "FAST_SOLUTION") {
@@ -590,10 +628,10 @@ export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackRe
       `**Sizning navbatingiz:**`,
       `Aniq masalani yuboring — men eng qisqa yechim yo'lini ko'rsataman.`,
     ].join("\n");
-    return {
+    return withPaceNote({
       reply,
       metadata: buildMetadata(mode, learnedHonorific, "STEP_BY_STEP"),
-    };
+    }, effectivePace);
   }
 
   const guide = SUBJECT_GUIDES[subjectId];
@@ -608,8 +646,8 @@ export function buildSmartFallback(params: SmartFallbackParams): SmartFallbackRe
     `Shu usulni o'zingiz bitta misolda qo'llab ko'ring. Javobingizni yuboring — qaysi qadamda qiynalayotganingizni aniqlab, keyingi mashqni shaxsiylashtiraman.`,
   ].join("\n");
 
-  return {
+  return withPaceNote({
     reply,
     metadata: buildMetadata(mode, learnedHonorific, "STEP_BY_STEP"),
-  };
+  }, effectivePace);
 }
