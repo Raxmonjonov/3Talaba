@@ -24,7 +24,10 @@ import {
   JarvisLiveTeacher,
   type LiveTeacherAction,
 } from "@/components/voice/JarvisLiveTeacher";
+import { ChalkboardClassroom } from "@/components/classroom/ChalkboardClassroom";
 import { TheoryMethodCards } from "@/components/curriculum/TheoryMethodCards";
+import { SEED_CURRICULUM } from "@/lib/curriculum/seed-content";
+import { buildChalkboardFromLesson } from "@/lib/learning/chalkboard-builder";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 
 interface LessonExample {
@@ -102,9 +105,11 @@ export default function LessonRunnerPage({
   const { slug } = use(params);
   const { reduceMotion } = useUIPreferences();
 
+  const [activeSlug, setActiveSlug] = useState<string>(slug);
   const [data, setData] = useState<LessonDetailPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [phase, setPhase] = useState<LessonPhase>("THEORY");
+  const [theoryView, setTheoryView] = useState<"CHALKBOARD" | "CARDS">("CHALKBOARD");
 
   // Mashqlar holati
   const [qIdx, setQIdx] = useState<number>(0);
@@ -124,15 +129,20 @@ export default function LessonRunnerPage({
   const xpEarnedSpanRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/lessons/${slug}`)
+    setActiveSlug(slug);
+  }, [slug]);
+
+  useEffect(() => {
+    fetch(`/api/lessons/${activeSlug}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((payload: LessonDetailPayload | null) => {
-        setData(payload);
+        if (payload) {
+          setData(payload);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [slug]);
+  }, [activeSlug]);
 
   useEffect(() => {
     if (reduceMotion || !stageCardRef.current) return;
@@ -332,17 +342,96 @@ export default function LessonRunnerPage({
         </div>
 
         {/* ====================================================================
-            1-BOSQICH: INTERAKTIV TALABA AI VA METOD KARTALARI
+            1-BOSQICH: JONLI SINF DOSKASI VA ANIMATSIYALI AI USTOZ
             ==================================================================== */}
         {phase === "THEORY" && (
-          <div ref={stageCardRef} className="mt-6">
-            <TheoryMethodCards
-              theoryMarkdown={lesson.theoryMarkdown}
-              lessonTitle={lesson.titleUz}
-              honorific={honorific}
-              lessonSlug={lesson.slug}
-              onProceedToExamples={() => setPhase("EXAMPLES")}
-            />
+          <div ref={stageCardRef} className="mt-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-bold text-white/75">
+                💡 Doskadagi har qanday qoidani bossangiz yoki yuqoridan mavzuni almashtirsangiz, <strong className="text-[#c6f432]">AI Ustoz</strong> faqat doskani yangilab jonli tushuntiradi.
+              </span>
+              <div className="inline-flex rounded-xl border border-white/15 bg-[#0b0b0c] p-1">
+                <button
+                  type="button"
+                  onClick={() => setTheoryView("CHALKBOARD")}
+                  className={`rounded-lg px-3 py-1 text-xs font-extrabold transition-all ${
+                    theoryView === "CHALKBOARD"
+                      ? "bg-[#c6f432] text-[#0b0b0c]"
+                      : "text-white/75 hover:text-white"
+                  }`}
+                >
+                  👨‍🏫 Jonli Doska Darsi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTheoryView("CARDS")}
+                  className={`rounded-lg px-3 py-1 text-xs font-extrabold transition-all ${
+                    theoryView === "CARDS"
+                      ? "bg-[#c6f432] text-[#0b0b0c]"
+                      : "text-white/75 hover:text-white"
+                  }`}
+                >
+                  📋 Konspekt Kartalari
+                </button>
+              </div>
+            </div>
+
+            {theoryView === "CHALKBOARD" ? (
+              <ChalkboardClassroom
+                slide={buildChalkboardFromLesson({
+                  slug: lesson.slug,
+                  subjectName: lesson.subject.nameUz,
+                  lessonTitle: lesson.titleUz,
+                  theoryMarkdown: lesson.theoryMarkdown,
+                  examples: lesson.examples,
+                })}
+                availableSlides={(() => {
+                  const seedSlides = SEED_CURRICULUM.map((s) =>
+                    buildChalkboardFromLesson({
+                      slug: s.topic.lesson.slug,
+                      subjectName: s.nameUz,
+                      lessonTitle: s.topic.lesson.titleUz,
+                      theoryMarkdown: s.topic.lesson.theoryMarkdown,
+                      examples: s.topic.lesson.examples,
+                    })
+                  );
+                  if (seedSlides.some((item) => item.id === lesson.slug)) {
+                    return seedSlides;
+                  }
+                  return [
+                    buildChalkboardFromLesson({
+                      slug: lesson.slug,
+                      subjectName: lesson.subject.nameUz,
+                      lessonTitle: lesson.titleUz,
+                      theoryMarkdown: lesson.theoryMarkdown,
+                      examples: lesson.examples,
+                    }),
+                    ...seedSlides,
+                  ];
+                })()}
+                onSelectSlide={(nextLessonSlug) => {
+                  setActiveSlug(nextLessonSlug);
+                  setQIdx(0);
+                  setSelectedOpt(null);
+                  setFeedback("idle");
+                  if (typeof window !== "undefined") {
+                    window.history.replaceState(null, "", `/learn/${nextLessonSlug}`);
+                  }
+                }}
+                honorific={honorific}
+                lessonSlug={lesson.slug}
+                onProceedNext={() => setPhase("EXAMPLES")}
+                proceedLabel="2-Bosqich: Namunaviy Misollarga O'tish"
+              />
+            ) : (
+              <TheoryMethodCards
+                theoryMarkdown={lesson.theoryMarkdown}
+                lessonTitle={lesson.titleUz}
+                honorific={honorific}
+                lessonSlug={lesson.slug}
+                onProceedToExamples={() => setPhase("EXAMPLES")}
+              />
+            )}
           </div>
         )}
 

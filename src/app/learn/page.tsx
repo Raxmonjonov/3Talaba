@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookOpen,
   CheckCircle2,
@@ -14,7 +15,14 @@ import {
   FileText,
   Brain,
 } from "lucide-react";
+import { ChalkboardClassroom } from "@/components/classroom/ChalkboardClassroom";
 import { UniversityPathwayAtlas } from "@/components/curriculum/UniversityPathwayAtlas";
+import { MATH_15_MODULES } from "@/lib/curriculum/math-modules-data";
+import { SEED_CURRICULUM } from "@/lib/curriculum/seed-content";
+import {
+  buildChalkboardFromLesson,
+  buildChalkboardFromMathModule,
+} from "@/lib/learning/chalkboard-builder";
 import { useLearningAdaptation } from "@/lib/learning/easy-adaptation";
 
 interface LessonSummary {
@@ -59,10 +67,35 @@ interface LessonsCatalogResponse {
 }
 
 export default function LearnIndexPage() {
+  const router = useRouter();
   const { pace, setPace, activeOption, options } = useLearningAdaptation();
   const [data, setData] = useState<LessonsCatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSubjectSlug, setSelectedSubjectSlug] = useState<string>("all");
+  const [activeBoardId, setActiveBoardId] = useState<string>(
+    SEED_CURRICULUM[0]?.topic.lesson.slug ?? "sat-math-linear-equations"
+  );
+
+  // Barcha dars va matematika modullarini yagona interaktiv doska uchun yig'amiz
+  const allBoardSlides = useMemo(() => {
+    const curriculumSlides = SEED_CURRICULUM.map((s) =>
+      buildChalkboardFromLesson({
+        slug: s.topic.lesson.slug,
+        subjectName: s.nameUz,
+        lessonTitle: s.topic.lesson.titleUz,
+        theoryMarkdown: s.topic.lesson.theoryMarkdown,
+        examples: s.topic.lesson.examples,
+      })
+    );
+    const mathSlides = MATH_15_MODULES.map((m) => buildChalkboardFromMathModule(m));
+    return [...curriculumSlides, ...mathSlides];
+  }, []);
+
+  const currentBoardSlide = useMemo(
+    () =>
+      allBoardSlides.find((s) => s.id === activeBoardId) ?? allBoardSlides[0]!,
+    [activeBoardId, allBoardSlides]
+  );
 
   useEffect(() => {
     fetch("/api/lessons")
@@ -227,6 +260,30 @@ export default function LearnIndexPage() {
           </div>
         </div>
       </div>
+
+      {/* JONLI DOSKA VA ANIMATSIYALI AI USTOZ: Faqat doskadagi mavzu almashadi! */}
+      <ChalkboardClassroom
+        slide={currentBoardSlide}
+        availableSlides={allBoardSlides}
+        onSelectSlide={(nextId) => setActiveBoardId(nextId)}
+        honorific={honorific}
+        lessonSlug={
+          SEED_CURRICULUM.some((s) => s.topic.lesson.slug === currentBoardSlide.id)
+            ? currentBoardSlide.id
+            : undefined
+        }
+        onProceedNext={() => {
+          const isCurriculumLesson = SEED_CURRICULUM.some(
+            (s) => s.topic.lesson.slug === currentBoardSlide.id
+          );
+          if (isCurriculumLesson) {
+            router.push(`/learn/${currentBoardSlide.id}`);
+          } else {
+            router.push("/math");
+          }
+        }}
+        proceedLabel="Misol va Mashqlarni Ishlash"
+      />
 
       {/* 0 dan Universitet va 100% Grantgacha 6 Bosqichli Yo'l Xaritasi va Grantlar Atlasi */}
       <UniversityPathwayAtlas />

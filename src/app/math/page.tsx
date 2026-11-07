@@ -27,8 +27,10 @@ import {
   Zap,
 } from "lucide-react";
 import { MATH_15_MODULES, type MathModuleLesson } from "@/lib/curriculum/math-modules-data";
+import { ChalkboardClassroom } from "@/components/classroom/ChalkboardClassroom";
 import { MathInteractiveCanvas } from "@/components/math/MathInteractiveCanvas";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
+import { buildChalkboardFromMathModule } from "@/lib/learning/chalkboard-builder";
 import { useLearningAdaptation } from "@/lib/learning/easy-adaptation";
 
 const STORAGE_KEY = "3talaba_math_completed_modules";
@@ -289,7 +291,7 @@ export default function MathAcademyPage() {
           {/* 6 Bosqichli Metodika Tabs */}
           <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
             {[
-              { id: 1, label: "1. Nazariya", icon: Lightbulb },
+              { id: 1, label: "1. Jonli Doska & AI Ustoz", icon: Lightbulb },
               { id: 2, label: "2. Isbot (Proof)", icon: Sigma },
               { id: 3, label: "3. Vizual SVG Model", icon: Eye },
               { id: 4, label: "4. SAT Tuzoqlari", icon: Zap },
@@ -305,11 +307,11 @@ export default function MathAcademyPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                     isActive
-                      ? "border border-emerald-400 bg-emerald-500/25 text-white shadow-neon"
-                      : "border border-white/5 bg-white/5 text-slate-400 hover:text-slate-200 hover:bg-white/10"
+                      ? "border border-[#c6f432] bg-[#c6f432] text-[#0b0b0c] shadow-neon"
+                      : "border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10"
                   }`}
                 >
-                  <Icon className={`h-3.5 w-3.5 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
+                  <Icon className={`h-3.5 w-3.5 ${isActive ? "text-[#0b0b0c]" : "text-[#c6f432]"}`} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -317,76 +319,25 @@ export default function MathAcademyPage() {
           </div>
 
           {/* ==================================================================
-              TAB 1: NAZARIYA VA KONSEPSIYA
+              TAB 1: JONLI SINF DOSKASI VA ANIMATSIYALI AI USTOZ
               ================================================================== */}
           {activeTab === 1 && (
-            <div className="space-y-6">
-              {/* 0 dan boshlovchilar uchun eng avval hayotiy o'xshatish va 30-soniyalik xotira qoidasi chiqadi */}
-              {pace === "SODDA" && (
-                <div className="rounded-2xl border border-[#c6f432]/50 bg-[#0b0b0c] p-5 space-y-2.5">
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-[#c6f432] px-2.5 py-0.5 text-[11px] font-black text-[#0b0b0c]">
-                    0 DAN SODDA TUSHUNTIRISH: AVVAL TASAVVUR QILING
-                  </span>
-                  <p className="text-sm text-white leading-relaxed">
-                    {currentModule.theory.realWorldAnalogy}
-                  </p>
-                  {currentModule.aiSummary.quickRules[0] && (
-                    <p className="border-t border-white/10 pt-2 text-xs text-[#c6f432] font-bold">
-                      🔑 30 soniyalik oltin qoida: {currentModule.aiSummary.quickRules[0]}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">
-                  Asosiy g&apos;oya ({activeOption.title})
-                </span>
-                <h3 className="mt-1 text-lg font-bold text-white">{currentModule.theory.headline}</h3>
-                <p className="mt-2 text-sm text-slate-200 leading-relaxed">{currentModule.theory.intuition}</p>
-              </div>
-
-              <div className="space-y-3">
-                {currentModule.theory.paragraphs.map((p, idx) => (
-                  <p key={idx} className="text-sm text-slate-300 leading-relaxed">
-                    {p}
-                  </p>
-                ))}
-              </div>
-
-              {pace !== "SODDA" && (
-                <div className="glass-pill rounded-xl p-4 border-l-4 border-l-[#c6f432]">
-                  <span className="text-xs font-bold uppercase text-[#c6f432] block">Hayotiy o&apos;xshatish:</span>
-                  <p className="mt-1 text-xs text-slate-300 leading-relaxed">{currentModule.theory.realWorldAnalogy}</p>
-                </div>
-              )}
-
-              {pace === "TEZKOR" && (
-                <div className="rounded-2xl border border-[#c6f432]/40 bg-[#0b0b0c] p-4 space-y-2">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#c6f432] block">
-                    ⚡ Imtihonda 10 soniyada ishlatiladigan tezkor qoidalar:
-                  </span>
-                  <ul className="space-y-1 text-xs text-white">
-                    {currentModule.aiSummary.quickRules.map((rule, rIdx) => (
-                      <li key={rIdx} className="flex items-start gap-2">
-                        <span className="text-[#c6f432] font-black">•</span>
-                        <span>{rule}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <div className="flex justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab(2)}
-                  className="btn-neon inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold"
-                >
-                  <span>2-qadam: Formulalar Isboti</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
+            <div className="space-y-5">
+              <ChalkboardClassroom
+                slide={buildChalkboardFromMathModule(currentModule)}
+                availableSlides={MATH_15_MODULES.map((m) =>
+                  buildChalkboardFromMathModule(m)
+                )}
+                onSelectSlide={(targetSlug) => {
+                  const found = MATH_15_MODULES.find((m) => m.slug === targetSlug);
+                  if (found) {
+                    setActiveModuleId(found.id);
+                  }
+                }}
+                honorific="Bo'lajak Talaba"
+                onProceedNext={() => setActiveTab(2)}
+                proceedLabel="2-qadam: Formulalar Isboti"
+              />
             </div>
           )}
 
