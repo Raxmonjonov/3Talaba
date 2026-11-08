@@ -252,7 +252,55 @@ export default function LessonRunnerPage({
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-6 lg:px-10">
+    <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-6 lg:px-10 space-y-6">
+      {/* JONLI SINF DOSKASI VA AI USTOZ (Har bir darsda aynan rasmdagidek 16:9 kenglikda) */}
+      <ChalkboardClassroom
+        slide={buildChalkboardFromLesson({
+          slug: lesson.slug,
+          subjectName: lesson.subject.nameUz,
+          lessonTitle: lesson.titleUz,
+          theoryMarkdown: lesson.theoryMarkdown,
+          examples: lesson.examples,
+        })}
+        availableSlides={(() => {
+          const seedSlides = SEED_CURRICULUM.map((s) =>
+            buildChalkboardFromLesson({
+              slug: s.topic.lesson.slug,
+              subjectName: s.nameUz,
+              lessonTitle: s.topic.lesson.titleUz,
+              theoryMarkdown: s.topic.lesson.theoryMarkdown,
+              examples: s.topic.lesson.examples,
+            })
+          );
+          if (seedSlides.some((item) => item.id === lesson.slug)) {
+            return seedSlides;
+          }
+          return [
+            buildChalkboardFromLesson({
+              slug: lesson.slug,
+              subjectName: lesson.subject.nameUz,
+              lessonTitle: lesson.titleUz,
+              theoryMarkdown: lesson.theoryMarkdown,
+              examples: lesson.examples,
+            }),
+            ...seedSlides,
+          ];
+        })()}
+        onSelectSlide={(nextLessonSlug) => {
+          setActiveSlug(nextLessonSlug);
+          setQIdx(0);
+          setSelectedOpt(null);
+          setFeedback("idle");
+          if (typeof window !== "undefined") {
+            window.history.replaceState(null, "", `/learn/${nextLessonSlug}`);
+          }
+        }}
+        honorific={honorific}
+        lessonSlug={lesson.slug}
+        onProceedNext={() => setPhase("EXAMPLES")}
+        proceedLabel="2-Bosqich: Namunaviy Misollarga O'tish"
+      />
+
       {/* Kengaytirilgan sinfxona sarlavhasi va asosiy dars maydoni */}
       <div className="glass-card p-5 sm:p-7 lg:p-9">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
@@ -342,96 +390,17 @@ export default function LessonRunnerPage({
         </div>
 
         {/* ====================================================================
-            1-BOSQICH: JONLI SINF DOSKASI VA ANIMATSIYALI AI USTOZ
+            1-BOSQICH: KONSPEKT KARTALARI (Jonli Doska sahifaning eng yuqorisida)
             ==================================================================== */}
         {phase === "THEORY" && (
           <div ref={stageCardRef} className="mt-6 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-bold text-white/75">
-                💡 Doskadagi har qanday qoidani bossangiz yoki yuqoridan mavzuni almashtirsangiz, <strong className="text-[#c6f432]">AI Ustoz</strong> faqat doskani yangilab jonli tushuntiradi.
-              </span>
-              <div className="inline-flex rounded-xl border border-white/15 bg-[#0b0b0c] p-1">
-                <button
-                  type="button"
-                  onClick={() => setTheoryView("CHALKBOARD")}
-                  className={`rounded-lg px-3 py-1 text-xs font-extrabold transition-all ${
-                    theoryView === "CHALKBOARD"
-                      ? "bg-[#c6f432] text-[#0b0b0c]"
-                      : "text-white/75 hover:text-white"
-                  }`}
-                >
-                  👨‍🏫 Jonli Doska Darsi
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTheoryView("CARDS")}
-                  className={`rounded-lg px-3 py-1 text-xs font-extrabold transition-all ${
-                    theoryView === "CARDS"
-                      ? "bg-[#c6f432] text-[#0b0b0c]"
-                      : "text-white/75 hover:text-white"
-                  }`}
-                >
-                  📋 Konspekt Kartalari
-                </button>
-              </div>
-            </div>
-
-            {theoryView === "CHALKBOARD" ? (
-              <ChalkboardClassroom
-                slide={buildChalkboardFromLesson({
-                  slug: lesson.slug,
-                  subjectName: lesson.subject.nameUz,
-                  lessonTitle: lesson.titleUz,
-                  theoryMarkdown: lesson.theoryMarkdown,
-                  examples: lesson.examples,
-                })}
-                availableSlides={(() => {
-                  const seedSlides = SEED_CURRICULUM.map((s) =>
-                    buildChalkboardFromLesson({
-                      slug: s.topic.lesson.slug,
-                      subjectName: s.nameUz,
-                      lessonTitle: s.topic.lesson.titleUz,
-                      theoryMarkdown: s.topic.lesson.theoryMarkdown,
-                      examples: s.topic.lesson.examples,
-                    })
-                  );
-                  if (seedSlides.some((item) => item.id === lesson.slug)) {
-                    return seedSlides;
-                  }
-                  return [
-                    buildChalkboardFromLesson({
-                      slug: lesson.slug,
-                      subjectName: lesson.subject.nameUz,
-                      lessonTitle: lesson.titleUz,
-                      theoryMarkdown: lesson.theoryMarkdown,
-                      examples: lesson.examples,
-                    }),
-                    ...seedSlides,
-                  ];
-                })()}
-                onSelectSlide={(nextLessonSlug) => {
-                  setActiveSlug(nextLessonSlug);
-                  setQIdx(0);
-                  setSelectedOpt(null);
-                  setFeedback("idle");
-                  if (typeof window !== "undefined") {
-                    window.history.replaceState(null, "", `/learn/${nextLessonSlug}`);
-                  }
-                }}
-                honorific={honorific}
-                lessonSlug={lesson.slug}
-                onProceedNext={() => setPhase("EXAMPLES")}
-                proceedLabel="2-Bosqich: Namunaviy Misollarga O'tish"
-              />
-            ) : (
-              <TheoryMethodCards
-                theoryMarkdown={lesson.theoryMarkdown}
-                lessonTitle={lesson.titleUz}
-                honorific={honorific}
-                lessonSlug={lesson.slug}
-                onProceedToExamples={() => setPhase("EXAMPLES")}
-              />
-            )}
+            <TheoryMethodCards
+              theoryMarkdown={lesson.theoryMarkdown}
+              lessonTitle={lesson.titleUz}
+              honorific={honorific}
+              lessonSlug={lesson.slug}
+              onProceedToExamples={() => setPhase("EXAMPLES")}
+            />
           </div>
         )}
 

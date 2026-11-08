@@ -131,7 +131,31 @@ export default function LearnIndexPage() {
   const completedCount = completedLessonIds.length;
 
   return (
-    <div className="mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-6 lg:px-10 space-y-8">
+    <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-6 lg:px-10 space-y-6">
+      {/* JONLI DOSKA VA ANIMATSIYALI AI USTOZ: Faqat doskadagi mavzu almashadi! */}
+      <ChalkboardClassroom
+        slide={currentBoardSlide}
+        availableSlides={allBoardSlides}
+        onSelectSlide={(nextId) => setActiveBoardId(nextId)}
+        honorific={honorific}
+        lessonSlug={
+          SEED_CURRICULUM.some((s) => s.topic.lesson.slug === currentBoardSlide.id)
+            ? currentBoardSlide.id
+            : undefined
+        }
+        onProceedNext={() => {
+          const isCurriculumLesson = SEED_CURRICULUM.some(
+            (s) => s.topic.lesson.slug === currentBoardSlide.id
+          );
+          if (isCurriculumLesson) {
+            router.push(`/learn/${currentBoardSlide.id}`);
+          } else {
+            router.push("/math");
+          }
+        }}
+        proceedLabel="Misol va Mashqlarni Ishlash"
+      />
+
       {/* Yuqori sokin sinfxona peshlavhasi */}
       <div className="glass-card p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6">
@@ -262,30 +286,6 @@ export default function LearnIndexPage() {
           </div>
         </div>
       </div>
-
-      {/* JONLI DOSKA VA ANIMATSIYALI AI USTOZ: Faqat doskadagi mavzu almashadi! */}
-      <ChalkboardClassroom
-        slide={currentBoardSlide}
-        availableSlides={allBoardSlides}
-        onSelectSlide={(nextId) => setActiveBoardId(nextId)}
-        honorific={honorific}
-        lessonSlug={
-          SEED_CURRICULUM.some((s) => s.topic.lesson.slug === currentBoardSlide.id)
-            ? currentBoardSlide.id
-            : undefined
-        }
-        onProceedNext={() => {
-          const isCurriculumLesson = SEED_CURRICULUM.some(
-            (s) => s.topic.lesson.slug === currentBoardSlide.id
-          );
-          if (isCurriculumLesson) {
-            router.push(`/learn/${currentBoardSlide.id}`);
-          } else {
-            router.push("/math");
-          }
-        }}
-        proceedLabel="Misol va Mashqlarni Ishlash"
-      />
 
       {/* 0 dan Universitet va 100% Grantgacha 6 Bosqichli Yo'l Xaritasi va Grantlar Atlasi */}
       <UniversityPathwayAtlas />

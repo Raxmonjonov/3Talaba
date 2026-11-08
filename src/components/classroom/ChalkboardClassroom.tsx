@@ -418,22 +418,6 @@ export function ChalkboardClassroom({
           draggable={false}
         />
 
-        {/* Ustoz gapirayotganda uning yonida kichik jonli ovoz indikatori */}
-        {isSpeaking && (
-          <div
-            className="pointer-events-none absolute z-30 inline-flex items-center gap-1 rounded-full border border-[#c6f432] bg-[#0b0b0c]/90 px-2.5 py-0.5 text-[#c6f432] shadow-[0_0_16px_rgba(198,244,50,0.6)] animate-pulse"
-            style={{
-              left: "2.2%",
-              top: "40.5%",
-              fontSize: "clamp(8px, 1.05cqw, 12px)",
-              fontWeight: 800,
-            }}
-          >
-            <Volume2 className="h-3 w-3" />
-            <span>AI Ustoz tushuntiryapti...</span>
-          </div>
-        )}
-
         {/* DOSKADAGI BO'R YOZUVLARI (Faqat yashil doska ichida, rasmdagi aniq joylashuvda!) */}
         <div
           className={`absolute inset-0 z-10 text-white transition-opacity duration-300 ${
@@ -441,7 +425,7 @@ export function ChalkboardClassroom({
           }`}
           style={serifStyle}
         >
-          {/* 1-QISM (YUQORI CHAP): "mavzu :<Mavzu Nomi>" + Markaziy Formulalar */}
+          {/* 1-QISM (YUQORI CHAP): "mavzu :<Mavzu Nomi>" */}
           <div
             onClick={() => explainSingleZone(0)}
             title="Bosib AI Ustozdan formulani tinglang"
@@ -471,7 +455,7 @@ export function ChalkboardClassroom({
             </div>
           </div>
 
-          {/* 1-QISM FORMULALARI: f(x) = mx + b va m = (y2 - y1) / (x2 - x1) */}
+          {/* 1-QISM FORMULALARI */}
           <div
             onClick={() => explainSingleZone(0)}
             title="Bosib AI Ustozdan formulani tinglang"
@@ -480,10 +464,10 @@ export function ChalkboardClassroom({
               position: "absolute",
               left: "17.2%",
               top: "17.8%",
-              width: "33.5%",
+              width: "35.5%",
               opacity: revealedStep >= 1 ? 1 : 0,
               transform: revealedStep >= 1 ? "translateY(0)" : "translateY(4px)",
-              fontSize: "clamp(8.5px, 1.85cqw, 21px)",
+              fontSize: "clamp(8.5px, 1.80cqw, 20.5px)",
               fontWeight: 700,
               lineHeight: 1.28,
               textShadow:
@@ -497,136 +481,100 @@ export function ChalkboardClassroom({
             ))}
           </div>
 
-          {/* AGAR O'QUVCHI SAVOL BERGAN BO'LSA — DOSKA MARKAZIDA USTOZ JAVOBI */}
-          {boardAiAnswer ? (
-            <div
-              className="rounded-xl border border-white/35 bg-[#162d01]/95 p-3 sm:p-5 shadow-2xl"
-              style={{
-                position: "absolute",
-                left: "19.5%",
-                top: "31%",
-                width: "68%",
-                maxHeight: "52%",
-                overflowY: "auto",
-                fontSize: "clamp(9px, 1.32cqw, 15px)",
-                lineHeight: 1.38,
-              }}
-            >
-              <div className="flex items-center justify-between border-b border-white/20 pb-1.5 mb-2">
-                <strong className="text-[#c6f432]">
-                  ✍️ AI Ustozning Doskadagi Javobi:
-                </strong>
-                <button
-                  type="button"
-                  onClick={() => setBoardAiAnswer(null)}
-                  className="inline-flex items-center gap-1 rounded border border-white/30 px-2 py-0.5 text-[11px] font-sans font-bold text-white hover:border-[#c6f432] hover:text-[#c6f432]"
-                >
-                  <X className="h-3 w-3" />
-                  <span>Yopish</span>
-                </button>
+          {/* 2-QISM (O'RTA CHAP): Asosiy Tushuncha va parametrlar ta'rifi */}
+          <div
+            onClick={() => explainSingleZone(1)}
+            title="Bosib AI Ustozdan asosiy qoidani tinglang"
+            className="cursor-pointer text-center transition-all duration-300"
+            style={{
+              position: "absolute",
+              left: "16.3%",
+              top: "32.2%",
+              width: "39.2%",
+              opacity: revealedStep >= 2 ? 1 : 0,
+              transform: revealedStep >= 2 ? "translateY(0)" : "translateY(4px)",
+              fontSize: "clamp(6.5px, 1.12cqw, 13px)",
+              fontWeight: 700,
+              lineHeight: 1.24,
+              textShadow:
+                activeZone === 1 && isSpeaking
+                  ? "0 0 12px rgba(255,255,255,0.65)"
+                  : "0 1px 2px rgba(0,0,0,0.45)",
+            }}
+          >
+            {slide.leftConcept.paragraphs.map((p, idx) => (
+              <div key={idx}>{p}</div>
+            ))}
+            {slide.leftConcept.bullets.map((b, bIdx) => (
+              <div key={bIdx} className="mt-[0.25cqw]">
+                • {b}
               </div>
-              <div className="whitespace-pre-line font-bold text-white">
-                {boardAiAnswer}
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* 2-QISM (O'RTA CHAP): Asosiy Tushuncha va m, b ta'rifi */}
-              <div
-                onClick={() => explainSingleZone(1)}
-                title="Bosib AI Ustozdan asosiy qoidani tinglang"
-                className="cursor-pointer text-center transition-all duration-300"
-                style={{
-                  position: "absolute",
-                  left: "16.3%",
-                  top: "32.2%",
-                  width: "39.2%",
-                  opacity: revealedStep >= 2 ? 1 : 0,
-                  transform: revealedStep >= 2 ? "translateY(0)" : "translateY(4px)",
-                  fontSize: "clamp(6.5px, 1.12cqw, 13px)",
-                  fontWeight: 700,
-                  lineHeight: 1.24,
-                  textShadow:
-                    activeZone === 1 && isSpeaking
-                      ? "0 0 12px rgba(255,255,255,0.65)"
-                      : "0 1px 2px rgba(0,0,0,0.45)",
-                }}
-              >
-                {slide.leftConcept.paragraphs.map((p, idx) => (
-                  <div key={idx}>{p}</div>
-                ))}
-                {slide.leftConcept.bullets.map((b, bIdx) => (
-                  <div key={bIdx} className="mt-[0.25cqw]">
-                    • {b}
-                  </div>
-                ))}
-              </div>
+            ))}
+          </div>
 
-              {/* 3-QISM (O'RTA O'NG): SAT Imtihonidagi Oltin Qoida */}
-              <div
-                onClick={() => explainSingleZone(2)}
-                title="Bosib AI Ustozdan oltin qoidani tinglang"
-                className="cursor-pointer text-center transition-all duration-300"
-                style={{
-                  position: "absolute",
-                  left: "52.2%",
-                  top: "52.5%",
-                  width: "36.2%",
-                  opacity: revealedStep >= 3 ? 1 : 0,
-                  transform: revealedStep >= 3 ? "translateY(0)" : "translateY(4px)",
-                  fontSize: "clamp(6.5px, 1.10cqw, 12.8px)",
-                  fontWeight: 700,
-                  lineHeight: 1.24,
-                  textShadow:
-                    activeZone === 2 && isSpeaking
-                      ? "0 0 12px rgba(255,255,255,0.65)"
-                      : "0 1px 2px rgba(0,0,0,0.45)",
-                }}
-              >
-                {slide.rightGoldenRule.heading && (
-                  <div>{slide.rightGoldenRule.heading}</div>
-                )}
-                {slide.rightGoldenRule.paragraphs.map((p, idx) => (
-                  <div key={idx}>{p}</div>
-                ))}
-                {slide.rightGoldenRule.bullets.map((b, bIdx) => (
-                  <div key={bIdx}>• {b}</div>
-                ))}
-              </div>
+          {/* 3-QISM (O'RTA O'NG): Imtihondagi Oltin Qoida */}
+          <div
+            onClick={() => explainSingleZone(2)}
+            title="Bosib AI Ustozdan oltin qoidani tinglang"
+            className="cursor-pointer text-center transition-all duration-300"
+            style={{
+              position: "absolute",
+              left: "52.2%",
+              top: "52.5%",
+              width: "36.2%",
+              opacity: revealedStep >= 3 ? 1 : 0,
+              transform: revealedStep >= 3 ? "translateY(0)" : "translateY(4px)",
+              fontSize: "clamp(6.5px, 1.10cqw, 12.8px)",
+              fontWeight: 700,
+              lineHeight: 1.24,
+              textShadow:
+                activeZone === 2 && isSpeaking
+                  ? "0 0 12px rgba(255,255,255,0.65)"
+                  : "0 1px 2px rgba(0,0,0,0.45)",
+            }}
+          >
+            {slide.rightGoldenRule.heading && (
+              <div>{slide.rightGoldenRule.heading}</div>
+            )}
+            {slide.rightGoldenRule.paragraphs.map((p, idx) => (
+              <div key={idx}>{p}</div>
+            ))}
+            {slide.rightGoldenRule.bullets.map((b, bIdx) => (
+              <div key={bIdx}>• {b}</div>
+            ))}
+          </div>
 
-              {/* 4-QISM (PASTKI MARKAZ — KURSIV): Parallel va Perpendikulyar To'g'ri Chiziqlar */}
-              <div
-                onClick={() => explainSingleZone(3)}
-                title="Bosib AI Ustozdan yakuniy xossalarni tinglang"
-                className="cursor-pointer text-center italic transition-all duration-300"
-                style={{
-                  position: "absolute",
-                  left: "18.0%",
-                  top: "67.2%",
-                  width: "50.5%",
-                  opacity: revealedStep >= 4 ? 1 : 0,
-                  transform: revealedStep >= 4 ? "translateY(0)" : "translateY(4px)",
-                  fontSize: "clamp(6.8px, 1.18cqw, 13.8px)",
-                  fontWeight: 700,
-                  lineHeight: 1.24,
-                  textShadow:
-                    activeZone === 3 && isSpeaking
-                      ? "0 0 12px rgba(255,255,255,0.65)"
-                      : "0 1px 2px rgba(0,0,0,0.45)",
-                }}
-              >
-                {slide.bottomSpecialRule.heading && (
-                  <div>{slide.bottomSpecialRule.heading}</div>
-                )}
-                {slide.bottomSpecialRule.paragraphs.map((p, idx) => (
-                  <div key={idx}>{p}</div>
-                ))}
-                {slide.bottomSpecialRule.bullets.map((b, idx) => (
-                  <div key={idx}>• {b}</div>
-                ))}
-              </div>
-            </>
-          )}
+          {/* 4-QISM (PASTKI MARKAZ — KURSIV): Muhim Xossalar */}
+          <div
+            onClick={() => explainSingleZone(3)}
+            title="Bosib AI Ustozdan yakuniy xossalarni tinglang"
+            className="cursor-pointer text-center italic transition-all duration-300"
+            style={{
+              position: "absolute",
+              left: "18.0%",
+              top: "67.2%",
+              width: "50.5%",
+              opacity: revealedStep >= 4 ? 1 : 0,
+              transform: revealedStep >= 4 ? "translateY(0)" : "translateY(4px)",
+              fontSize: "clamp(6.8px, 1.18cqw, 13.8px)",
+              fontWeight: 700,
+              lineHeight: 1.24,
+              textShadow:
+                activeZone === 3 && isSpeaking
+                  ? "0 0 12px rgba(255,255,255,0.65)"
+                  : "0 1px 2px rgba(0,0,0,0.45)",
+            }}
+          >
+            {slide.bottomSpecialRule.heading && (
+              <div>{slide.bottomSpecialRule.heading}</div>
+            )}
+            {slide.bottomSpecialRule.paragraphs.map((p, idx) => (
+              <div key={idx}>{p}</div>
+            ))}
+            {slide.bottomSpecialRule.bullets.map((b, idx) => (
+              <div key={idx}>• {b}</div>
+            ))}
+          </div>
         </div>
       </div>
 
