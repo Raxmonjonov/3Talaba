@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Bot, Mail, Send } from "lucide-react";
 import { BRAND, CONTACTS, LEGAL_LINKS, SECTION_IDS, TARGETS } from "@/lib/site-config";
 
@@ -24,7 +27,29 @@ const CONTACT_ITEMS = [
   { ...CONTACTS.email, icon: Mail, external: false },
 ];
 
+const WORKSPACE_PREFIXES = [
+  "/math",
+  "/learn",
+  "/coach",
+  "/dashboard",
+  "/practice",
+  "/mock",
+  "/placement",
+  "/roadmap",
+  "/profile",
+  "/history",
+];
+
 export function Footer() {
+  const pathname = usePathname();
+  const isWorkspaceRoute = WORKSPACE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname?.startsWith(`${prefix}/`)
+  );
+
+  if (isWorkspaceRoute) {
+    return null;
+  }
+
   return (
     <footer className="mt-20 border-t border-white/10 bg-slate-950/70 backdrop-blur-2xl">
       <div className="mx-auto w-full max-w-[1480px] px-4 py-12 sm:px-6 lg:px-10">

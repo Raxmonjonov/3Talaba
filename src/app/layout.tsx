@@ -56,17 +56,17 @@ export default function RootLayout({
   return (
     <html
       lang="uz"
-      className={`${jakarta.variable} ${jetbrainsMono.variable} dark`}
+      className={`${jakarta.variable} ${jetbrainsMono.variable} dark overflow-x-hidden`}
       suppressHydrationWarning
     >
-      <body className="relative min-h-screen bg-canvas font-sans text-fg antialiased selection:bg-[#c6f432] selection:text-[#0b0b0c]">
+      <body className="relative min-h-screen max-w-[100vw] overflow-x-hidden bg-canvas font-sans text-fg antialiased selection:bg-[#c6f432] selection:text-[#0b0b0c]">
         <AppProviders>
           {/* O'quvchi tizimga kirganda yoki ro'yxatdan o'tganda avtomatik ravishda nurli sinfxona tusiga kiruvchi fon */}
           <DynamicAmbientBackground />
 
-          <div className="relative z-10 flex min-h-screen flex-col justify-between">
+          <div className="relative z-10 flex min-h-screen w-full max-w-[100vw] flex-col justify-between overflow-x-hidden">
             <Navbar />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 min-h-0 overflow-x-hidden">{children}</main>
 
             {/* Xalqaro O'quv Kampusi Footer */}
             <Footer />

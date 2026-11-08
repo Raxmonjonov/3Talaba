@@ -131,7 +131,7 @@ export default function LearnIndexPage() {
   const completedCount = completedLessonIds.length;
 
   return (
-    <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-6 lg:px-10 space-y-6">
+    <div className="custom-scrollbar mx-auto h-[calc(100dvh-69px)] w-full max-w-[1480px] overflow-y-auto px-3 py-1.5 sm:px-5 lg:px-8 space-y-4">
       {/* JONLI DOSKA VA ANIMATSIYALI AI USTOZ: Faqat doskadagi mavzu almashadi! */}
       <ChalkboardClassroom
         slide={currentBoardSlide}

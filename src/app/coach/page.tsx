@@ -503,21 +503,26 @@ export default function AICoachPage() {
       streamTimerRef.current = null;
     }
 
-    const totalFrames = Math.max(16, Math.min(64, Math.ceil(fullText.length / 10)));
+    const tokens = fullText.match(/\S+\s*/g) ?? [fullText];
+    const totalFrames = Math.max(10, Math.min(36, Math.ceil(tokens.length / 3)));
     let frame = 0;
     setStreamingId(messageId);
 
     streamTimerRef.current = window.setInterval(() => {
       frame += 1;
-      const visibleLength =
+      const visibleWords =
         frame >= totalFrames
-          ? fullText.length
-          : Math.max(1, Math.ceil((fullText.length * frame) / totalFrames));
+          ? tokens.length
+          : Math.max(1, Math.ceil((tokens.length * frame) / totalFrames));
+      const nextSlice =
+        frame >= totalFrames
+          ? fullText
+          : tokens.slice(0, visibleWords).join("");
 
       setMessages((previous) =>
         previous.map((message) =>
           message.id === messageId
-            ? { ...message, content: fullText.slice(0, visibleLength) }
+            ? { ...message, content: nextSlice }
             : message
         )
       );
@@ -529,7 +534,7 @@ export default function AICoachPage() {
         }
         setStreamingId(null);
       }
-    }, 26);
+    }, 24);
   }, []);
 
   const resetConversation = useCallback(() => {
@@ -686,86 +691,42 @@ export default function AICoachPage() {
       : currentSubject.practicePrompts;
 
   return (
-    <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-6 lg:px-10">
-      <div className="glass-card overflow-hidden">
+    <div className="relative z-10 mx-auto flex h-[calc(100dvh-69px)] w-full max-w-[1480px] flex-col overflow-hidden px-3 py-1.5 sm:px-5 lg:px-8">
+      <div className="glass-card flex flex-1 min-h-0 flex-col overflow-hidden">
         {/* Yuqori sarlavha va umumiy ko'rsatkichlar */}
-        <div className="border-b border-border/70 p-5 sm:p-7">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="shrink-0 border-b border-border/70 px-4 py-3 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full bg-neon-soft px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-neon">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Talaba AI · Shaxsiy Sokratik Murabbiy</span>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-soft px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-neon">
+                  <Sparkles className="h-3 w-3" />
+                  <span>Talaba AI · Sokratik Murabbiy</span>
+                </span>
+                <h1 className="text-lg font-extrabold text-fg sm:text-xl">
+                  Salom, <span className="text-gold">{warmAddress}</span>! Birgalikda
+                  fikrlaymiz
+                </h1>
               </div>
 
-              <h1 className="mt-2.5 text-2xl font-extrabold text-fg sm:text-3xl">
-                Salom, <span className="text-gold">{warmAddress}</span>! Birgalikda
-                fikrlaymiz
-              </h1>
-
-              <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-fg-muted sm:text-sm">
-                {currentSubject.greeting}
-              </p>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-neon/30 bg-neon-soft/20 px-2.5 py-1 text-neon">
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-neon/30 bg-neon-soft/20 px-2 py-0.5 text-neon">
                   <currentSubject.icon className="h-3.5 w-3.5" />
                   {currentSubject.label}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold-soft/20 px-2.5 py-1 text-gold">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold-soft/20 px-2 py-0.5 text-gold">
                   <currentMode.icon className="h-3.5 w-3.5" />
                   {currentMode.label}
                 </span>
                 {data?.student.currentLevel && (
-                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-elevated/70 px-2.5 py-1 text-fg-muted">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-elevated/70 px-2 py-0.5 text-fg-muted">
                     Daraja: {data.student.currentLevel}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
-              <div className="rounded-xl border border-gold/40 bg-gold-soft px-4 py-2 text-center">
-                <span
-                  id="coach-xp-counter"
-                  className="flex items-center gap-1.5 font-mono text-base font-extrabold text-gold"
-                >
-                  <Trophy className="h-4 w-4" />
-                  {xpTotal} XP
-                </span>
-              </div>
-              <Link
-                href="/learn"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-bold text-fg hover:border-neon"
-              >
-                <BookOpen className="h-4 w-4 text-neon" />
-                <span>Darslarga o&apos;tish</span>
-              </Link>
-              <Link
-                href="/roadmap"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs font-bold text-fg hover:border-gold"
-              >
-                <Compass className="h-4 w-4 text-gold" />
-                <span>12 Oylik Xarita</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Oson Yo'l-Yo'riq va Tushuntirish Darajasini Moslash */}
-          <div className="mt-5 rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c]/85 p-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="space-y-1">
-                <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-extrabold uppercase tracking-wider text-[#c6f432]">
-                  🧭 TALABA AI YO&apos;L-YO&apos;RIG&apos;I (TEZ MOSLASHISH)
-                </span>
-                <p className="text-xs leading-relaxed text-white/80">
-                  <strong className="text-white">1.</strong> Chapdan fanni tanlang →{" "}
-                  <strong className="text-white">2.</strong> O&apos;ngdan tushuntirish darajasini belgilang →{" "}
-                  <strong className="text-white">3.</strong> Savol yoki yecholmagan misolingizni yozing →{" "}
-                  <strong className="text-white">4.</strong> Javobni ovozli tinglang!
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1">
                 {options.map((opt) => {
                   const isActive = pace === opt.id;
                   return (
@@ -773,7 +734,7 @@ export default function AICoachPage() {
                       key={opt.id}
                       type="button"
                       onClick={() => setPace(opt.id)}
-                      className={`rounded-xl border px-3 py-2 text-[11px] font-extrabold transition-all ${
+                      className={`rounded-xl border px-2.5 py-1.5 text-[11px] font-extrabold transition-all ${
                         isActive
                           ? "border-[#c6f432] bg-[#c6f432] text-[#0b0b0c] shadow-[0_0_18px_rgba(198,244,50,0.3)]"
                           : "border-white/15 bg-white/[0.04] text-white/80 hover:border-[#c6f432]/50 hover:text-white"
@@ -784,13 +745,37 @@ export default function AICoachPage() {
                   );
                 })}
               </div>
+
+              <div className="rounded-xl border border-gold/40 bg-gold-soft px-3 py-1.5 text-center">
+                <span
+                  id="coach-xp-counter"
+                  className="flex items-center gap-1.5 font-mono text-sm font-extrabold text-gold"
+                >
+                  <Trophy className="h-4 w-4" />
+                  {xpTotal} XP
+                </span>
+              </div>
+              <Link
+                href="/learn"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-bold text-fg hover:border-neon"
+              >
+                <BookOpen className="h-3.5 w-3.5 text-neon" />
+                <span>Darslarga o&apos;tish</span>
+              </Link>
+              <Link
+                href="/roadmap"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-bold text-fg hover:border-gold"
+              >
+                <Compass className="h-3.5 w-3.5 text-gold" />
+                <span>12 Oylik Xarita</span>
+              </Link>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-0 lg:grid-cols-12">
+        <div className="grid flex-1 min-h-0 gap-0 overflow-hidden lg:grid-cols-12">
           {/* Chap yon panel: fan, rejim, tezkor mashqlar va xavfsizlik */}
-          <aside className="space-y-4 border-b border-border/70 p-4 sm:p-5 lg:col-span-4 xl:col-span-3 lg:border-b-0 lg:border-r">
+          <aside className="custom-scrollbar h-full min-h-0 space-y-3.5 overflow-y-auto border-b border-border/70 p-4 lg:col-span-4 xl:col-span-3 lg:border-b-0 lg:border-r">
             <section className="rounded-2xl border border-border bg-surface/70 p-4">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-xs font-extrabold uppercase tracking-wider text-neon">
@@ -970,8 +955,8 @@ export default function AICoachPage() {
           </aside>
 
           {/* Asosiy chat oynasi */}
-          <section className="flex min-h-[720px] flex-col lg:col-span-8 xl:col-span-9">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 px-4 py-3 sm:px-5">
+          <section className="flex h-full min-h-0 flex-col overflow-hidden lg:col-span-8 xl:col-span-9">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border/70 px-4 py-2.5 sm:px-5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-neon/30 bg-neon-soft/20 px-2.5 py-1 text-[11px] font-bold text-neon">
                   <currentSubject.icon className="h-3.5 w-3.5" />
@@ -987,7 +972,7 @@ export default function AICoachPage() {
                 type="button"
                 onClick={handleClearChat}
                 data-clear-chat
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-elevated/80 px-3 py-1.5 text-[11px] font-bold text-fg-muted transition-all hover:border-danger/60 hover:text-danger"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-elevated/80 px-3 py-1 text-[11px] font-bold text-fg-muted transition-all hover:border-danger/60 hover:text-danger"
               >
                 <Eraser className="h-3.5 w-3.5" />
                 <span>Suhbatni tozalash</span>
@@ -996,8 +981,7 @@ export default function AICoachPage() {
 
             <div
               id="coach-messages-list"
-              className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-5"
-              style={{ maxHeight: "640px" }}
+              className="custom-scrollbar flex-1 min-h-0 space-y-4 overflow-y-auto px-4 py-4 sm:px-5"
             >
               {messages.length === 0 ? (
                 <div className="space-y-5">
@@ -1239,7 +1223,7 @@ export default function AICoachPage() {
                 event.preventDefault();
                 void handleSendMessage();
               }}
-              className="border-t border-border/70 p-4 sm:p-5"
+              className="shrink-0 border-t border-border/70 p-3.5 sm:p-4"
             >
               {messages.length > 0 && mode !== "WRITING_REVIEW" && (
                 <div className="mb-2.5 flex flex-wrap items-center gap-2">

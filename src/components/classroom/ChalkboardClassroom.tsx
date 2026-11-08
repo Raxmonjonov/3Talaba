@@ -146,7 +146,7 @@ export function ChalkboardClassroom({
       setLiveSubtitle(script);
       setIsSpeaking(true);
 
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      if (typeof window !== "undefined") {
         jarvisVoice.speak(script, () => setIsSpeaking(false));
       } else {
         const fallbackTimer = setTimeout(() => setIsSpeaking(false), 4500);
@@ -177,7 +177,7 @@ export function ChalkboardClassroom({
         if (stepIdx < 3) {
           const nextTimer = setTimeout(
             () => playStep((stepIdx + 1) as ChalkZoneIndex),
-            420
+            360
           );
           timersRef.current.push(nextTimer);
         } else {
@@ -186,15 +186,15 @@ export function ChalkboardClassroom({
         }
       };
 
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        const estDurationMs = Math.min(13000, Math.max(4000, text.length * 65));
+      if (typeof window !== "undefined") {
         let advanced = false;
         const safeAdvance = () => {
           if (advanced) return;
           advanced = true;
           advance();
         };
-        const safetyTimer = setTimeout(safeAdvance, estDurationMs);
+        // Nutq o'rtasida uzilib qolmasligi uchun faqat uzoq muddatli ehtiyot taymeri (45s)
+        const safetyTimer = setTimeout(safeAdvance, 45000);
         timersRef.current.push(safetyTimer);
         jarvisVoice.speak(text, safeAdvance);
       } else {
@@ -304,13 +304,13 @@ export function ChalkboardClassroom({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* ====================================================================
           1. YUQORI PANEL: Mavzuni almashtirish + AI Ustoz Ovozli Tushuntirish
           ==================================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl border border-[#c6f432]/35 bg-[#0b0b0c] px-4 py-2.5 sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#c6f432]/35 bg-[#0b0b0c] px-3.5 py-2 sm:px-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-xl bg-[#c6f432] px-3 py-1 text-[11px] font-black uppercase tracking-wider text-[#0b0b0c]">
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-[#c6f432] px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-[#0b0b0c]">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Jonli Doska</span>
           </span>
@@ -321,7 +321,7 @@ export function ChalkboardClassroom({
                 type="button"
                 onClick={goPrevSlide}
                 title="Oldingi mavzu"
-                className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-[#c6f432] hover:text-[#0b0b0c]"
+                className="rounded-lg p-1 text-white/80 transition-colors hover:bg-[#c6f432] hover:text-[#0b0b0c]"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -329,7 +329,7 @@ export function ChalkboardClassroom({
                 aria-label="Doskadagi mavzuni tanlash"
                 value={slide.id}
                 onChange={(e) => onSelectSlide(e.target.value)}
-                className="max-w-[200px] sm:max-w-[290px] truncate bg-[#0b0b0c] px-2 py-1 text-xs font-extrabold text-white outline-none cursor-pointer"
+                className="max-w-[190px] sm:max-w-[280px] truncate bg-[#0b0b0c] px-2 py-0.5 text-xs font-extrabold text-white outline-none cursor-pointer"
               >
                 {availableSlides.map((s, idx) => (
                   <option key={s.id} value={s.id} className="bg-[#0b0b0c] text-white">
@@ -341,7 +341,7 @@ export function ChalkboardClassroom({
                 type="button"
                 onClick={goNextSlide}
                 title="Keyingi mavzu"
-                className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-[#c6f432] hover:text-[#0b0b0c]"
+                className="rounded-lg p-1 text-white/80 transition-colors hover:bg-[#c6f432] hover:text-[#0b0b0c]"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -358,7 +358,7 @@ export function ChalkboardClassroom({
                   key={opt.id}
                   type="button"
                   onClick={() => setPace(opt.id)}
-                  className={`rounded-lg px-2.5 py-1 text-[11px] font-extrabold transition-all ${
+                  className={`rounded-lg px-2 py-0.5 text-[11px] font-extrabold transition-all ${
                     active
                       ? "bg-[#c6f432] text-[#0b0b0c]"
                       : "text-white/75 hover:text-white"
@@ -374,7 +374,7 @@ export function ChalkboardClassroom({
             <button
               type="button"
               onClick={stopLecture}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#c6f432] bg-[#c6f432]/20 px-3.5 py-1.5 text-xs font-extrabold text-[#c6f432] transition-all hover:bg-[#c6f432] hover:text-[#0b0b0c]"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#c6f432] bg-[#c6f432]/20 px-3 py-1 text-xs font-extrabold text-[#c6f432] transition-all hover:bg-[#c6f432] hover:text-[#0b0b0c]"
             >
               <Square className="h-3.5 w-3.5 fill-current" />
               <span>To&apos;xtatish</span>
@@ -383,7 +383,7 @@ export function ChalkboardClassroom({
             <button
               type="button"
               onClick={startAutoLecture}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#c6f432] px-3.5 py-1.5 text-xs font-black text-[#0b0b0c] shadow-[0_0_20px_rgba(198,244,50,0.4)] transition-transform hover:scale-[1.02]"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#c6f432] px-3 py-1 text-xs font-black text-[#0b0b0c] shadow-[0_0_20px_rgba(198,244,50,0.4)] transition-transform hover:scale-[1.02]"
             >
               <Play className="h-3.5 w-3.5 fill-current" />
               <span>AI Ustoz Tushuntirsin</span>
@@ -394,7 +394,7 @@ export function ChalkboardClassroom({
             type="button"
             onClick={() => runChalkWriteSequence(true)}
             title="Doskani qaytadan bo'r bilan yozish"
-            className="inline-flex items-center gap-1 rounded-xl border border-white/15 bg-white/[0.04] px-2.5 py-1.5 text-xs font-bold text-white/85 transition-all hover:border-[#c6f432] hover:text-[#c6f432]"
+            className="inline-flex items-center gap-1 rounded-xl border border-white/15 bg-white/[0.04] px-2.5 py-1 text-xs font-bold text-white/85 transition-all hover:border-[#c6f432] hover:text-[#c6f432]"
           >
             <Eraser className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Qayta yozish</span>
@@ -404,11 +404,14 @@ export function ChalkboardClassroom({
 
       {/* ====================================================================
           2. AYNAN RASMDAGI 16:9 SINF DOSKASI VA HAQIQIY PROFESSOR SAHNASI
-             (Hech qanday ortiqcha quti ustozni ham, o'chirg'ichni ham to'smaydi!)
+             (Ekran balandligiga proporsional moslashadi — ortiqcha vertikal skroll chiqmaydi!)
           ==================================================================== */}
       <div
-        className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-white/15 shadow-[0_24px_60px_rgba(0,0,0,0.85)] select-none"
-        style={{ containerType: "inline-size" }}
+        className="relative mx-auto aspect-[16/9] w-full overflow-hidden rounded-2xl border border-white/15 bg-[#050508] shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none"
+        style={{
+          containerType: "inline-size",
+          maxWidth: "calc((100dvh - 328px) * 16 / 9)",
+        }}
       >
         {/* Asl rasmdagi Professor, Kitoblar, Yog'och Ramka, Yashil Doska, O'chirg'ich va Bo'rlar */}
         <img
@@ -580,13 +583,13 @@ export function ChalkboardClassroom({
 
       {/* ====================================================================
           3. DOSKA OSTIDAGI JONLI AI USTOZ NUTQI VA SAVOL-JAVOB PANELI
-             (Doska rasmiga hech qachon xalaqit bermaydi!)
+             (Doska rasmiga hech qachon xalaqit bermaydi va ekranga sig'adi!)
           ==================================================================== */}
-      <div className="rounded-2xl border border-white/15 bg-[#0b0b0c] p-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5">
-          <div className="flex flex-wrap items-center gap-1.5">
+      <div className="rounded-2xl border border-white/15 bg-[#0b0b0c] px-3.5 py-2.5 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
+          <div className="flex flex-wrap items-center gap-1">
             <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-[#c6f432] mr-1">
-              👨‍🏫 AI USTOZ NUTQI (BOSQICH {activeZone + 1}/4):
+              👨‍🏫 AI USTOZ NUTQI ({activeZone + 1}/4):
             </span>
             {(
               [
@@ -600,7 +603,7 @@ export function ChalkboardClassroom({
                 key={z.idx}
                 type="button"
                 onClick={() => explainSingleZone(z.idx)}
-                className={`rounded-lg px-2.5 py-1 text-[11px] font-extrabold transition-all ${
+                className={`rounded-lg px-2 py-0.5 text-[11px] font-extrabold transition-all ${
                   activeZone === z.idx
                     ? "bg-[#c6f432] text-[#0b0b0c]"
                     : "bg-white/[0.06] text-white/75 hover:text-white"
@@ -615,7 +618,7 @@ export function ChalkboardClassroom({
             <button
               type="button"
               onClick={onProceedNext}
-              className="btn-neon inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-black"
+              className="btn-neon inline-flex items-center gap-1.5 px-3.5 py-1 text-xs font-black"
             >
               <span>{proceedLabel}</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -623,12 +626,12 @@ export function ChalkboardClassroom({
           )}
         </div>
 
-        <p className="text-xs sm:text-sm leading-relaxed text-white/90">
+        <p className="text-xs leading-snug text-white/90 line-clamp-2">
           {liveSubtitle || slide.teacherNarration[pace][activeZone]}
         </p>
 
         {/* Tezkor AI savol tugmalari + Matn/Mikrofon formasi */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             disabled={askingAi}
@@ -637,7 +640,7 @@ export function ChalkboardClassroom({
                 `«${slide.topicTitle}» mavzusini mutlaqo 0 dan boshlagan o'quvchiga hayotiy o'xshatish bilan juda sodda qilib tushuntirib ber.`
               )
             }
-            className="rounded-lg border border-[#c6f432]/40 bg-[#c6f432]/10 px-2.5 py-1 text-[11px] font-bold text-[#c6f432] transition-all hover:bg-[#c6f432] hover:text-[#0b0b0c] disabled:opacity-50"
+            className="rounded-lg border border-[#c6f432]/40 bg-[#c6f432]/10 px-2 py-0.5 text-[11px] font-bold text-[#c6f432] transition-all hover:bg-[#c6f432] hover:text-[#0b0b0c] disabled:opacity-50"
           >
             🪜 0 dan sodda tushuntir
           </button>
@@ -649,7 +652,7 @@ export function ChalkboardClassroom({
                 `«${slide.topicTitle}» mavzusidan doskada 1 ta oson misol yozib, qadamma-qadam yechib ko'rsat.`
               )
             }
-            className="rounded-lg border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[11px] font-bold text-white/85 transition-all hover:border-[#c6f432] hover:text-[#c6f432] disabled:opacity-50"
+            className="rounded-lg border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[11px] font-bold text-white/85 transition-all hover:border-[#c6f432] hover:text-[#c6f432] disabled:opacity-50"
           >
             ✏️ Doskada 1 ta misol yechib ko&apos;rsat
           </button>
@@ -661,41 +664,42 @@ export function ChalkboardClassroom({
                 `«${slide.topicTitle}» mavzusida imtihonda 5 soniyada javob topish siri qanday?`
               )
             }
-            className="rounded-lg border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[11px] font-bold text-white/85 transition-all hover:border-[#c6f432] hover:text-[#c6f432] disabled:opacity-50"
+            className="rounded-lg border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[11px] font-bold text-white/85 transition-all hover:border-[#c6f432] hover:text-[#c6f432] disabled:opacity-50"
           >
             ⚡ 5 soniyalik imtihon siri
           </button>
-        </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void handleAskTeacher();
-          }}
-          className="flex items-center gap-2"
-        >
-          <JarvisMicButton
-            onTranscript={(t) => {
-              setStudentQuestion(t);
-              void handleAskTeacher(t);
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleAskTeacher();
             }}
-          />
-          <input
-            type="text"
-            value={studentQuestion}
-            onChange={(e) => setStudentQuestion(e.target.value)}
-            placeholder={`${honorific}, tushunmagan joyingizni yozing yoki mikrofonda so'rang — AI Ustoz doskada tushuntiradi...`}
-            className="flex-1 rounded-xl border border-white/15 bg-white/[0.04] px-3.5 py-2 text-xs sm:text-sm text-white placeholder:text-white/45 outline-none focus:border-[#c6f432]"
-          />
-          <button
-            type="submit"
-            disabled={askingAi || !studentQuestion.trim()}
-            className="btn-neon inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black disabled:opacity-40"
+            className="flex flex-1 min-w-[260px] items-center gap-1.5"
           >
-            <Send className="h-3.5 w-3.5" />
-            <span>{askingAi ? "Yozmoqda..." : "So'rash"}</span>
-          </button>
-        </form>
+            <JarvisMicButton
+              className="!p-1.5 !rounded-xl"
+              onTranscript={(t) => {
+                setStudentQuestion(t);
+                void handleAskTeacher(t);
+              }}
+            />
+            <input
+              type="text"
+              value={studentQuestion}
+              onChange={(e) => setStudentQuestion(e.target.value)}
+              placeholder={`${honorific}, tushunmagan joyingizni yozing yoki mikrofonda so'rang...`}
+              className="flex-1 rounded-xl border border-white/15 bg-white/[0.04] px-3 py-1 text-xs text-white placeholder:text-white/45 outline-none focus:border-[#c6f432]"
+            />
+            <button
+              type="submit"
+              disabled={askingAi || !studentQuestion.trim()}
+              className="btn-neon inline-flex items-center gap-1 px-3 py-1 text-xs font-black disabled:opacity-40"
+            >
+              <Send className="h-3 w-3" />
+              <span>{askingAi ? "..." : "So'rash"}</span>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

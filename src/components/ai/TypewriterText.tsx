@@ -9,43 +9,55 @@ interface TypewriterTextProps {
   className?: string;
 }
 
+/**
+ * Tabiiy o'qish ritmiga moslashtirilgan matn animatsiyasi.
+ * So'zlarni harfma-harf uzib qo'ymasdan, butun so'z bo'laklari bo'yicha silliq chiqaradi.
+ */
 export function TypewriterText({
   content,
-  speedMs = 15,
+  speedMs = 28,
   onFinish,
   className = "",
 }: TypewriterTextProps) {
-  const [displayedLength, setDisplayedLength] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
 
   useEffect(() => {
-    setDisplayedLength(0);
-    if (!content) return;
+    if (!content) {
+      setDisplayedText("");
+      return;
+    }
 
-    let currentIndex = 0;
-    const totalLength = content.length;
-    // Har bir intervalda tezlikni matn hajmiga qarab moslashtirish
-    // Agar matn uzun bo'lsa (500+ belgi), foydalanuvchi ko'p kutib qolmasligi uchun 2-3 tadan harf chiqariladi
-    const stepSize = totalLength > 600 ? 4 : totalLength > 300 ? 2 : 1;
+    const tokens = content.match(/\S+\s*/g) ?? [content];
+    if (tokens.length <= 3) {
+      setDisplayedText(content);
+      onFinish?.();
+      return;
+    }
+
+    let tokenIndex = 0;
+    const wordsPerTick = tokens.length > 90 ? 3 : tokens.length > 40 ? 2 : 1;
+    setDisplayedText(tokens.slice(0, wordsPerTick).join(""));
+    tokenIndex = wordsPerTick;
 
     const interval = setInterval(() => {
-      currentIndex += stepSize;
-      if (currentIndex >= totalLength) {
-        setDisplayedLength(totalLength);
+      tokenIndex += wordsPerTick;
+      if (tokenIndex >= tokens.length) {
+        setDisplayedText(content);
         clearInterval(interval);
         onFinish?.();
       } else {
-        setDisplayedLength(currentIndex);
+        setDisplayedText(tokens.slice(0, tokenIndex).join(""));
       }
     }, speedMs);
 
     return () => clearInterval(interval);
   }, [content, speedMs, onFinish]);
 
-  const isTyping = displayedLength < content.length;
+  const isTyping = displayedText.length < content.length;
 
   return (
     <div className={`whitespace-pre-line leading-relaxed ${className}`}>
-      {content.slice(0, displayedLength)}
+      {displayedText}
       {isTyping && (
         <span className="inline-block w-1.5 h-4 ml-0.5 align-middle bg-neon animate-pulse" />
       )}

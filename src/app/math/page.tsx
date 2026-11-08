@@ -75,12 +75,8 @@ export default function MathAcademyPage() {
   // Modul tanlanganda
   const handleSelectModule = (mod: MathModuleLesson) => {
     setActiveModuleId(mod.id);
-    setActiveTab(1);
     setPracticeAnswers({});
     setShowPracticeSolution({});
-    if (typeof window !== "undefined") {
-      document.getElementById("math-chalkboard-stage")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
   };
 
   // Mini-amaliyot javobini belgilash
@@ -93,133 +89,123 @@ export default function MathAcademyPage() {
   const progressPercent = Math.round((completedModules.length / MATH_15_MODULES.length) * 100);
 
   return (
-    <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-6 lg:px-10 space-y-6">
+    <div className="relative z-10 mx-auto flex h-[calc(100dvh-69px)] w-full max-w-[1480px] flex-col overflow-hidden px-3 py-1.5 sm:px-5 lg:px-8">
       {/* ====================================================================
-          JONLI SINF DOSKASI VA AI USTOZ (To'liq 16:9 kenglikda)
+          YUQORI BOSQICHLAR VA MODUL BOSHQARUV PANELI (Shrink-0)
           ==================================================================== */}
-      <div id="math-chalkboard-stage">
-        <ChalkboardClassroom
-          slide={buildChalkboardFromMathModule(currentModule)}
-          availableSlides={MATH_15_MODULES.map((m) =>
-            buildChalkboardFromMathModule(m)
-          )}
-          onSelectSlide={(targetSlug) => {
-            const found = MATH_15_MODULES.find((m) => m.slug === targetSlug);
-            if (found) {
-              setActiveModuleId(found.id);
-            }
-          }}
-          honorific="Bo'lajak Talaba"
-          onProceedNext={() => setActiveTab(2)}
-          proceedLabel="2-qadam: Formulalar Isboti"
-        />
-      </div>
-
-      {/* ====================================================================
-          Yuqori Sarlavha va Umumiy Progress Bar
-          ==================================================================== */}
-      <div className="glass-card p-6 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 py-1 text-xs font-extrabold text-emerald-300">
-              <Sigma className="h-3.5 w-3.5" />
-              <span>ALGEBRA &amp; GEOMETRIYA AKADEMIYASI</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
-              6 Bosqichli Chuqur Matematika Metodi
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-3xl">
-              15 ta modul orqali maktab algebrasidan tortib Digital SAT 800 darajasigacha bo&apos;lgan
-              barcha formulalar isboti va vizual SVG modellari.
-            </p>
-          </div>
-
-          {/* Progress bloki */}
-          <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-300">Tugallangan modullar:</span>
-              <span className="font-mono text-sm font-black text-emerald-400">
-                {completedModules.length} / {MATH_15_MODULES.length}
-              </span>
-            </div>
-            <div className="h-2.5 w-full sm:w-48 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full bg-gradient-to-r from-[#c6f432] to-[#ffffff] transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <span className="text-[11px] font-mono text-slate-400">{progressPercent}% o&apos;zlashtirildi</span>
-          </div>
-        </div>
-
-        {/* Oson o'rganish yo'l-yo'rig'i va tushuntirish darajasi */}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c] p-4 text-xs">
-          <div className="flex items-center gap-2.5 text-slate-200">
-            <Compass className="h-4 w-4 shrink-0 text-[#c6f432]" />
-            <span>
-              <strong className="text-[#c6f432]">Oson Yo&apos;l-Yo&apos;riq:</strong> Chapdan darajangizga mos modulni tanlang → 1 dan 6 gacha qadamlarni ketma-ket o&apos;ting (3-qadamda slayderlarni surib grafikni jonlantiring!).
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {options.map((opt) => (
+      <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/12 bg-[#0b0b0c]/90 px-3.5 py-2 backdrop-blur-xl">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {[
+            { id: 1, label: "1. Jonli Doska & AI Ustoz", icon: Lightbulb },
+            { id: 2, label: "2. Isbot (Proof)", icon: Sigma },
+            { id: 3, label: "3. Vizual SVG Model", icon: Eye },
+            { id: 4, label: "4. SAT Tuzoqlari", icon: Zap },
+            { id: 5, label: "5. Mini-Amaliyot", icon: PenLine },
+            { id: 6, label: "6. Talaba AI Xulosasi", icon: Brain },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
               <button
-                key={opt.id}
+                key={tab.id}
                 type="button"
-                onClick={() => setPace(opt.id)}
-                className={`rounded-lg px-2.5 py-1 font-extrabold transition-all ${
-                  pace === opt.id
-                    ? "bg-[#c6f432] text-[#0b0b0c]"
-                    : "border border-white/10 bg-white/5 text-slate-300 hover:text-white"
+                onClick={() => setActiveTab(tab.id)}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold transition-all ${
+                  isActive
+                    ? "border border-[#c6f432] bg-[#c6f432] text-[#0b0b0c] shadow-neon"
+                    : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {opt.title}
+                <Icon className={`h-3.5 w-3.5 ${isActive ? "text-[#0b0b0c]" : "text-[#c6f432]"}`} />
+                <span>{tab.label}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-2.5 text-xs">
+          <span className="hidden xl:inline-flex items-center gap-1.5 font-mono text-[11px] font-bold text-emerald-400">
+            <Sigma className="h-3.5 w-3.5" />
+            <span>Modul {currentModule.id}/15 ({progressPercent}%)</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => handleMarkCompleted(currentModule.id)}
+            className={`inline-flex items-center gap-1 rounded-xl border px-2.5 py-1 text-[11px] font-bold transition-all ${
+              completedModules.includes(currentModule.id)
+                ? "border-emerald-400 bg-emerald-500/25 text-emerald-300"
+                : "border-white/15 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:text-white"
+            }`}
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>
+              {completedModules.includes(currentModule.id) ? "✓ Tugallangan" : "Tugallash"}
+            </span>
+          </button>
         </div>
       </div>
 
       {/* ====================================================================
-          Asosiy Tuzilma: Chap Panel (15 ta Modul) + O'ng Oyna (6 Bosqich)
+          1-BOSQICH: JONLI SINF DOSKASI VA AI USTOZ (To'liq ekranga sig'adi, skrollsiz!)
           ==================================================================== */}
-      <div className="grid gap-6 lg:gap-8 lg:grid-cols-12 items-start">
-        {/* ====================================================================
-            CHAP PANEL: 15 ta Modul Ro'yxati (3-4 Ustun)
-            ==================================================================== */}
-        <aside className="lg:col-span-4 xl:col-span-3 glass-card p-4 sm:p-5 space-y-4">
-          <div className="space-y-2.5 border-b border-white/10 pb-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
-                O&apos;quv Dasturi (15 ta Modul)
-              </span>
-              <span className="font-mono text-[11px] text-[#c6f432]">Barchasi ochiq</span>
+      {activeTab === 1 ? (
+        <div id="math-chalkboard-stage" className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+          <ChalkboardClassroom
+            slide={buildChalkboardFromMathModule(currentModule)}
+            availableSlides={MATH_15_MODULES.map((m) =>
+              buildChalkboardFromMathModule(m)
+            )}
+            onSelectSlide={(targetSlug) => {
+              const found = MATH_15_MODULES.find((m) => m.slug === targetSlug);
+              if (found) {
+                setActiveModuleId(found.id);
+              }
+            }}
+            honorific="Bo'lajak Talaba"
+            onProceedNext={() => setActiveTab(2)}
+            proceedLabel="2-qadam: Formulalar Isboti"
+          />
+        </div>
+      ) : (
+        /* ====================================================================
+           2..6 BOSQICHLAR: Chap Panel (15 ta Modul) + O'ng Oyna (Ichki thin-scrollbar)
+           ==================================================================== */
+        <div className="grid flex-1 min-h-0 gap-5 overflow-hidden lg:grid-cols-12">
+          {/* CHAP PANEL: 15 ta Modul Ro'yxati */}
+          <aside className="glass-card flex h-full min-h-0 flex-col overflow-hidden p-4 lg:col-span-4 xl:col-span-3">
+            <div className="shrink-0 space-y-2.5 border-b border-white/10 pb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
+                  O&apos;quv Dasturi (15 ta Modul)
+                </span>
+                <span className="font-mono text-[11px] text-[#c6f432]">Barchasi ochiq</span>
+              </div>
+
+              {/* Daraja bo'yicha saralash */}
+              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                {[
+                  { id: "ALL" as const, label: "Barchasi (15)" },
+                  { id: "FOUNDATION" as const, label: "0 dan Poydevor (1–5)" },
+                  { id: "MID" as const, label: "O'rta SAT (6–10)" },
+                  { id: "ADV" as const, label: "SAT 800 (11–15)" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTierFilter(t.id)}
+                    className={`rounded-lg px-2 py-1 font-bold transition-all ${
+                      tierFilter === t.id
+                        ? "bg-[#c6f432] text-[#0b0b0c]"
+                        : "border border-white/10 bg-[#0b0b0c] text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Daraja bo'yicha saralash */}
-            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-              {[
-                { id: "ALL" as const, label: "Barchasi (15)" },
-                { id: "FOUNDATION" as const, label: "0 dan Poydevor (1–5)" },
-                { id: "MID" as const, label: "O'rta SAT (6–10)" },
-                { id: "ADV" as const, label: "SAT 800 (11–15)" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTierFilter(t.id)}
-                  className={`rounded-lg px-2 py-1.5 font-bold transition-all ${
-                    tierFilter === t.id
-                      ? "bg-[#c6f432] text-[#0b0b0c]"
-                      : "border border-white/10 bg-[#0b0b0c] text-slate-300 hover:text-white"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2 max-h-[780px] overflow-y-auto pr-1">
+            <div className="custom-scrollbar mt-3 flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
             {MATH_15_MODULES.filter((mod) => {
               if (tierFilter === "FOUNDATION") return mod.id <= 5;
               if (tierFilter === "MID") return mod.id >= 6 && mod.id <= 10;
@@ -270,11 +256,11 @@ export default function MathAcademyPage() {
         </aside>
 
         {/* ====================================================================
-            O'NG OYNA: 6 Bosqichli Darslik Interfeysi (8-9 Ustun)
+            O'NG OYNA: 6 Bosqichli Darslik Interfeysi (Ichki thin-scrollbar)
             ==================================================================== */}
-        <main className="lg:col-span-8 xl:col-span-9 glass-card p-6 sm:p-8 lg:p-10 space-y-6">
-          {/* Modul Sarlavhasi va Pro Banneri (agar Pro bo'lsa) */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+        <main className="custom-scrollbar lg:col-span-8 xl:col-span-9 glass-card h-full min-h-0 overflow-y-auto p-5 sm:p-7 space-y-5">
+          {/* Modul Sarlavhasi va Ovozli Tinglash */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-bold text-emerald-400 uppercase">
@@ -287,7 +273,7 @@ export default function MathAcademyPage() {
                   </span>
                 )}
               </div>
-              <h2 className="mt-1 text-xl sm:text-2xl font-black text-white">{currentModule.title}</h2>
+              <h2 className="mt-1 text-lg sm:text-xl font-black text-white">{currentModule.title}</h2>
             </div>
 
             <div className="flex items-center gap-2">
@@ -295,51 +281,7 @@ export default function MathAcademyPage() {
                 text={`${currentModule.title}. ${currentModule.theory.headline}. ${currentModule.theory.intuition}`}
                 label="Mavzuni tinglash"
               />
-              <button
-                type="button"
-                onClick={() => handleMarkCompleted(currentModule.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-                  completedModules.includes(currentModule.id)
-                    ? "border-emerald-400 bg-emerald-500/25 text-emerald-300"
-                    : "border-white/15 bg-white/5 text-slate-300 hover:border-emerald-400/40 hover:text-white"
-                }`}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>
-                  {completedModules.includes(currentModule.id) ? "✓ Tugallangan" : "Tugallandi deb belgilash"}
-                </span>
-              </button>
             </div>
-          </div>
-
-          {/* 6 Bosqichli Metodika Tabs */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
-            {[
-              { id: 1, label: "1. Jonli Doska & AI Ustoz", icon: Lightbulb },
-              { id: 2, label: "2. Isbot (Proof)", icon: Sigma },
-              { id: 3, label: "3. Vizual SVG Model", icon: Eye },
-              { id: 4, label: "4. SAT Tuzoqlari", icon: Zap },
-              { id: 5, label: "5. Mini-Amaliyot", icon: PenLine },
-              { id: 6, label: "6. Talaba AI Xulosasi", icon: Brain },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                    isActive
-                      ? "border border-[#c6f432] bg-[#c6f432] text-[#0b0b0c] shadow-neon"
-                      : "border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <Icon className={`h-3.5 w-3.5 ${isActive ? "text-[#0b0b0c]" : "text-[#c6f432]"}`} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
           </div>
 
           {/* ==================================================================
@@ -745,6 +687,7 @@ export default function MathAcademyPage() {
           )}
         </main>
       </div>
+      )}
     </div>
   );
 }

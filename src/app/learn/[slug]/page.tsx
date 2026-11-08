@@ -252,7 +252,7 @@ export default function LessonRunnerPage({
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-6 lg:px-10 space-y-6">
+    <div className="custom-scrollbar mx-auto h-[calc(100dvh-69px)] w-full max-w-[1480px] overflow-y-auto px-3 py-1.5 sm:px-5 lg:px-8 space-y-4">
       {/* JONLI SINF DOSKASI VA AI USTOZ (Har bir darsda aynan rasmdagidek 16:9 kenglikda) */}
       <ChalkboardClassroom
         slide={buildChalkboardFromLesson({
