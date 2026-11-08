@@ -50,14 +50,16 @@ async function synthesizeWithElevenLabs(text: string): Promise<ArrayBuffer | nul
 }
 
 /**
- * 2-ustuvorlik: OpenAI Neural TTS `tts-1` (`OPENAI_API_KEY`)
+ * 1-ustuvorlik: OpenAI Neural TTS `tts-1` (`OPENAI_TTS_API_KEY` yoki `OPENAI_API_KEY`)
  */
 async function synthesizeWithOpenAI(
   text: string,
   voice: string = "onyx",
   speed: number = 1.0
 ): Promise<ArrayBuffer | null> {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const apiKey = (
+    process.env.OPENAI_TTS_API_KEY || process.env.OPENAI_API_KEY
+  )?.trim();
   if (!apiKey) return null;
 
   try {
@@ -174,20 +176,7 @@ export async function POST(req: Request) {
   const speed = parsed.data.speed ?? 1.0;
   const voice = parsed.data.voice ?? "onyx";
 
-  // 1. ElevenLabs Neural TTS
-  const elevenAudio = await synthesizeWithElevenLabs(cleanedText);
-  if (elevenAudio) {
-    return new NextResponse(elevenAudio, {
-      status: 200,
-      headers: {
-        "Content-Type": "audio/mpeg",
-        "Cache-Control": "public, max-age=3600",
-        "X-TTS-Provider": "elevenlabs",
-      },
-    });
-  }
-
-  // 2. OpenAI TTS (`tts-1`)
+  // 1. OpenAI Neural TTS (`tts-1`)
   const openAiAudio = await synthesizeWithOpenAI(cleanedText, voice, speed);
   if (openAiAudio) {
     return new NextResponse(openAiAudio, {
@@ -196,6 +185,19 @@ export async function POST(req: Request) {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "public, max-age=3600",
         "X-TTS-Provider": "openai-tts-1",
+      },
+    });
+  }
+
+  // 2. ElevenLabs Neural TTS
+  const elevenAudio = await synthesizeWithElevenLabs(cleanedText);
+  if (elevenAudio) {
+    return new NextResponse(elevenAudio, {
+      status: 200,
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "public, max-age=3600",
+        "X-TTS-Provider": "elevenlabs",
       },
     });
   }
