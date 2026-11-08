@@ -78,6 +78,9 @@ export default function MathAcademyPage() {
     setActiveTab(1);
     setPracticeAnswers({});
     setShowPracticeSolution({});
+    if (typeof window !== "undefined") {
+      document.getElementById("math-chalkboard-stage")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   // Mini-amaliyot javobini belgilash
@@ -90,7 +93,28 @@ export default function MathAcademyPage() {
   const progressPercent = Math.round((completedModules.length / MATH_15_MODULES.length) * 100);
 
   return (
-    <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 py-8 sm:px-6 lg:px-10 space-y-8">
+    <div className="relative z-10 mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-6 lg:px-10 space-y-6">
+      {/* ====================================================================
+          JONLI SINF DOSKASI VA AI USTOZ (To'liq 16:9 kenglikda)
+          ==================================================================== */}
+      <div id="math-chalkboard-stage">
+        <ChalkboardClassroom
+          slide={buildChalkboardFromMathModule(currentModule)}
+          availableSlides={MATH_15_MODULES.map((m) =>
+            buildChalkboardFromMathModule(m)
+          )}
+          onSelectSlide={(targetSlug) => {
+            const found = MATH_15_MODULES.find((m) => m.slug === targetSlug);
+            if (found) {
+              setActiveModuleId(found.id);
+            }
+          }}
+          honorific="Bo'lajak Talaba"
+          onProceedNext={() => setActiveTab(2)}
+          proceedLabel="2-qadam: Formulalar Isboti"
+        />
+      </div>
+
       {/* ====================================================================
           Yuqori Sarlavha va Umumiy Progress Bar
           ==================================================================== */}
@@ -319,25 +343,53 @@ export default function MathAcademyPage() {
           </div>
 
           {/* ==================================================================
-              TAB 1: JONLI SINF DOSKASI VA ANIMATSIYALI AI USTOZ
+              TAB 1: NAZARIYA XULOSASI VA HAYOTIY ANALOGIYA
               ================================================================== */}
           {activeTab === 1 && (
             <div className="space-y-5">
-              <ChalkboardClassroom
-                slide={buildChalkboardFromMathModule(currentModule)}
-                availableSlides={MATH_15_MODULES.map((m) =>
-                  buildChalkboardFromMathModule(m)
-                )}
-                onSelectSlide={(targetSlug) => {
-                  const found = MATH_15_MODULES.find((m) => m.slug === targetSlug);
-                  if (found) {
-                    setActiveModuleId(found.id);
-                  }
-                }}
-                honorific="Bo'lajak Talaba"
-                onProceedNext={() => setActiveTab(2)}
-                proceedLabel="2-qadam: Formulalar Isboti"
-              />
+              <div className="rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c] p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#c6f432]">
+                      Asosiy g&apos;oya va hayotiy ma&apos;nosi
+                    </span>
+                    <h3 className="mt-1 text-lg font-black text-white">
+                      {currentModule.theory.headline}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document
+                        .getElementById("math-chalkboard-stage")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#c6f432] px-3.5 py-2 text-xs font-black text-[#0b0b0c] hover:brightness-105"
+                  >
+                    <Lightbulb className="h-3.5 w-3.5" />
+                    <span>Jonli Doskaga ko&apos;tarilish</span>
+                  </button>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  {currentModule.theory.intuition}
+                </p>
+                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3.5 text-xs text-slate-200">
+                  <strong className="text-[#c6f432]">Hayotiy misol: </strong>
+                  {currentModule.theory.realWorldAnalogy}
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {currentModule.theory.paragraphs.map((kp: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2.5 rounded-xl border border-white/10 bg-[#0b0b0c] p-3.5 text-xs text-slate-200"
+                  >
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#c6f432]" />
+                    <span>{kp}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

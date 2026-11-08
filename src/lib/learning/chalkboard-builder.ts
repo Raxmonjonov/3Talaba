@@ -259,6 +259,54 @@ export function buildChalkboardFromLesson(input: {
 export function buildChalkboardFromMathModule(
   mod: MathModuleLesson
 ): ChalkboardSlideData {
+  // 1-modul uchun aynan rasmdagi Chiziqli Funksiya namunaviy doska yozuvi
+  if (mod.id === 1) {
+    const formulas = ["f(x) = mx + b", "m = (y2 - y1) / (x2 - x1)"];
+    const leftConcept: ChalkboardZoneContent = {
+      paragraphs: [
+        "Digital SAT Matematika bo'limida eng ko'p uchraydigan model bu chiziqli funksiya bo'lib, u quyidagi standart ko'rinishda yoziladi:",
+        "Bu yerda:",
+      ],
+      bullets: [
+        "m (Slope / Qiyalik koeffitsiyenti): x qiymati 1 birlikka oshganda y ning qanchaga o'zgarish tezligi. Ikki nuqta (x1, y1) va (x2, y2) berilganda:",
+        "b (Y-intercept / Boshlang'ich qiymat): x = 0 bo'lgandagi boshlang'ich nuqta (0, b).",
+      ],
+    };
+    const rightGoldenRule: ChalkboardZoneContent = {
+      heading: "SAT Imtihonidagi Oltin Qoida (Ifodani butunligicha topish)",
+      paragraphs: [
+        "Ko'pincha SAT savolida x ning o'zini emas, balki 3x + 2 kabi ifodani topish so'raladi. Bunday paytda x ni kasr qilib hisoblab o'tirmasdan, tenglamaning ikkala tomonini bir xil songa bo'lish yoki ko'paytirish orqali javobni 5 soniyada topish mumkin!",
+      ],
+      bullets: [],
+    };
+    const bottomSpecialRule: ChalkboardZoneContent = {
+      heading: "Parallel va Perpendikulyar To'g'ri Chiziqlar",
+      paragraphs: [],
+      bullets: [
+        "Parallel chiziqlar (hech qachon kesishmaydi / yechimga ega emas): Qiyaliklari teng (m1 = m2), ammo boshlang'ich nuqtalari farqli (b1 ≠ b2).",
+        "Perpendikulyar chiziqlar (90^° burchak ostida kesishadi): Qiyaliklari ko'paytmasi -1 ga teng (m1 · m2 = -1).",
+      ],
+    };
+
+    return {
+      id: mod.slug,
+      subjectBadge: "SAT Algebra",
+      topicTitle: "Chiziqli Funksiya Nima?",
+      formulas,
+      leftConcept,
+      rightGoldenRule,
+      bottomSpecialRule,
+      teacherNarration: buildTeacherNarration({
+        topicTitle: "Chiziqli Funksiya Nima?",
+        formulas,
+        leftSummary: `${leftConcept.paragraphs[0]} ${leftConcept.bullets.join(" ")}`,
+        rightSummary: `${rightGoldenRule.heading}. ${rightGoldenRule.paragraphs[0]}`,
+        bottomSummary: `${bottomSpecialRule.heading}. ${bottomSpecialRule.bullets.join(" ")}`,
+        analogyHint: mod.theory.realWorldAnalogy,
+      }),
+    };
+  }
+
   const cleanTitle = mod.title.replace(/^\d+\.\s*/, "").trim();
   const formulas = mod.proof.mainFormulas.map((f) => cleanChalkText(f.formula));
 
@@ -277,7 +325,7 @@ export function buildChalkboardFromMathModule(
           mod.proof.conclusion
       ),
     ],
-    bullets: mod.aiSummary.quickRules.slice(0, 2).map((r) => cleanChalkText(r)),
+    bullets: mod.aiSummary.quickRules.slice(0, 1).map((r) => cleanChalkText(r)),
   };
 
   const bottomSpecialRule: ChalkboardZoneContent = {

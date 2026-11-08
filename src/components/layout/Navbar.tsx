@@ -175,15 +175,17 @@ export function Navbar() {
 
         {/* Mobil menyu tugmasi */}
         <div className="flex items-center gap-2 lg:hidden">
-          <QuickGuideButton />
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300"
-            aria-label="Mavzuni almashtirish"
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <QuickGuideButton />
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300"
+              aria-label="Mavzuni almashtirish"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
+            </button>
+          </div>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
