@@ -86,34 +86,35 @@ export function ChalkboardClassroom({
       clearAllTimers();
       setBoardAiAnswer(null);
 
-      const startWriting = () => {
-        setIsErasing(false);
-        setRevealedStep(1);
-        setActiveZone(0);
-        setLiveSubtitle(slide.teacherNarration[pace][0]);
-
-        const t1 = setTimeout(() => {
-          setRevealedStep(2);
-          setActiveZone(1);
-        }, 380);
-        const t2 = setTimeout(() => {
-          setRevealedStep(3);
-          setActiveZone(2);
-        }, 760);
-        const t3 = setTimeout(() => {
-          setRevealedStep(4);
-          setActiveZone(0);
-        }, 1150);
-
-        timersRef.current.push(t1, t2, t3);
-      };
-
       if (withErase) {
         setIsErasing(true);
-        const eraseTimer = setTimeout(startWriting, 360);
+        const eraseTimer = setTimeout(() => {
+          setIsErasing(false);
+          setRevealedStep(1);
+          setActiveZone(0);
+          setLiveSubtitle(slide.teacherNarration[pace][0]);
+
+          const t1 = setTimeout(() => {
+            setRevealedStep(2);
+            setActiveZone(1);
+          }, 110);
+          const t2 = setTimeout(() => {
+            setRevealedStep(3);
+            setActiveZone(2);
+          }, 220);
+          const t3 = setTimeout(() => {
+            setRevealedStep(4);
+            setActiveZone(0);
+          }, 330);
+
+          timersRef.current.push(t1, t2, t3);
+        }, 140);
         timersRef.current.push(eraseTimer);
       } else {
-        startWriting();
+        setIsErasing(false);
+        setRevealedStep(4);
+        setActiveZone(0);
+        setLiveSubtitle(slide.teacherNarration[pace][0]);
       }
     },
     [clearAllTimers, pace, slide.teacherNarration]
@@ -444,15 +445,14 @@ export function ChalkboardClassroom({
           <div
             onClick={() => explainSingleZone(0)}
             title="Bosib AI Ustozdan formulani tinglang"
-            className="cursor-pointer transition-all duration-500"
+            className="cursor-pointer transition-all duration-300"
             style={{
               position: "absolute",
               left: "17.6%",
               top: "7.2%",
               width: "70%",
               opacity: revealedStep >= 1 ? 1 : 0,
-              clipPath:
-                revealedStep >= 1 ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+              transform: revealedStep >= 1 ? "translateY(0)" : "translateY(4px)",
               textShadow:
                 activeZone === 0 && isSpeaking
                   ? "0 0 12px rgba(255,255,255,0.65)"
@@ -475,15 +475,14 @@ export function ChalkboardClassroom({
           <div
             onClick={() => explainSingleZone(0)}
             title="Bosib AI Ustozdan formulani tinglang"
-            className="cursor-pointer text-center transition-all duration-500"
+            className="cursor-pointer text-center transition-all duration-300"
             style={{
               position: "absolute",
               left: "17.2%",
               top: "17.8%",
               width: "33.5%",
               opacity: revealedStep >= 1 ? 1 : 0,
-              clipPath:
-                revealedStep >= 1 ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+              transform: revealedStep >= 1 ? "translateY(0)" : "translateY(4px)",
               fontSize: "clamp(8.5px, 1.85cqw, 21px)",
               fontWeight: 700,
               lineHeight: 1.28,
@@ -536,15 +535,14 @@ export function ChalkboardClassroom({
               <div
                 onClick={() => explainSingleZone(1)}
                 title="Bosib AI Ustozdan asosiy qoidani tinglang"
-                className="cursor-pointer text-center transition-all duration-500"
+                className="cursor-pointer text-center transition-all duration-300"
                 style={{
                   position: "absolute",
                   left: "16.3%",
                   top: "32.2%",
                   width: "39.2%",
                   opacity: revealedStep >= 2 ? 1 : 0,
-                  clipPath:
-                    revealedStep >= 2 ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+                  transform: revealedStep >= 2 ? "translateY(0)" : "translateY(4px)",
                   fontSize: "clamp(6.5px, 1.12cqw, 13px)",
                   fontWeight: 700,
                   lineHeight: 1.24,
@@ -568,15 +566,14 @@ export function ChalkboardClassroom({
               <div
                 onClick={() => explainSingleZone(2)}
                 title="Bosib AI Ustozdan oltin qoidani tinglang"
-                className="cursor-pointer text-center transition-all duration-500"
+                className="cursor-pointer text-center transition-all duration-300"
                 style={{
                   position: "absolute",
                   left: "52.2%",
                   top: "52.5%",
                   width: "36.2%",
                   opacity: revealedStep >= 3 ? 1 : 0,
-                  clipPath:
-                    revealedStep >= 3 ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+                  transform: revealedStep >= 3 ? "translateY(0)" : "translateY(4px)",
                   fontSize: "clamp(6.5px, 1.10cqw, 12.8px)",
                   fontWeight: 700,
                   lineHeight: 1.24,
@@ -601,15 +598,14 @@ export function ChalkboardClassroom({
               <div
                 onClick={() => explainSingleZone(3)}
                 title="Bosib AI Ustozdan yakuniy xossalarni tinglang"
-                className="cursor-pointer text-center italic transition-all duration-500"
+                className="cursor-pointer text-center italic transition-all duration-300"
                 style={{
                   position: "absolute",
                   left: "18.0%",
                   top: "67.2%",
                   width: "50.5%",
                   opacity: revealedStep >= 4 ? 1 : 0,
-                  clipPath:
-                    revealedStep >= 4 ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+                  transform: revealedStep >= 4 ? "translateY(0)" : "translateY(4px)",
                   fontSize: "clamp(6.8px, 1.18cqw, 13.8px)",
                   fontWeight: 700,
                   lineHeight: 1.24,

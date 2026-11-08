@@ -278,7 +278,7 @@ export default function RegisterWizardPage() {
             SAHIFA 1: ISMINGIZ NIMA?
             ==================================================================== */}
         {page === 1 && (
-          <form onSubmit={handlePage1} className="space-y-6">
+          <form onSubmit={handlePage1} noValidate className="space-y-6">
             <div>
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">
                 1-SAVOL (1 MA&apos;LUMOT)
@@ -557,7 +557,7 @@ export default function RegisterWizardPage() {
             SAHIFA 6: TELEFON RAQAMINGIZ
             ==================================================================== */}
         {page === 6 && (
-          <form onSubmit={handlePage6} className="space-y-6">
+          <form onSubmit={handlePage6} noValidate className="space-y-6">
             <div>
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">
                 6-SAVOL (1 MA&apos;LUMOT)
@@ -607,7 +607,7 @@ export default function RegisterWizardPage() {
             SAHIFA 7: EMAIL VA XAVFSIZ PAROL (HISOBNI YARATISH)
             ==================================================================== */}
         {page === 7 && (
-          <form onSubmit={handleCreateAccount} className="space-y-6">
+          <form onSubmit={handleCreateAccount} noValidate className="space-y-6">
             <div>
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">
                 7-SAVOL (KIRISH HISOBI)

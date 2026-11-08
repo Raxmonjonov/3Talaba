@@ -51,6 +51,19 @@ export function cleanChalkText(raw: string): string {
     .trim();
 }
 
+function fitChalkLine(text: string, maxChars: number): string {
+  const cleaned = cleanChalkText(text);
+  if (cleaned.length <= maxChars) return cleaned;
+  const sliced = cleaned.slice(0, maxChars);
+  // Agar nuqta bilan tugagan tugallangan jumla bo'lsa, o'sha nuqtada kesamiz
+  const sentenceEnd = Math.max(sliced.lastIndexOf(". "), sliced.lastIndexOf("! "));
+  if (sentenceEnd > maxChars * 0.45) {
+    return sliced.slice(0, sentenceEnd + 1).trim();
+  }
+  const lastSpace = sliced.lastIndexOf(" ");
+  return `${(lastSpace > maxChars * 0.65 ? sliced.slice(0, lastSpace) : sliced).trim()}.`;
+}
+
 interface RawMarkdownSection {
   title: string;
   formulas: string[];
@@ -162,62 +175,93 @@ export function buildChalkboardFromLesson(input: {
   const third = sections[2];
   const firstExample = input.examples?.[0];
 
-  const topicTitle = first?.title || cleanChalkText(input.lessonTitle);
+  const isReferenceLinearLesson = input.slug === "sat-math-linear-equations";
+  const rawTitle = first?.title || cleanChalkText(input.lessonTitle);
+  const topicTitle = isReferenceLinearLesson
+    ? rawTitle
+    : fitChalkLine(rawTitle, 48).replace(/\.$/, "");
 
   // Formulalarni yig'ish (agar markdown ichida $$ bo'lmasa, kalit qolipni ajratamiz)
   const allFormulas = sections.flatMap((s) => s.formulas);
   const fallbackFormulas =
     allFormulas.length > 0
-      ? allFormulas.slice(0, 3)
+      ? allFormulas.slice(0, 2).map((f) => (isReferenceLinearLesson ? f : fitChalkLine(f, 52).replace(/\.$/, "")))
       : first?.bullets.length
-        ? first.bullets.slice(0, 2).map((b) => (b.length > 56 ? `${b.slice(0, 54)}...` : b))
-        : [cleanChalkText(input.lessonTitle)];
+        ? first.bullets.slice(0, 2).map((b) => fitChalkLine(b, 52))
+        : [fitChalkLine(input.lessonTitle, 52).replace(/\.$/, "")];
 
-  const leftConcept: ChalkboardZoneContent = {
-    paragraphs:
-      first?.paragraphs && first.paragraphs.length > 0
-        ? first.paragraphs
-        : [cleanChalkText(input.lessonTitle)],
-    bullets: first?.bullets ?? [],
-  };
+  const leftConcept: ChalkboardZoneContent = isReferenceLinearLesson
+    ? {
+        paragraphs:
+          first?.paragraphs && first.paragraphs.length > 0
+            ? first.paragraphs
+            : [cleanChalkText(input.lessonTitle)],
+        bullets: first?.bullets ?? [],
+      }
+    : {
+        paragraphs:
+          first?.paragraphs && first.paragraphs.length > 0
+            ? [fitChalkLine(first.paragraphs[0]!, 175)]
+            : [fitChalkLine(input.lessonTitle, 175)],
+        bullets: (first?.bullets ?? []).slice(0, 2).map((b) => fitChalkLine(b, 150)),
+      };
 
-  const rightGoldenRule: ChalkboardZoneContent = second
+  const rightGoldenRule: ChalkboardZoneContent = isReferenceLinearLesson && second
     ? {
         heading: second.title,
         paragraphs: second.paragraphs,
         bullets: second.bullets,
       }
-    : {
-        heading: "Imtihondagi Oltin Qoida (Tezkor Usul)",
-        paragraphs: firstExample
-          ? [cleanChalkText(firstExample.takeaway)]
-          : [
-              "Savol shartining oxirgi jumlasini birinchi o'qing va ikkita chalg'ituvchi variantni darhol chiqarib tashlang.",
-            ],
-        bullets: [],
-      };
+    : second
+      ? {
+          heading: fitChalkLine(second.title, 56),
+          paragraphs: [
+            fitChalkLine(
+              [...second.paragraphs, ...second.bullets].join(" "),
+              240
+            ),
+          ],
+          bullets: [],
+        }
+      : {
+          heading: "Imtihondagi Oltin Qoida (Tezkor Usul)",
+          paragraphs: firstExample
+            ? [fitChalkLine(firstExample.takeaway, 240)]
+            : [
+                "Savol shartining oxirgi jumlasini birinchi o'qing va ikkita chalg'ituvchi variantni darhol chiqarib tashlang.",
+              ],
+          bullets: [],
+        };
 
-  const bottomSpecialRule: ChalkboardZoneContent = third
+  const bottomSpecialRule: ChalkboardZoneContent = isReferenceLinearLesson && third
     ? {
         heading: third.title,
         paragraphs: third.paragraphs,
         bullets: third.bullets,
       }
-    : firstExample
+    : third
       ? {
-          heading: cleanChalkText(firstExample.title),
-          paragraphs: [cleanChalkText(firstExample.problem)],
-          bullets: firstExample.stepByStepSolution
+          heading: fitChalkLine(third.title, 56),
+          paragraphs: [],
+          bullets: [...third.bullets, ...third.paragraphs]
             .slice(0, 2)
-            .map((s) => cleanChalkText(s)),
+            .map((b) => fitChalkLine(b, 138)),
         }
-      : {
-          heading: "Muhim Eslatma",
-          paragraphs: [
-            "Har bir qoidani kamida bitta amaliy misolda qo'llab tekshiring.",
-          ],
-          bullets: [],
-        };
+      : firstExample
+        ? {
+            heading: fitChalkLine(firstExample.title, 56),
+            paragraphs: [],
+            bullets: firstExample.stepByStepSolution
+              .slice(0, 2)
+              .map((s) => fitChalkLine(s, 138)),
+          }
+        : {
+            heading: "Muhim Eslatma",
+            paragraphs: [
+              "Har bir qoidani kamida bitta amaliy misolda qo'llab tekshiring.",
+            ],
+            bullets: [],
+          };
 
   const leftSummary = [
     ...leftConcept.paragraphs.slice(0, 1),
@@ -307,36 +351,41 @@ export function buildChalkboardFromMathModule(
     };
   }
 
-  const cleanTitle = mod.title.replace(/^\d+\.\s*/, "").trim();
-  const formulas = mod.proof.mainFormulas.map((f) => cleanChalkText(f.formula));
+  const cleanTitle = fitChalkLine(mod.title.replace(/^\d+\.\s*/, "").trim(), 48).replace(/\.$/, "");
+  const formulas = mod.proof.mainFormulas
+    .slice(0, 2)
+    .map((f) => fitChalkLine(f.formula, 52).replace(/\.$/, ""));
 
   const leftConcept: ChalkboardZoneContent = {
-    paragraphs: [cleanChalkText(mod.theory.intuition)],
-    bullets: mod.theory.paragraphs.slice(0, 2).map((p) => cleanChalkText(p)),
+    paragraphs: [fitChalkLine(mod.theory.intuition, 175)],
+    bullets: mod.theory.paragraphs.slice(0, 2).map((p) => fitChalkLine(p, 150)),
   };
 
   const trap = mod.satTraps[0];
   const rightGoldenRule: ChalkboardZoneContent = {
     heading: "SAT Imtihonidagi Oltin Qoida",
     paragraphs: [
-      cleanChalkText(
+      fitChalkLine(
         trap?.satLifehack ??
           mod.aiSummary.quickRules[0] ??
-          mod.proof.conclusion
+          mod.proof.conclusion,
+        240
       ),
     ],
-    bullets: mod.aiSummary.quickRules.slice(0, 1).map((r) => cleanChalkText(r)),
+    bullets: [],
   };
 
   const bottomSpecialRule: ChalkboardZoneContent = {
-    heading: trap ? cleanChalkText(trap.trapTitle) : cleanChalkText(mod.aiSummary.cheatSheetTitle),
+    heading: trap
+      ? fitChalkLine(trap.trapTitle, 56)
+      : fitChalkLine(mod.aiSummary.cheatSheetTitle, 56),
     paragraphs: [],
     bullets: trap
       ? [
-          `Keng tarqalgan xato: ${cleanChalkText(trap.mistakeText)}`,
-          `To'g'ri yondashuv: ${cleanChalkText(trap.correctWay)}`,
+          `Keng tarqalgan xato: ${fitChalkLine(trap.mistakeText, 118)}`,
+          `To'g'ri yondashuv: ${fitChalkLine(trap.correctWay, 118)}`,
         ]
-      : mod.aiSummary.takeaways.slice(0, 2).map((t) => cleanChalkText(t)),
+      : mod.aiSummary.takeaways.slice(0, 2).map((t) => fitChalkLine(t, 135)),
   };
 
   return {

@@ -87,7 +87,9 @@ export default function LearnIndexPage() {
         examples: s.topic.lesson.examples,
       })
     );
-    const mathSlides = MATH_15_MODULES.map((m) => buildChalkboardFromMathModule(m));
+    const mathSlides = MATH_15_MODULES.filter((m) => m.id !== 1).map((m) =>
+      buildChalkboardFromMathModule(m)
+    );
     return [...curriculumSlides, ...mathSlides];
   }, []);
 

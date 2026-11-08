@@ -26,7 +26,7 @@ export function HomeChalkboardSection() {
         examples: s.topic.lesson.examples,
       })
     );
-    const mathSlides = MATH_15_MODULES.map((m) =>
+    const mathSlides = MATH_15_MODULES.filter((m) => m.id !== 1).map((m) =>
       buildChalkboardFromMathModule(m)
     );
     return [...lessonSlides, ...mathSlides];

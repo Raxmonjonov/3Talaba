@@ -42,7 +42,7 @@ export function QuickGuideButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-[#c6f432]/50 bg-[#c6f432]/15 px-3 py-2 text-xs font-extrabold text-[#c6f432] transition-all hover:bg-[#c6f432] hover:text-[#0b0b0c]"
+        className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl border border-[#c6f432]/50 bg-[#c6f432]/15 px-3 py-2 text-xs font-extrabold text-[#c6f432] transition-all hover:bg-[#c6f432] hover:text-[#0b0b0c]"
         title="Platformadan foydalanish va oson o'rganish yo'l-yo'rig'i"
       >
         <HelpCircle className="h-4 w-4" />
