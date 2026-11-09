@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Brain, CheckCircle2, Sigma, Sparkles, Volume2, Pause } from "lucide-react";
 import { BRAND, TARGETS } from "@/lib/site-config";
@@ -19,6 +19,16 @@ export function HeroSection() {
 
   const voiceExplanationText =
     "Kvadrat tenglamani Viyet teoremasi orqali tezkor yechamiz. Ildizlar yig'indisi 6 ga, ko'paytmasi 8 ga teng. Demak, javob: 2 va 4.";
+
+  useEffect(() => {
+    return jarvisVoice.subscribe((s) => {
+      if (s.currentText === voiceExplanationText) {
+        setIsPlayingVoice(s.isSpeaking && !s.isPaused);
+      } else if (!s.isSpeaking) {
+        setIsPlayingVoice(false);
+      }
+    });
+  }, [voiceExplanationText]);
 
   const handleToggleVoice = () => {
     if (isPlayingVoice) {

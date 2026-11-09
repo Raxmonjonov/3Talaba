@@ -23,6 +23,7 @@
     "@prisma/client": "^5.22.0",
     "animejs": "^4.5.0",
     "bcryptjs": "^2.4.3",
+    "edge-tts-universal": "^1.4.0",
     "lucide-react": "^0.475.0",
     "next": "^15.2.0",
     "next-auth": "^4.24.11",

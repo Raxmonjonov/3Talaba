@@ -155,6 +155,60 @@ async function synthesizeWithCloudStream(text: string): Promise<Uint8Array | nul
   }
 }
 
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const text = url.searchParams.get("text") || "";
+  const speed = parseFloat(url.searchParams.get("speed") || "0.95") || 0.95;
+  const voice = url.searchParams.get("voice") || "onyx";
+
+  if (!text) {
+    return NextResponse.json({ error: "Missing text parameter" }, { status: 400 });
+  }
+
+  const cleanedText = cleanTextForSpeech(text);
+  if (!cleanedText) {
+    return NextResponse.json({ fallback: "web-speech" }, { status: 200 });
+  }
+
+  const openAiAudio = await synthesizeWithOpenAI(cleanedText, voice, speed);
+  if (openAiAudio) {
+    return new NextResponse(openAiAudio, {
+      status: 200,
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "public, max-age=3600",
+        "X-TTS-Provider": "openai-tts-1",
+      },
+    });
+  }
+
+  const elevenAudio = await synthesizeWithElevenLabs(cleanedText);
+  if (elevenAudio) {
+    return new NextResponse(elevenAudio, {
+      status: 200,
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "public, max-age=3600",
+        "X-TTS-Provider": "elevenlabs",
+      },
+    });
+  }
+
+  const cloudAudio = await synthesizeWithCloudStream(cleanedText);
+  if (cloudAudio) {
+    return new NextResponse(Buffer.from(cloudAudio), {
+      status: 200,
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Cache-Control": "public, max-age=3600",
+        "X-TTS-Provider": "cloud-neural",
+      },
+    });
+  }
+
+  return NextResponse.json({ fallback: "web-speech" }, { status: 200 });
+}
+
 export async function POST(req: Request) {
   let body: unknown;
   try {
