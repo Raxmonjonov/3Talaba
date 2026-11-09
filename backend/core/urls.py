@@ -5,6 +5,7 @@ URL Routing for Adaptive AI Exam Platform (/api/v1/).
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from .api_grading import async_grade_ielts_writing, async_grade_writing_examiner
 from .views import (
     CurrentStudyPlanView,
     GoogleOAuth2LoginView,
@@ -49,5 +50,15 @@ urlpatterns = [
         "api/v1/practice/premium-mocks/",
         PremiumFullMockTestsView.as_view(),
         name="premium_mocks",
+    ),
+    path(
+        "api/v1/examiner/grade-writing/",
+        async_grade_writing_examiner,
+        name="examiner_grade_writing",
+    ),
+    path(
+        "api/v1/ai-eval/writing/",
+        async_grade_ielts_writing,
+        name="ai_eval_writing",
     ),
 ]

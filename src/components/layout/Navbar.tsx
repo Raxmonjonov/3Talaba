@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { loadSecureLocal, removeSecureLocal } from "@/lib/security/client-storage";
 import {
@@ -34,7 +35,14 @@ const MOBILE_TONE_CLASSES: Record<NonNullable<NavLinkItem["tone"]>, string> = {
 };
 
 export function Navbar() {
+  const pathname = usePathname();
   const { data: session } = useSession();
+
+  // CD-IELTS Inspera simulyatori to'liq ekranli rasmiy imtihon muhiti bo'lgani uchun
+  // platforma umumiy navbari simulyator ustida ikkinchi navbar bo'lib turmasligi kerak.
+  if (pathname === "/simulator" || pathname?.startsWith("/simulator/")) {
+    return null;
+  }
   const { theme, toggleTheme, reduceMotion, toggleReduceMotion } = useUIPreferences();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [localUserName, setLocalUserName] = useState<string | null>(null);

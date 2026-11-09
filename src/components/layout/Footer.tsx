@@ -38,6 +38,8 @@ const WORKSPACE_PREFIXES = [
   "/roadmap",
   "/profile",
   "/history",
+  "/simulator",
+  "/examiner",
 ];
 
 export function Footer() {

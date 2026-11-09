@@ -1,6 +1,10 @@
 """
-PostgreSQL Database Schema (models.py) for GoPrep-style Adaptive AI Exam Platform (IELTS & SAT).
-Built for Django 5.x + Django REST Framework + PostgreSQL.
+Phase 1: Production PostgreSQL Models (Django 5.x)
+Covers:
+- User (streaks, XP, target band, exam date, subscription tier, Telegram integration)
+- AdaptiveNode & UserNodeMastery (Dynamic Micro-Adaptive Skill Tree)
+- ExamSession (Inspera/Bluebook live timer, highlights, notes, flagged questions)
+- AISubmission (IELTS/SAT essays & audio with inline corrections & 4-criterion rubric JSON)
 """
 
 import uuid
@@ -28,19 +32,18 @@ class ExamType(models.TextChoices):
 
 
 class ExamSection(models.TextChoices):
-    # IELTS Sections
     LISTENING = "LISTENING", "Listening"
     READING = "READING", "Reading"
     WRITING = "WRITING", "Writing"
     SPEAKING = "SPEAKING", "Speaking"
-    # Digital SAT Sections
     SAT_RW = "SAT_RW", "SAT Reading & Writing"
     SAT_MATH = "SAT_MATH", "SAT Math"
 
 
 class SubscriptionTier(models.TextChoices):
     FREE = "FREE", "Free Tier"
-    PREMIUM = "PREMIUM", "Premium Subscriber"
+    PRO = "PRO", "Pro Pass"
+    PREMIUM = "PREMIUM", "Premium Unlimited"
     ADMIN = "ADMIN", "Administrator"
 
 
@@ -52,21 +55,20 @@ class OnboardingStep(models.TextChoices):
     COMPLETED = "COMPLETED", "5. Study Plan Generated & Onboarding Complete"
 
 
-# Strict State Machine Transition Map
 VALID_ONBOARDING_TRANSITIONS: dict[str, set[str]] = {
     OnboardingStep.ACCOUNT_CREATED: {OnboardingStep.GOAL_SELECTED},
     OnboardingStep.GOAL_SELECTED: {
         OnboardingStep.DIAGNOSTIC_IN_PROGRESS,
-        OnboardingStep.GOAL_SELECTED,  # Allow updating goals before starting diagnostic
+        OnboardingStep.GOAL_SELECTED,
     },
     OnboardingStep.DIAGNOSTIC_IN_PROGRESS: {OnboardingStep.DIAGNOSTIC_COMPLETED},
     OnboardingStep.DIAGNOSTIC_COMPLETED: {OnboardingStep.COMPLETED},
-    OnboardingStep.COMPLETED: set(),  # Terminal state
+    OnboardingStep.COMPLETED: set(),
 }
 
 
 # ============================================================================
-# 2. USER & AUTHENTICATION MODELS (JWT + Google OAuth2 + RBAC)
+# 2. USER MODEL (Streaks, XP, Target Band, Exam Date, Subscription Tier)
 # ============================================================================
 
 class UserManager(BaseUserManager):
@@ -83,7 +85,7 @@ class UserManager(BaseUserManager):
         if password:
             user.set_password(password)
         else:
-            user.set_unusable_password()  # For pure Google OAuth2 users
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 
@@ -101,8 +103,8 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    Core User model supporting JWT authentication, Google OAuth2,
-    and Role-Based Access Control (Free vs Premium quotas).
+    Core User entity supporting gamification (XP, streaks), target exam goals,
+    localization (uz/ru/en), Telegram reminders, and subscription RBAC.
     """
 
     FREE_DAILY_PRACTICE_LIMIT = 2
@@ -113,17 +115,41 @@ class User(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=150, blank=True)
     avatar_url = models.URLField(max_length=500, blank=True, null=True)
 
-    # Google OAuth2 Integration
+    # OAuth & Localization
     google_oauth_id = models.CharField(
         max_length=255, unique=True, null=True, blank=True, db_index=True
     )
-    auth_provider = models.CharField(
-        max_length=32,
-        default="email",
-        choices=[("email", "Email/Password"), ("google", "Google OAuth2")],
+    auth_provider = models.CharField(max_length=32, default="email")
+    preferred_locale = models.CharField(
+        max_length=8,
+        default="uz",
+        choices=[("uz", "O'zbekcha"), ("ru", "Русский"), ("en", "English")],
+    )
+    telegram_chat_id = models.CharField(
+        max_length=64, blank=True, null=True, db_index=True
     )
 
-    # RBAC & Subscription State
+    # Exam Goals
+    target_exam = models.CharField(
+        max_length=20,
+        choices=ExamType.choices,
+        default=ExamType.IELTS_ACADEMIC,
+    )
+    target_band = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        default=Decimal("7.5"),
+        help_text="Target IELTS Band (e.g. 7.5) or Digital SAT Score (e.g. 1520.0)",
+    )
+    exam_date = models.DateField(null=True, blank=True)
+
+    # Gamification (Streaks & XP Leaderboard)
+    xp_points = models.PositiveIntegerField(default=0, db_index=True)
+    current_streak = models.PositiveSmallIntegerField(default=0)
+    longest_streak = models.PositiveSmallIntegerField(default=0)
+    last_activity_date = models.DateField(null=True, blank=True)
+
+    # RBAC & Quotas
     subscription_tier = models.CharField(
         max_length=20,
         choices=SubscriptionTier.choices,
@@ -131,8 +157,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         db_index=True,
     )
     subscription_expires_at = models.DateTimeField(null=True, blank=True)
-
-    # Daily Quota Tracking for Free Tier Users
     daily_practice_count = models.PositiveSmallIntegerField(default=0)
     daily_ai_eval_count = models.PositiveSmallIntegerField(default=0)
     quota_reset_date = models.DateField(default=date.today)
@@ -150,22 +174,46 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         db_table = "users"
         indexes = [
-            models.Index(fields=["email"]),
+            models.Index(fields=["-xp_points"]),
             models.Index(fields=["subscription_tier", "subscription_expires_at"]),
         ]
-
-    def __str__(self) -> str:
-        return f"{self.email} ({self.subscription_tier})"
 
     @property
     def is_premium_active(self) -> bool:
         if self.subscription_tier == SubscriptionTier.ADMIN:
             return True
-        if self.subscription_tier == SubscriptionTier.PREMIUM:
+        if self.subscription_tier in (SubscriptionTier.PRO, SubscriptionTier.PREMIUM):
             if self.subscription_expires_at is None:
                 return True
             return self.subscription_expires_at > timezone.now()
         return False
+
+    def record_study_activity(self, xp_earned: int = 25) -> None:
+        today = timezone.localdate()
+        if self.last_activity_date == today:
+            self.xp_points += xp_earned
+        elif (
+            self.last_activity_date is not None
+            and (today - self.last_activity_date).days == 1
+        ):
+            self.current_streak += 1
+            self.longest_streak = max(self.longest_streak, self.current_streak)
+            self.xp_points += xp_earned
+            self.last_activity_date = today
+        else:
+            self.current_streak = 1
+            self.longest_streak = max(self.longest_streak, 1)
+            self.xp_points += xp_earned
+            self.last_activity_date = today
+
+        self.save(
+            update_fields=[
+                "xp_points",
+                "current_streak",
+                "longest_streak",
+                "last_activity_date",
+            ]
+        )
 
     def refresh_daily_quota_if_needed(self) -> None:
         today = timezone.localdate()
@@ -183,59 +231,283 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 # ============================================================================
-# 3. ONBOARDING STATE MACHINE MODEL
+# 3. ADAPTIVE SKILL TREE NODES (Dynamic Micro-Adaptive Roadmap)
+# ============================================================================
+
+class AdaptiveNode(models.Model):
+    """
+    Skill-tree node representing a micro-skill:
+    e.g., Reading -> True/False/Not Given, Reading -> Matching Headings,
+    Writing -> Task 2 Cohesion, SAT Math -> Systems of Linear Equations.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slug = models.SlugField(max_length=120, unique=True, db_index=True)
+    exam_type = models.CharField(
+        max_length=20, choices=ExamType.choices, db_index=True
+    )
+    section = models.CharField(
+        max_length=20, choices=ExamSection.choices, db_index=True
+    )
+    title_en = models.CharField(max_length=200)
+    title_uz = models.CharField(max_length=200)
+    description_uz = models.TextField(blank=True)
+
+    parent_node = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="child_nodes",
+    )
+    prerequisites = models.ManyToManyField(
+        "self", symmetrical=False, blank=True, related_name="unlocks_nodes"
+    )
+
+    difficulty_tier = models.PositiveSmallIntegerField(
+        default=2, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    exam_weight_pct = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        default=Decimal("10.0"),
+        help_text="Frequency weight in real IELTS/SAT exams (used to prioritize remediation).",
+    )
+
+    class Meta:
+        db_table = "adaptive_nodes"
+        indexes = [
+            models.Index(fields=["exam_type", "section", "difficulty_tier"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"[{self.section}] {self.title_en}"
+
+
+class UserNodeMastery(models.Model):
+    """
+    Tracks each user's live mastery (0.0 - 100.0) of an AdaptiveNode.
+    When mastery drops below 65% after a practice session, `needs_immediate_remediation`
+    is flagged true and the Dynamic Micro-Adaptive Engine injects remediation drills
+    into tomorrow's schedule.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="node_masteries"
+    )
+    node = models.ForeignKey(
+        AdaptiveNode, on_delete=models.CASCADE, related_name="user_masteries"
+    )
+
+    mastery_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("50.00"),
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    attempts_count = models.PositiveIntegerField(default=0)
+    failure_streak = models.PositiveSmallIntegerField(default=0)
+    needs_immediate_remediation = models.BooleanField(default=False, db_index=True)
+    next_review_date = models.DateField(default=date.today, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "user_node_masteries"
+        unique_together = [("user", "node")]
+        indexes = [
+            models.Index(fields=["user", "needs_immediate_remediation", "next_review_date"]),
+        ]
+
+    def update_from_accuracy(self, accuracy_ratio: float) -> None:
+        """
+        Recalculates mastery using Exponential Moving Average (EMA).
+        Automatically triggers remediation if user fails (< 0.60 accuracy).
+        """
+        self.attempts_count += 1
+        observed = Decimal(str(round(accuracy_ratio * 100, 2)))
+        self.mastery_score = (self.mastery_score * Decimal("0.60")) + (
+            observed * Decimal("0.40")
+        )
+
+        if accuracy_ratio < 0.60:
+            self.failure_streak += 1
+            self.needs_immediate_remediation = True
+            self.next_review_date = timezone.localdate()  # Inject immediately for today/tomorrow
+        else:
+            self.failure_streak = 0
+            self.needs_immediate_remediation = self.mastery_score < Decimal("65.00")
+            interval_days = 1 if self.needs_immediate_remediation else min(14, 2 ** min(4, self.attempts_count))
+            self.next_review_date = timezone.localdate() + timedelta(days=interval_days)
+
+        self.save()
+
+
+# ============================================================================
+# 4. DISTRACTION-FREE EXAM SESSION (Inspera / Bluebook State Persistence)
+# ============================================================================
+
+class ExamSession(models.Model):
+    """
+    Persists live exam simulator state so users never lose progress, timer state,
+    text highlights, sticky notes, or flagged questions on browser refresh.
+    """
+
+    class SessionState(models.TextChoices):
+        ACTIVE = "ACTIVE", "Active"
+        PAUSED = "PAUSED", "Paused"
+        SUBMITTED = "SUBMITTED", "Submitted"
+        EXPIRED = "EXPIRED", "Expired"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="exam_sessions"
+    )
+    practice_test = models.ForeignKey(
+        "PracticeTest", on_delete=models.CASCADE, related_name="live_sessions"
+    )
+
+    state = models.CharField(
+        max_length=16,
+        choices=SessionState.choices,
+        default=SessionState.ACTIVE,
+        db_index=True,
+    )
+    remaining_seconds = models.PositiveIntegerField(default=3600)
+
+    # Array of highlight objects:
+    # [{"id": "hl-1", "start": 42, "end": 118, "text": "...", "color": "yellow"|"green", "note": "..."}]
+    highlighted_ranges = models.JSONField(default=list, blank=True)
+
+    # Question IDs flagged for review: ["q-1", "q-4"]
+    flagged_questions = models.JSONField(default=list, blank=True)
+
+    #Eliminated / struck-through MCQ option IDs: {"q-1": ["A", "C"]}
+    strikethrough_options = models.JSONField(default=dict, blank=True)
+
+    # Live draft answers: {"q-1": "TRUE", "q-2": "NOT GIVEN", "essay-1": "In recent decades..."}
+    draft_answers = models.JSONField(default=dict, blank=True)
+
+    last_synced_at = models.DateTimeField(auto_now=True)
+    started_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "exam_sessions"
+        indexes = [
+            models.Index(fields=["user", "state", "-last_synced_at"]),
+        ]
+
+
+# ============================================================================
+# 5. AI SUBMISSION (Structured IELTS/SAT Examiner Critique & Inline Corrections)
+# ============================================================================
+
+class AISubmission(models.Model):
+    """
+    Stores Writing essays (Task 1/2) or Speaking audio recordings alongside
+    strict ex-IELTS Examiner JSON evaluation and sentence-level inline corrections.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="ai_submissions"
+    )
+    exam_session = models.ForeignKey(
+        ExamSession,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ai_submissions",
+    )
+    adaptive_node = models.ForeignKey(
+        AdaptiveNode,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ai_submissions",
+    )
+
+    section = models.CharField(
+        max_length=20,
+        choices=ExamSection.choices,
+        default=ExamSection.WRITING,
+    )
+    task_type = models.CharField(
+        max_length=32,
+        default="WRITING_TASK_2",
+        help_text="WRITING_TASK_1, WRITING_TASK_2, SPEAKING_PART_2, etc.",
+    )
+    prompt_text = models.TextField()
+    user_essay_or_transcript = models.TextField()
+    audio_recording_url = models.URLField(max_length=500, blank=True, null=True)
+    word_count = models.PositiveSmallIntegerField(default=0)
+
+    # Official 4-Pillar IELTS Band Scores (0.0 - 9.0 in 0.5 steps)
+    overall_band = models.DecimalField(
+        max_digits=3, decimal_places=1, null=True, blank=True
+    )
+    task_response_band = models.DecimalField(
+        max_digits=3, decimal_places=1, null=True, blank=True
+    )
+    coherence_cohesion_band = models.DecimalField(
+        max_digits=3, decimal_places=1, null=True, blank=True
+    )
+    lexical_resource_band = models.DecimalField(
+        max_digits=3, decimal_places=1, null=True, blank=True
+    )
+    grammatical_range_band = models.DecimalField(
+        max_digits=3, decimal_places=1, null=True, blank=True
+    )
+
+    # Array of {"original_phrase", "improved_phrase", "band_9_synonym", "reason", "reason_uz", "category"}
+    inline_corrections = models.JSONField(default=list, blank=True)
+
+    # Array of concrete study actions + Uzbekistan/English localized examiner commentary
+    actionable_next_steps = models.JSONField(default=list, blank=True)
+    full_rubric_response = models.JSONField(default=dict, blank=True)
+
+    processing_time_ms = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "ai_submissions"
+        indexes = [
+            models.Index(fields=["user", "section", "-created_at"]),
+        ]
+
+
+# ============================================================================
+# 6. EXISTING ONBOARDING, PRACTICE TEST & STUDY PLAN MODELS
 # ============================================================================
 
 class OnboardingState(models.Model):
-    """
-    Tracks a user's progress through the mandatory multi-step onboarding flow:
-    1. Target Exam & Target Score Selection
-    2. Exam Date & Weekly Study Hours
-    3. Short Diagnostic Test Execution
-    4. Adaptive Study Plan Generation
-    """
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name="onboarding_state",
     )
-
     current_step = models.CharField(
         max_length=32,
         choices=OnboardingStep.choices,
         default=OnboardingStep.ACCOUNT_CREATED,
         db_index=True,
     )
-
-    # Goal Parameters
     exam_type = models.CharField(
-        max_length=20,
-        choices=ExamType.choices,
-        null=True,
-        blank=True,
+        max_length=20, choices=ExamType.choices, null=True, blank=True
     )
-    # IELTS Band (e.g., 7.5) or SAT Score (e.g., 1500.0)
     target_score = models.DecimalField(
-        max_digits=6,
-        decimal_places=1,
-        null=True,
-        blank=True,
+        max_digits=6, decimal_places=1, null=True, blank=True
     )
     baseline_score = models.DecimalField(
-        max_digits=6,
-        decimal_places=1,
-        null=True,
-        blank=True,
+        max_digits=6, decimal_places=1, null=True, blank=True
     )
     exam_date = models.DateField(null=True, blank=True)
     daily_study_minutes = models.PositiveSmallIntegerField(
         default=60,
         validators=[MinValueValidator(15), MaxValueValidator(480)],
     )
-
-    # Link to the diagnostic submission once started/completed
     diagnostic_submission = models.OneToOneField(
         "Submission",
         on_delete=models.SET_NULL,
@@ -243,7 +515,6 @@ class OnboardingState(models.Model):
         blank=True,
         related_name="onboarding_diagnostic",
     )
-
     completed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -255,43 +526,28 @@ class OnboardingState(models.Model):
         return self.current_step == OnboardingStep.COMPLETED
 
     def transition_to(self, next_step: str) -> None:
-        """
-        Enforces strict state machine transitions so users cannot skip steps.
-        """
         allowed = VALID_ONBOARDING_TRANSITIONS.get(self.current_step, set())
         if next_step not in allowed:
             raise ValidationError(
                 f"Invalid onboarding state transition from '{self.current_step}' to '{next_step}'."
             )
-
         if next_step == OnboardingStep.GOAL_SELECTED:
             if not self.exam_type or not self.target_score or not self.exam_date:
                 raise ValidationError(
                     "exam_type, target_score, and exam_date must be set before advancing to GOAL_SELECTED."
                 )
-
         if next_step == OnboardingStep.DIAGNOSTIC_COMPLETED:
             if not self.diagnostic_submission or self.diagnostic_submission.status != "EVALUATED":
                 raise ValidationError(
                     "Diagnostic submission must be evaluated before completing the diagnostic step."
                 )
-
         if next_step == OnboardingStep.COMPLETED:
             self.completed_at = timezone.now()
-
         self.current_step = next_step
         self.save()
 
 
-# ============================================================================
-# 4. PRACTICE TESTS & QUESTIONS
-# ============================================================================
-
 class PracticeTest(models.Model):
-    """
-    Represents either an initial Diagnostic Test, a Section Drill, or a Full Mock Exam.
-    """
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = models.SlugField(max_length=120, unique=True)
     title = models.CharField(max_length=255)
@@ -301,45 +557,46 @@ class PracticeTest(models.Model):
     section = models.CharField(
         max_length=20, choices=ExamSection.choices, db_index=True
     )
-
+    adaptive_node = models.ForeignKey(
+        AdaptiveNode,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="practice_tests",
+    )
     is_diagnostic = models.BooleanField(default=False, db_index=True)
     is_premium_only = models.BooleanField(default=False, db_index=True)
     duration_minutes = models.PositiveSmallIntegerField(default=30)
     difficulty_level = models.PositiveSmallIntegerField(
         default=3, validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
-
     instructions = models.TextField(blank=True)
     is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "practice_tests"
-        indexes = [
-            models.Index(fields=["exam_type", "section", "is_published"]),
-            models.Index(fields=["exam_type", "is_diagnostic"]),
-        ]
-
-    def __str__(self) -> str:
-        return f"[{self.exam_type} - {self.section}] {self.title}"
 
 
 class Question(models.Model):
-    """
-    Individual question inside a PracticeTest.
-    Supports Objective (MCQ / Fill-in-blank for Reading, Listening, Math)
-    and Subjective AI-evaluated tasks (Writing Task 1/2, Speaking Part 1/2/3).
-    """
-
     class QuestionFormat(models.TextChoices):
         MULTIPLE_CHOICE = "MCQ", "Multiple Choice"
+        TRUE_FALSE_NG = "TFNG", "True / False / Not Given"
         FILL_IN_BLANK = "FIB", "Fill in the Blank"
+        MATCHING_HEADINGS = "HEADINGS", "Drag-and-Drop Matching Headings"
         ESSAY_PROMPT = "ESSAY", "Writing Essay (AI Evaluated)"
         SPEAKING_PROMPT = "SPEAKING", "Speaking Audio Prompt (AI Evaluated)"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     practice_test = models.ForeignKey(
         PracticeTest, on_delete=models.CASCADE, related_name="questions"
+    )
+    adaptive_node = models.ForeignKey(
+        AdaptiveNode,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="questions",
     )
     order_index = models.PositiveSmallIntegerField(default=1)
     section = models.CharField(max_length=20, choices=ExamSection.choices)
@@ -348,28 +605,15 @@ class Question(models.Model):
         choices=QuestionFormat.choices,
         default=QuestionFormat.MULTIPLE_CHOICE,
     )
-
-    topic_tag = models.CharField(
-        max_length=100,
-        db_index=True,
-        help_text="e.g., 'True/False/Not Given', 'Linear Equations', 'Task 2 Opinion Essay'",
-    )
+    topic_tag = models.CharField(max_length=100, db_index=True)
     passage_text = models.TextField(blank=True, null=True)
     audio_url = models.URLField(max_length=500, blank=True, null=True)
     prompt_text = models.TextField()
-
-    # JSON structure for MCQ options: [{"id": "A", "text": "..."}, ...]
     options_json = models.JSONField(default=list, blank=True)
-    # Deterministic answer key for Reading/Listening/Math (kept server-side only)
     correct_answer = models.CharField(max_length=255, blank=True)
     explanation = models.TextField(blank=True)
-
-    # Rubric & Context for LLM Evaluation (Writing/Speaking)
-    ai_rubric_criteria = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text="Scoring rubric weights and model instructions for LLM grading.",
-    )
+    explanation_uz = models.TextField(blank=True)
+    ai_rubric_criteria = models.JSONField(default=dict, blank=True)
 
     class Meta:
         db_table = "questions"
@@ -377,48 +621,27 @@ class Question(models.Model):
         unique_together = [("practice_test", "order_index")]
 
 
-# ============================================================================
-# 5. ADAPTIVE STUDY PLAN & DAILY/WEEKLY CHECKLISTS
-# ============================================================================
-
 class StudyPlan(models.Model):
-    """
-    Adaptive Study Plan generated from the user's diagnostic test results,
-    target score gap, and days remaining until exam_date.
-    """
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="study_plans"
     )
     exam_type = models.CharField(max_length=20, choices=ExamType.choices)
     is_active = models.BooleanField(default=True, db_index=True)
-
     baseline_score = models.DecimalField(max_digits=6, decimal_places=1)
     target_score = models.DecimalField(max_digits=6, decimal_places=1)
     target_exam_date = models.DateField()
     total_weeks = models.PositiveSmallIntegerField(default=4)
-
-    # Diagnostic breakdown e.g. {"READING": 6.0, "LISTENING": 6.5, "WRITING": 5.5, "SPEAKING": 6.0}
     section_diagnostics_json = models.JSONField(default=dict)
-    # Prioritized weak topics e.g. ["WRITING:Coherence & Cohesion", "READING:Inference"]
     priority_focus_areas = models.JSONField(default=list)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "study_plans"
-        indexes = [
-            models.Index(fields=["user", "is_active"]),
-        ]
 
 
 class StudyPlanModule(models.Model):
-    """
-    Individual Daily/Weekly Checklist item within a user's StudyPlan.
-    """
-
     class ModuleStatus(models.TextChoices):
         LOCKED = "LOCKED", "Locked"
         PENDING = "PENDING", "Pending"
@@ -429,18 +652,26 @@ class StudyPlanModule(models.Model):
     study_plan = models.ForeignKey(
         StudyPlan, on_delete=models.CASCADE, related_name="modules"
     )
+    adaptive_node = models.ForeignKey(
+        AdaptiveNode,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="study_modules",
+    )
     week_number = models.PositiveSmallIntegerField(db_index=True)
     day_of_week = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(7)],
-        help_text="1=Monday ... 7=Sunday",
+        validators=[MinValueValidator(1), MaxValueValidator(7)]
     )
     scheduled_date = models.DateField(db_index=True)
-
     section = models.CharField(max_length=20, choices=ExamSection.choices)
     title = models.CharField(max_length=255)
     topic_focus = models.CharField(max_length=120)
+    is_remediation_drill = models.BooleanField(
+        default=False,
+        help_text="True when dynamically injected by the Micro-Adaptive Engine after a failed drill.",
+    )
     estimated_minutes = models.PositiveSmallIntegerField(default=30)
-
     practice_test = models.ForeignKey(
         PracticeTest,
         on_delete=models.SET_NULL,
@@ -458,27 +689,13 @@ class StudyPlanModule(models.Model):
 
     class Meta:
         db_table = "study_plan_modules"
-        ordering = ["week_number", "day_of_week", "id"]
-        indexes = [
-            models.Index(fields=["study_plan", "week_number", "status"]),
-            models.Index(fields=["study_plan", "scheduled_date"]),
-        ]
+        ordering = ["scheduled_date", "-is_remediation_drill", "id"]
 
-
-# ============================================================================
-# 6. SUBMISSIONS & AI EVALUATIONS
-# ============================================================================
 
 class Submission(models.Model):
-    """
-    Represents a user's attempt at a PracticeTest (Diagnostic or Regular Practice).
-    Stores both deterministic scores (Reading/Listening/Math) and LLM evaluations
-    (Writing/Speaking band score & detailed rubric feedback).
-    """
-
     class SubmissionStatus(models.TextChoices):
         IN_PROGRESS = "IN_PROGRESS", "In Progress"
-        SUBMITTED = "SUBMITTED", "Submitted (Pending AI Grading)"
+        SUBMITTED = "SUBMITTED", "Submitted"
         EVALUATED = "EVALUATED", "Evaluated"
         FAILED = "FAILED", "Evaluation Failed"
 
@@ -496,39 +713,25 @@ class Submission(models.Model):
         blank=True,
         related_name="submissions",
     )
-
     status = models.CharField(
         max_length=20,
         choices=SubmissionStatus.choices,
         default=SubmissionStatus.IN_PROGRESS,
         db_index=True,
     )
-
-    # Overall Band (e.g., 7.0) or Scaled Score (e.g., 1420.0)
     overall_score = models.DecimalField(
         max_digits=6, decimal_places=1, null=True, blank=True
     )
-    # Section-wise score breakdown e.g. {"READING": 7.5, "WRITING": 6.5}
     section_scores_json = models.JSONField(default=dict, blank=True)
-
     time_spent_seconds = models.PositiveIntegerField(default=0)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "submissions"
-        indexes = [
-            models.Index(fields=["user", "status", "-started_at"]),
-            models.Index(fields=["practice_test", "user"]),
-        ]
 
 
 class QuestionResponse(models.Model):
-    """
-    Stores a user's answer to a single Question within a Submission,
-    including LLM feedback for Writing essays and Speaking transcripts.
-    """
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     submission = models.ForeignKey(
         Submission, on_delete=models.CASCADE, related_name="responses"
@@ -536,32 +739,13 @@ class QuestionResponse(models.Model):
     question = models.ForeignKey(
         Question, on_delete=models.PROTECT, related_name="user_responses"
     )
-
-    # Objective or Written answer text (or ASR transcript for Speaking)
     answer_text = models.TextField(blank=True)
-    # Optional S3/Cloud URL for Speaking audio recording
     speaking_audio_url = models.URLField(max_length=500, blank=True, null=True)
-
-    # Objective grading fields
     is_correct = models.BooleanField(null=True, blank=True)
-
-    # AI Evaluation Fields (for Writing & Speaking)
     estimated_band_score = models.DecimalField(
-        max_digits=4,
-        decimal_places=1,
-        null=True,
-        blank=True,
-        help_text="IELTS Band 0.0-9.0 or SAT Essay score",
+        max_digits=4, decimal_places=1, null=True, blank=True
     )
-    ai_evaluation_json = models.JSONField(
-        default=dict,
-        blank=True,
-        help_text=(
-            "Structured LLM output: { "
-            "'criteria_scores': {'task_response': 7.0, 'coherence': 6.5, 'lexical': 7.0, 'grammar': 6.5}, "
-            "'strengths': [...], 'weaknesses': [...], 'improved_sample': '...' }"
-        ),
-    )
+    ai_evaluation_json = models.JSONField(default=dict, blank=True)
     evaluated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

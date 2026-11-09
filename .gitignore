@@ -34,4 +34,10 @@ next-env.d.ts
 tsbuildinfo
 *.tsbuildinfo
 
+# AI & Agent artifacts
+.agents/
+.freebuff/
+.gemini/
+.claude/
+
 .cloud-attachments/

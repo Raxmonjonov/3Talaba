@@ -67,15 +67,31 @@ export function HeroSection() {
           100% o&apos;zbek tilida.
         </p>
 
-        <div className="flex flex-wrap items-center gap-4 pt-2">
+        <div className="flex flex-wrap items-center gap-3 pt-2">
           <HeroPrimaryCta />
 
           <Link
-            href="/math"
-            className="glass-card inline-flex items-center gap-2 px-6 py-4 text-base font-bold text-white transition-colors hover:text-emerald-300"
+            href="/simulator"
+            className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/40 bg-sky-500/15 px-5 py-3.5 text-sm sm:text-base font-bold text-sky-200 transition-all hover:bg-sky-500/25 hover:scale-[1.02]"
           >
-            <Sigma className="h-5 w-5 text-emerald-400" />
-            <span>Algebra &amp; Geometriya</span>
+            <span>CD-IELTS Simulyator</span>
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+
+          <Link
+            href="/examiner"
+            className="inline-flex items-center gap-2 rounded-2xl border border-purple-400/40 bg-purple-500/15 px-5 py-3.5 text-sm sm:text-base font-bold text-purple-200 transition-all hover:bg-purple-500/25 hover:scale-[1.02]"
+          >
+            <Sparkles className="h-4 w-4 text-purple-300" />
+            <span>AI Writing Examiner</span>
+          </Link>
+
+          <Link
+            href="/math"
+            className="glass-card inline-flex items-center gap-2 px-5 py-3.5 text-sm sm:text-base font-bold text-white transition-colors hover:text-emerald-300"
+          >
+            <Sigma className="h-4 w-4 text-emerald-400" />
+            <span>Matematika</span>
           </Link>
         </div>
 

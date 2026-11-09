@@ -41,21 +41,25 @@ export interface NavLinkItem {
  * O'quv Dasturlari (/learn) | Matematika (/math) | Amaliyot (/practice) | Talaba AI (/coach) | Tariflar (/#pricing) | FAQ (/#faq)
  */
 export const GUEST_NAV_LINKS: NavLinkItem[] = [
+  { href: "/simulator", label: "IELTS Simulyator", tone: "neon" },
+  { href: "/examiner", label: "AI Examiner", tone: "gold" },
   { href: "/learn", label: "O'quv Dasturlari" },
   { href: "/math", label: "Matematika" },
   { href: "/practice", label: "Amaliyot" },
-  { href: "/coach", label: "Talaba AI", tone: "gold" },
+  { href: "/coach", label: "Talaba AI" },
   { href: "/#pricing", label: "Tariflar" },
   { href: "/#faq", label: "FAQ" },
 ];
 
 /** Tizimga kirgan o'quvchi uchun Navbar tuzilmasi (shaxsiy kabinet sahifalari). */
 export const STUDENT_NAV_LINKS: NavLinkItem[] = [
+  { href: "/simulator", label: "IELTS Simulyator", tone: "neon" },
+  { href: "/examiner", label: "AI Examiner", tone: "gold" },
   { href: "/learn", label: "Darslar" },
   { href: "/math", label: "Matematika" },
   { href: "/practice", label: "Amaliyot" },
-  { href: "/coach", label: "Talaba AI", tone: "gold" },
-  { href: "/profile", label: "Mening Profilim", tone: "neon" },
+  { href: "/coach", label: "Talaba AI" },
+  { href: "/profile", label: "Mening Profilim" },
 ];
 
 /**
