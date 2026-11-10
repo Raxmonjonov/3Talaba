@@ -65,7 +65,11 @@ async function synthesizeWithGeminiTTS(
       body: JSON.stringify({
         contents: [
           {
-            parts: [{ text }],
+            parts: [
+              {
+                text: `Please read the following text transcript aloud clearly without adding any words:\n${text}`,
+              },
+            ],
           },
         ],
         generationConfig: {
