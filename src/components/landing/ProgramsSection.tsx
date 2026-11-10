@@ -74,23 +74,9 @@ export function ProgramsSection() {
       className="scroll-mt-28 space-y-6"
       aria-labelledby="programs-title"
     >
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-emerald-400">
-            O&apos;QUV DASTURLARI
-          </span>
-          <h2 id="programs-title" className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
-            Asosiy Fanlar va Chuqur Tayyorgarlik Kurslari
-          </h2>
-        </div>
-        <a
-          href={`#${SECTION_IDS.roadmap}`}
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-300 hover:text-amber-200"
-        >
-          <span>12 Oylik Tizimni ko&apos;rish</span>
-          <ArrowRight className="h-4 w-4" />
-        </a>
-      </div>
+      <h2 id="programs-title" className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+        Kurslar
+      </h2>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {PROGRAMS.map((program) => {
@@ -116,7 +102,6 @@ export function ProgramsSection() {
                 <h3 className={`mt-4 text-xl font-bold text-white transition-colors ${styles.titleHover}`}>
                   {program.title}
                 </h3>
-                <p className="mt-2 text-xs font-medium text-slate-300">{program.description}</p>
               </div>
               <div
                 className={`mt-6 flex items-center justify-between border-t border-white/10 pt-3 text-xs font-bold ${styles.footer}`}

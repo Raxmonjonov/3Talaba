@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { HomeChalkboardSection } from "@/components/classroom/HomeChalkboardSection";
-import { EasyOnboardingGuideSection } from "@/components/learning/EasyOnboardingGuideSection";
 import { ProgramsSection } from "@/components/landing/ProgramsSection";
-import { RoadmapSection } from "@/components/landing/RoadmapSection";
-import { AiCoachSection } from "@/components/landing/AiCoachSection";
-import { DailyPracticeSection } from "@/components/landing/DailyPracticeSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { FAQ_ITEMS } from "@/components/landing/faq-data";
@@ -42,12 +37,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <HeroSection />
-      <HomeChalkboardSection />
-      <EasyOnboardingGuideSection />
       <ProgramsSection />
-      <RoadmapSection />
-      <AiCoachSection />
-      <DailyPracticeSection />
       <PricingSection />
       <FaqSection items={FAQ_ITEMS} />
     </div>

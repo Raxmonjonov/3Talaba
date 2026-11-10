@@ -46,11 +46,6 @@ export function HeroSection() {
     <section className="grid items-center gap-8 lg:grid-cols-12" aria-labelledby="hero-title">
       {/* Chap qism: Sarlavha, Maqsad va Harakat tugmalari */}
       <div className="space-y-6 lg:col-span-7">
-        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3.5 py-1.5 text-xs font-extrabold text-emerald-300">
-          <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-          <span>XALQARO TA&apos;LIM PLATFORMASI • 12 OYLIK TIZIM</span>
-        </div>
-
         <h1
           id="hero-title"
           className="text-3xl font-black leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl"
@@ -62,9 +57,7 @@ export function HeroSection() {
         </h1>
 
         <p className="max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
-          Digital {TARGETS.sat}, {TARGETS.ielts} va chuqur Matematikani bosqichma-bosqich,{" "}
-          {BRAND.aiName} murabbiyi bilan birga o&apos;rganing. {BRAND.fullName} — tushuntirishlar
-          100% o&apos;zbek tilida.
+          SAT, IELTS va Matematika — o&apos;zbek tilida.
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-2">
