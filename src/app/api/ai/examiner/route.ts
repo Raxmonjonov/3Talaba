@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const EX_IELTS_EXAMINER_SYSTEM_PROMPT = `You are a Senior British Council / IDP Certified Ex-IELTS Writing Examiner with 15+ years of assessment experience.
+const EX_IELTS_EXAMINER_SYSTEM_PROMPT = `You are a Senior British Council / IDP Certified Ex-IELTS Writing Examiner with 15+ years of assessment experience.
 Your task is to evaluate an IELTS Writing submission strictly according to the official public IELTS Writing Band Descriptors across all four equally weighted criteria:
 1. Task Response (TR) / Task Achievement (TA)
 2. Coherence and Cohesion (CC)

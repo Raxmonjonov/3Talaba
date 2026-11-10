@@ -7,10 +7,10 @@ import {
   CD_IELTS_40_QUESTIONS,
   CD_IELTS_PASSAGES,
 } from "@/lib/simulator/cd-ielts-data";
-import { EX_IELTS_EXAMINER_SYSTEM_PROMPT } from "@/app/api/ai/examiner/route";
 import {
   EssayEvaluationSchema,
   evaluateEssayDeterministically,
+  EX_IELTS_EXAMINER_SYSTEM_PROMPT,
   STRICT_EXAMINER_SYSTEM_PROMPT,
 } from "@/lib/examiner/essay-evaluator";
 

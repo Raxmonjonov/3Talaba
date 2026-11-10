@@ -50,6 +50,8 @@ STRICT ANTI-INFLATION & PENALTY RULES:
 4. VERBATIM QUOTES: Every exact_original_quote in inline_corrections MUST exist character-for-character inside the candidate's essay.
 5. Output strictly valid JSON matching EssayEvaluationSchema.`;
 
+export const EX_IELTS_EXAMINER_SYSTEM_PROMPT = STRICT_EXAMINER_SYSTEM_PROMPT;
+
 function roundToHalfBand(score: number): number {
   return Math.round(Math.max(1.0, Math.min(9.0, score)) * 2) / 2;
 }
