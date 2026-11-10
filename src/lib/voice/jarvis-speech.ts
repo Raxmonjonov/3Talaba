@@ -511,7 +511,8 @@ export class TeacherVoiceController {
     await new Promise((resolve) => setTimeout(resolve, 50));
     if (sessionId !== this.activeSessionId) return;
 
-    this.executeWebSpeechQueue(sentences, sessionId, onEnd);
+    // 1-USTUVORLIK: Insoniy va tabiiy Gemini Neural TTS orqali yangratish
+    this.playEntireWithServerAudio(sentences, sessionId, onEnd);
   }
 
   /**
@@ -520,15 +521,18 @@ export class TeacherVoiceController {
   private tryPlayServerAudio(
     sentence: string,
     sessionId: number,
-    onEnded: () => void
+    onEnded: () => void,
+    onError?: () => void
   ) {
     if (typeof window === "undefined" || typeof Audio === "undefined") {
-      onEnded();
+      if (onError) onError();
+      else onEnded();
       return;
     }
 
     try {
-      const audioUrl = `/api/tts?text=${encodeURIComponent(sentence)}&speed=${this.speechRate}`;
+      const voiceName = this.preferredGender === "male" ? "Puck" : "Aoede";
+      const audioUrl = `/api/tts?text=${encodeURIComponent(sentence)}&voice=${voiceName}&speed=${this.speechRate}`;
       const audio = new Audio(audioUrl);
       this.activeAudio = audio;
 
@@ -548,17 +552,20 @@ export class TeacherVoiceController {
       audio.onerror = () => {
         if (sessionId !== this.activeSessionId) return;
         this.activeAudio = null;
-        onEnded();
+        if (onError) onError();
+        else onEnded();
       };
 
       void audio.play().catch(() => {
         if (sessionId === this.activeSessionId) {
           this.activeAudio = null;
-          onEnded();
+          if (onError) onError();
+          else onEnded();
         }
       });
     } catch {
-      onEnded();
+      if (onError) onError();
+      else onEnded();
     }
   }
 
@@ -693,10 +700,18 @@ export class TeacherVoiceController {
       this.state.sentenceIndex = index;
       this.notify();
 
-      this.tryPlayServerAudio(sent, sessionId, () => {
-        index += 1;
-        setTimeout(playStep, 40);
-      });
+      this.tryPlayServerAudio(
+        sent,
+        sessionId,
+        () => {
+          index += 1;
+          setTimeout(playStep, 40);
+        },
+        () => {
+          // Server audio mavjud bo'lmasa yoki xato bersa, zaxira Web Speech API ga o'tamiz
+          this.executeWebSpeechQueue(sentences.slice(index), sessionId, onEnd);
+        }
+      );
     };
     playStep();
   }

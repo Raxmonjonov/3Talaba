@@ -38,7 +38,7 @@ export type EssayEvaluation = z.infer<typeof EssayEvaluationSchema>;
 
 export const STRICT_EXAMINER_SYSTEM_PROMPT = `You are a Principal British Council / IDP Certified IELTS Writing Examiner with 15+ years of official grading calibration.
 Evaluate the candidate's IELTS Academic Writing submission strictly according to the official public IELTS Writing Band Descriptors across all four equally weighted criteria:
-1. TR (Task Response for Task 2 / Task Achievement for Task 1)
+1. Task Response (TR) for Task 2 / Task Achievement (TA) for Task 1
 2. CC (Coherence and Cohesion)
 3. LR (Lexical Resource)
 4. GRA (Grammatical Range and Accuracy)

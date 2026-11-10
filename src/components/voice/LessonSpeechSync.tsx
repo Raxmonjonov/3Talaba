@@ -127,16 +127,17 @@ export function LessonSpeechSync({
     activeUtteranceRef.current = null;
   }, [clearTimers]);
 
-  // Zaxira Server Neural Audio orqali o'qish (Web Speech xato berganda yoki ovoz bo'lmaganda)
-  const playServerAudioFallback = useCallback(
-    (sentence: string, onEnded: () => void) => {
+  // Tabiiy insoniy ovoz: Server Neural Audio (Gemini TTS) orqali o'qish
+  const playServerAudio = useCallback(
+    (sentence: string, onEnded: () => void, onErrorFallback?: () => void) => {
       if (isAbortedRef.current || typeof window === "undefined" || typeof Audio === "undefined") {
-        onEnded();
+        if (onErrorFallback) onErrorFallback();
+        else onEnded();
         return;
       }
 
       try {
-        const audioUrl = `/api/tts?text=${encodeURIComponent(sentence)}&speed=0.95`;
+        const audioUrl = `/api/tts?text=${encodeURIComponent(sentence)}&voice=Aoede&speed=0.95`;
         const audio = new Audio(audioUrl);
         serverAudioRef.current = audio;
 
@@ -153,15 +154,18 @@ export function LessonSpeechSync({
 
         audio.onerror = () => {
           serverAudioRef.current = null;
-          onEnded();
+          if (onErrorFallback) onErrorFallback();
+          else onEnded();
         };
 
         void audio.play().catch(() => {
           serverAudioRef.current = null;
-          onEnded();
+          if (onErrorFallback) onErrorFallback();
+          else onEnded();
         });
       } catch {
-        onEnded();
+        if (onErrorFallback) onErrorFallback();
+        else onEnded();
       }
     },
     []
@@ -206,66 +210,71 @@ export function LessonSpeechSync({
         }
       };
 
-      if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-        playServerAudioFallback(cleaned, advanceNext);
-        return;
-      }
-
-      const availableVoices = window.speechSynthesis.getVoices();
-      const voice =
-        selectedVoice ||
-        pickBestTeacherVoice(availableVoices, "uz-UZ") ||
-        availableVoices[0];
-
-      const utter = new SpeechSynthesisUtterance(cleaned);
-
-      if (voice) {
-        utter.voice = voice;
-        utter.lang = voice.lang;
-      } else {
-        utter.lang = typeof navigator !== "undefined" ? navigator.language : "uz-UZ";
-      }
-
-      // Talab bo'yicha parametrlar
-      utter.rate = 0.95;
-      utter.pitch = 1.0;
-      utter.volume = 1.0;
-
-      activeUtteranceRef.current = utter;
       setCurrentSentenceIndex(index);
 
-      utter.onstart = () => {
-        if (isAbortedRef.current) return;
-        setIsSpeaking(true);
-        setIsPaused(false);
-      };
+      // 1-USTUVORLIK: Gemini Neural Multilingual TTS (Tabiiy o'zbek tili)
+      playServerAudio(
+        cleaned,
+        advanceNext,
+        () => {
+          // Zaxira: Web Speech API (faqat server mavjud bo'lmaganda)
+          if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+            advanceNext();
+            return;
+          }
 
-      // 3-Qoida: Gap audiosi tugagach (utterance.onend), u ekranda ochiladi va keyingi gap ishga tushadi
-      utter.onend = () => {
-        activeUtteranceRef.current = null;
-        advanceNext();
-      };
+          const availableVoices = window.speechSynthesis.getVoices();
+          const voice =
+            selectedVoice ||
+            pickBestTeacherVoice(availableVoices, "uz-UZ") ||
+            availableVoices[0];
 
-      utter.onerror = () => {
-        activeUtteranceRef.current = null;
-        if (isAbortedRef.current) return;
-        // Agar Web Speech xato bersa, Server Neural TTS orqali yangratib davom etamiz
-        playServerAudioFallback(cleaned, advanceNext);
-      };
+          const utter = new SpeechSynthesisUtterance(cleaned);
 
-      try {
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
+          if (voice) {
+            utter.voice = voice;
+            utter.lang = voice.lang;
+          } else {
+            utter.lang = typeof navigator !== "undefined" ? navigator.language : "uz-UZ";
+          }
+
+          utter.rate = 0.95;
+          utter.pitch = 1.0;
+          utter.volume = 1.0;
+
+          activeUtteranceRef.current = utter;
+
+          utter.onstart = () => {
+            if (isAbortedRef.current) return;
+            setIsSpeaking(true);
+            setIsPaused(false);
+          };
+
+          utter.onend = () => {
+            activeUtteranceRef.current = null;
+            advanceNext();
+          };
+
+          utter.onerror = () => {
+            activeUtteranceRef.current = null;
+            advanceNext();
+          };
+
+          try {
+            if (window.speechSynthesis.paused) {
+              window.speechSynthesis.resume();
+            }
+            window.speechSynthesis.speak(utter);
+            if (window.speechSynthesis.paused) {
+              window.speechSynthesis.resume();
+            }
+          } catch {
+            advanceNext();
+          }
         }
-        window.speechSynthesis.speak(utter);
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
-        }
-      } catch {
-        playServerAudioFallback(cleaned, advanceNext);
-      }
+      );
     },
-    [playServerAudioFallback, selectedVoice, sentences]
+    [playServerAudio, selectedVoice, sentences]
   );
 
   // Komponent yopilganda audioni to'liq to'xtatish
