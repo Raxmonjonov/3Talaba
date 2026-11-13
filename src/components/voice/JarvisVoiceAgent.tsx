@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Mic,
   MicOff,
@@ -10,8 +10,10 @@ import {
   Volume2,
   VolumeX,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { jarvisVoice, type JarvisVoiceState } from "@/lib/voice/jarvis-speech";
+import { usePushToTalk } from "@/lib/voice/usePushToTalk";
 
 export function JarvisVoiceButton({
   text,
@@ -23,10 +25,48 @@ export function JarvisVoiceButton({
   className?: string;
 }) {
   const [voiceState, setVoiceState] = useState<JarvisVoiceState>(jarvisVoice.state);
+  const [thinking, setThinking] = useState(false);
+  const [aiReply, setAiReply] = useState<string | null>(null);
 
   useEffect(() => {
     return jarvisVoice.subscribe((s) => setVoiceState(s));
   }, []);
+
+  const { listening } = usePushToTalk({
+    enabled: !thinking,
+    onTranscript: async (transcript) => {
+      setThinking(true);
+      setAiReply(null);
+      try {
+        const res = await fetch("/api/ai/coach", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: transcript,
+            mode: "SOCRATIC_TUTOR",
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const reply =
+            data?.assistantMessage?.content ||
+            data?.message ||
+            `Barakalla! Savolingiz qabul qilindi.`;
+          setAiReply(reply);
+          jarvisVoice.speak(reply);
+        } else {
+          setAiReply("Kecharing, hozirgi javob bera olmayapman. Qayta urinib ko'ring.");
+        }
+      } catch {
+        setAiReply("Tarmoq xatosi. Iltimos, internet aloqasini tekshiring.");
+      } finally {
+        setThinking(false);
+      }
+    },
+    onStartListening: () => {
+      setAiReply(null);
+    },
+  });
 
   const isCurrent = voiceState.currentText === text;
   const isPlaying = isCurrent && voiceState.isSpeaking && !voiceState.isPaused;
@@ -46,27 +86,50 @@ export function JarvisVoiceButton({
   const handleStop = (e: React.MouseEvent) => {
     e.stopPropagation();
     jarvisVoice.stop();
+    setThinking(false);
+    setAiReply(null);
+  };
+
+  const handleSpeakReply = () => {
+    if (aiReply) {
+      jarvisVoice.speak(aiReply);
+    }
   };
 
   return (
-    <div className={`inline-flex items-center gap-1.5 ${className}`}>
+    <div className={`inline-flex flex-col items-center gap-1.5 ${className}`}>
       <button
         type="button"
         onClick={handleClick}
+        disabled={thinking || listening}
         className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
-          isPlaying
-            ? "border-neon bg-neon-soft text-neon shadow-neon animate-pulse"
-            : isPaused
-              ? "border-gold bg-gold-soft text-gold"
-              : "border-white/10 bg-surface/80 text-fg-muted hover:border-neon hover:text-neon"
+          thinking
+            ? "border-neon bg-neon/20 text-neon animate-pulse cursor-not-allowed"
+            : isPlaying
+              ? "border-neon bg-neon-soft text-neon shadow-neon"
+              : isPaused
+                ? "border-gold bg-gold-soft text-gold"
+                : "border-white/10 bg-surface/80 text-fg-muted hover:border-neon hover:text-neon"
         }`}
-        title={isPlaying ? "Vaqtincha to'xtatish" : "Talaba AI ovozida tinglash"}
+        title={
+          thinking
+            ? "AI o'ylamoqda..."
+            : listening
+              ? "Eshitilmoqda..."
+              : isPlaying
+                ? "Vaqtincha to'xtatish"
+                : "Talaba AI ovozida tinglash"
+        }
       >
-        {isPlaying ? (
+        {thinking ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <span className="text-[10px]">O'ylamoqda…</span>
+          </>
+        ) : isPlaying ? (
           <>
             <Pause className="h-3.5 w-3.5" />
             <span>Pauza</span>
-            {/* Audio to'lqin nishoni */}
             <span className="flex items-center gap-0.5 ml-1">
               <span className="h-2.5 w-0.5 bg-neon animate-bounce" style={{ animationDelay: "0ms" }} />
               <span className="h-3.5 w-0.5 bg-neon animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -86,7 +149,19 @@ export function JarvisVoiceButton({
         )}
       </button>
 
-      {isCurrent && (voiceState.isSpeaking || voiceState.isPaused) && (
+      {aiReply && (
+        <button
+          type="button"
+          onClick={handleSpeakReply}
+          className="inline-flex items-center gap-1 rounded-xl border border-neon/40 bg-neon/10 px-2.5 py-1 text-[10px] font-bold text-neon transition-all hover:bg-neon/20"
+          title="Javobni qayta tinglash"
+        >
+          <Volume2 className="h-3 w-3" />
+          <span>Javobni qayta tinglash</span>
+        </button>
+      )}
+
+      {isCurrent && (voiceState.isSpeaking || voiceState.isPaused) && !thinking && (
         <button
           type="button"
           onClick={handleStop}
