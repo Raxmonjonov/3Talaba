@@ -256,6 +256,7 @@ export function LessonSpeechSync({
           };
 
           utter.onerror = () => {
+            if (isAbortedRef.current) return;
             activeUtteranceRef.current = null;
             advanceNext();
           };
@@ -317,8 +318,16 @@ export function LessonSpeechSync({
   const handlePause = () => {
     clearTimers();
     isAbortedRef.current = true;
-    if (serverAudioRef.current && !serverAudioRef.current.paused) {
-      serverAudioRef.current.pause();
+    activeUtteranceRef.current = null;
+    if (serverAudioRef.current) {
+      try {
+        serverAudioRef.current.pause();
+        serverAudioRef.current.currentTime = 0;
+        serverAudioRef.current.src = "";
+      } catch {
+        // ignore
+      }
+      serverAudioRef.current = null;
     }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       try {
