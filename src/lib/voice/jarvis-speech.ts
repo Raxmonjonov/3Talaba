@@ -12,6 +12,8 @@
  *    - `play`, `pause`, `resume`, `stop` operatsiyalari xavfsiz va asinxron boshqariladi.
  */
 
+import { numbersToUzbekWords } from "./uz-numbers";
+
 export interface JarvisVoiceState {
   isSpeaking: boolean;
   isPaused: boolean;
@@ -102,6 +104,15 @@ export function cleanTextForSpeech(text: string): string {
       .replace(/\s+/g, " ")
       .trim()
   );
+}
+
+/**
+ * Ovozli o'qish uchun yakuniy matn: tozalash + barcha raqamlarni o'zbekcha so'zga aylantirish.
+ * ("6 ga" -> "olti ga", "7.5" -> "yetti butun o'ndan besh"). Shu tufayli TTS raqamlarni
+ * inglizcha/ruscha o'qib yubormaydi.
+ */
+export function prepareUzbekSpeechText(text: string): string {
+  return numbersToUzbekWords(cleanTextForSpeech(text));
 }
 
 /**
