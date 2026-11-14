@@ -13,7 +13,10 @@ import {
 } from "lucide-react";
 import {
   cleanTextForSpeech,
+  jarvisVoice,
   pickBestTeacherVoice,
+  splitIntoNaturalSentences,
+  type JarvisVoiceState,
 } from "@/lib/voice/jarvis-speech";
 
 export interface LessonSpeechSyncProps {
@@ -62,7 +65,7 @@ export function LessonSpeechSync({
   const [isPaused, setIsPaused] = useState(false);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [revealedSentences, setRevealedSentences] = useState<string[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [jarvisState, setJarvisState] = useState<JarvisVoiceState>(jarvisVoice.state);
 
   const sentences = useMemo(() => {
     return splitLessonIntoSentences(lessonText);
@@ -78,23 +81,14 @@ export function LessonSpeechSync({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // Brauzer ovozlarini olish va eng sifatli Natural ovozni tanlash
+  // Jarvis singletondan ovoz holatini obuna bo'lish — barcha sahifalarda bir xil ovoz
   useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-
-    const updateVoice = () => {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        const best = pickBestTeacherVoice(voices, "uz-UZ");
-        setSelectedVoice(best);
-      }
-    };
-
-    updateVoice();
-    window.speechSynthesis.addEventListener?.("voiceschanged", updateVoice);
-    return () => {
-      window.speechSynthesis.removeEventListener?.("voiceschanged", updateVoice);
-    };
+    const unsub = jarvisVoice.subscribe((s) => {
+      setJarvisState(s);
+      setIsSpeaking(s.isSpeaking && !s.isPaused);
+      setIsPaused(s.isPaused);
+    });
+    return unsub;
   }, []);
 
   const clearTimers = useCallback(() => {
@@ -137,7 +131,9 @@ export function LessonSpeechSync({
       }
 
       try {
-        const audioUrl = `/api/tts?text=${encodeURIComponent(sentence)}&voice=Aoede&speed=0.95`;
+        const ttsVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer", "Aoede", "Puck", "Charon", "Kore", "Fenrir"];
+        const ttsVoice = ttsVoices.includes(jarvisState.voiceName) ? jarvisState.voiceName : "Aoede";
+        const audioUrl = `/api/tts?text=${encodeURIComponent(sentence)}&voice=${encodeURIComponent(ttsVoice)}&speed=0.95`;
         const audio = new Audio(audioUrl);
         serverAudioRef.current = audio;
 
@@ -225,7 +221,7 @@ export function LessonSpeechSync({
 
           const availableVoices = window.speechSynthesis.getVoices();
           const voice =
-            selectedVoice ||
+            jarvisVoice.selectedVoice ||
             pickBestTeacherVoice(availableVoices, "uz-UZ") ||
             availableVoices[0];
 
@@ -275,7 +271,7 @@ export function LessonSpeechSync({
         }
       );
     },
-    [playServerAudio, selectedVoice, sentences]
+    [playServerAudio, jarvisVoice.selectedVoice, sentences]
   );
 
   // Komponent yopilganda audioni to'liq to'xtatish

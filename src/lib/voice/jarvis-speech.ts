@@ -311,7 +311,7 @@ export class TeacherVoiceController {
 
   private listeners: Set<VoiceListener> = new Set();
   private recognition: any = null;
-  private selectedVoice: SpeechSynthesisVoice | null = null;
+  public selectedVoice: SpeechSynthesisVoice | null = null;
   private activeUtterances: Set<SpeechSynthesisUtterance> = new Set();
   private activeAudio: HTMLAudioElement | null = null;
   private utteranceQueue: string[] = [];
@@ -360,8 +360,12 @@ export class TeacherVoiceController {
 
     if (hasTTS) {
       this.refreshVoices();
+      this.restoreVoiceFromStorage();
       if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = () => this.refreshVoices();
+        window.speechSynthesis.onvoiceschanged = () => {
+          this.refreshVoices();
+          this.restoreVoiceFromStorage();
+        };
       }
     }
 
@@ -381,6 +385,22 @@ export class TeacherVoiceController {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     const voices = window.speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
+
+    // localStorage da saqlangan ovoz mavjud bo'lfa, uni avval o'rnatamiz
+    try {
+      const saved = localStorage.getItem("jarvis_voice_name");
+      if (saved) {
+        const found = voices.find((v) => v.name === saved);
+        if (found) {
+          this.selectedVoice = found;
+          this.state.voiceName = found.name;
+          this.notify();
+          return;
+        }
+      }
+    } catch {
+      // localStorage yo'q bo'lsa e'tiborsiz qoldiramiz
+    }
 
     this.selectedVoice = pickBestTeacherVoice(
       voices,
@@ -406,7 +426,30 @@ export class TeacherVoiceController {
     if (found) {
       this.selectedVoice = found;
       this.state.voiceName = found.name;
+      try {
+        localStorage.setItem("jarvis_voice_name", found.name);
+      } catch {
+        // localStorage yo'q bo'lsa e'tiborsiz qoldiramiz
+      }
       this.notify();
+    }
+  }
+
+  public restoreVoiceFromStorage() {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      const saved = localStorage.getItem("jarvis_voice_name");
+      if (!saved) return;
+      const voices = window.speechSynthesis.getVoices();
+      const found = voices.find((v) => v.name === saved);
+      if (found) {
+        this.selectedVoice = found;
+        this.state.voiceName = found.name;
+        this.notify();
+        return;
+      }
+    } catch {
+      // localStorage yo'q bo'lsa e'tiborsiz qoldiramiz
     }
   }
 
