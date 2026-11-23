@@ -37,29 +37,109 @@ export interface NavLinkItem {
   tone?: "default" | "gold" | "neon";
 }
 
-/** Ro'yxatdan o'tmagan foydalanuvchi uchun Navbar tuzilmasi:
- * O'quv Dasturlari (/learn) | Matematika (/math) | Amaliyot (/practice) | Talaba AI (/coach) | Tariflar (/#pricing) | FAQ (/#faq)
+/** Ro'yxatdan o'tmagan foydalanuvchi uchun asosiy, ixcham Navbar tuzilmasi.
+ * Qolgan barcha qo'shimcha bo'limlar Sozlamalar (/settings) ichida jamlangan.
  */
 export const GUEST_NAV_LINKS: NavLinkItem[] = [
-  { href: "/simulator", label: "IELTS Simulyator", tone: "neon" },
-  { href: "/examiner", label: "AI Examiner", tone: "gold" },
-  { href: "/learn", label: "O'quv Dasturlari" },
-  { href: "/math", label: "Matematika" },
-  { href: "/practice", label: "Amaliyot" },
-  { href: "/coach", label: "Talaba AI" },
-  { href: "/#pricing", label: "Tariflar" },
-  { href: "/#faq", label: "FAQ" },
-];
-
-/** Tizimga kirgan o'quvchi uchun Navbar tuzilmasi (shaxsiy kabinet sahifalari). */
-export const STUDENT_NAV_LINKS: NavLinkItem[] = [
-  { href: "/simulator", label: "IELTS Simulyator", tone: "neon" },
-  { href: "/examiner", label: "AI Examiner", tone: "gold" },
   { href: "/learn", label: "Darslar" },
   { href: "/math", label: "Matematika" },
   { href: "/practice", label: "Amaliyot" },
-  { href: "/coach", label: "Talaba AI" },
-  { href: "/profile", label: "Mening Profilim" },
+  { href: "/simulator", label: "IELTS Simulyator", tone: "neon" },
+  { href: "/coach", label: "Talaba AI", tone: "gold" },
+];
+
+/** Tizimga kirgan o'quvchi uchun asosiy, ixcham Navbar tuzilmasi.
+ * Profil, Xarita, Tarix, AI Examiner, Tariflar va boshqa bo'limlar /settings ichida.
+ */
+export const STUDENT_NAV_LINKS: NavLinkItem[] = [
+  { href: "/learn", label: "Darslar" },
+  { href: "/math", label: "Matematika" },
+  { href: "/practice", label: "Amaliyot" },
+  { href: "/simulator", label: "IELTS Simulyator", tone: "neon" },
+  { href: "/coach", label: "Talaba AI", tone: "gold" },
+];
+
+/** Sozlamalar (/settings) bo'limiga ko'chirilgan barcha qo'shimcha sahifalar ro'yxati. */
+export interface SettingsSectionLink {
+  href: string;
+  label: string;
+  description: string;
+  category: "personal" | "tools" | "info";
+  badge?: string;
+}
+
+export const SETTINGS_EXTRA_SECTIONS: SettingsSectionLink[] = [
+  {
+    href: "/profile",
+    label: "Mening Profilim",
+    description: "12 oylik xarita, konspektlar va savollar banki bir joyda",
+    category: "personal",
+    badge: "Kabinet",
+  },
+  {
+    href: "/progress",
+    label: "Progress & Reyting",
+    description: "XP ballari, darajalar, nishonlar va respublika peshqadamlari",
+    category: "personal",
+    badge: "XP",
+  },
+  {
+    href: "/roadmap",
+    label: "12 Oylik Yo'l Xaritasi",
+    description: "365 kunlik shaxsiy o'qish grafigi va kunlik vaqt rejasi",
+    category: "personal",
+  },
+  {
+    href: "/history",
+    label: "Dars Tarixi & Konspektlar",
+    description: "O'tilgan darslar, muhim formulalar va namuna misollar",
+    category: "personal",
+  },
+  {
+    href: "/examiner",
+    label: "AI Writing Examiner",
+    description: "IELTS Writing insholarini 4 mezon bo'yicha AI baholash",
+    category: "tools",
+    badge: "AI",
+  },
+  {
+    href: "/placement",
+    label: "Diagnostika Testi",
+    description: "Joriy SAT & IELTS darajangizni aniqlash va qayta topshirish",
+    category: "tools",
+  },
+  {
+    href: "/onboarding",
+    label: "Maqsadlarni Sozlash",
+    description: "Maqsadli universitet, sinf va kunlik o'qish vaqtini o'zgartirish",
+    category: "tools",
+  },
+  {
+    href: "/guardian",
+    label: "Ota-ona & Ustoz Ko'rinishi",
+    description: "Haftalik o'sish hisoboti va maxsus ulashish kodi",
+    category: "info",
+  },
+  {
+    href: "/admin",
+    label: "Admin Panel",
+    description: "Foydalanuvchilar, savollar banki va kontent boshqaruvi",
+    category: "info",
+    badge: "Admin",
+  },
+  {
+    href: "/settings?tab=billing",
+    label: "Tariflar & Pro Obuna",
+    description: "Joriy tarifni ko'rish va qayta ro'yxatdan o'tmasdan Pro Campus'ga o'tish",
+    category: "info",
+    badge: "Pro",
+  },
+  {
+    href: `/#${SECTION_IDS.faq}`,
+    label: "Ko'p So'raladigan Savollar (FAQ)",
+    description: "Platforma va imtihonlarga tayyorgarlik bo'yicha javoblar",
+    category: "info",
+  },
 ];
 
 /**

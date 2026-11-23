@@ -40,6 +40,10 @@ const WORKSPACE_PREFIXES = [
   "/history",
   "/simulator",
   "/examiner",
+  "/settings",
+  "/admin",
+  "/guardian",
+  "/onboarding",
 ];
 
 export function Footer() {

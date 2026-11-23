@@ -29,11 +29,17 @@ import {
   Brain,
   ShieldCheck,
   RotateCcw,
+  Crown,
 } from "lucide-react";
 import { JarvisVoiceButton } from "@/components/voice/JarvisVoiceAgent";
 import { SegmentLoading } from "@/components/layout/SegmentLoading";
 import { UniversityPathwayAtlas } from "@/components/curriculum/UniversityPathwayAtlas";
 import { TARGETS } from "@/lib/site-config";
+import {
+  loadStoredPlan,
+  subscribeStoredPlan,
+  type PlanId,
+} from "@/lib/billing/plan-storage";
 import {
   generatePersonalizedRoadmap,
   calculateDailyTimeBreakdown,
@@ -212,6 +218,8 @@ function ProfileContent() {
   // ---------------------------------------------------------------------------
   // 1. Profil va foydalanuvchi ma'lumotlari
   // ---------------------------------------------------------------------------
+  const [localUser, setLocalUser] = useState<{ name?: string; email?: string } | null>(null);
+  const [activePlan, setActivePlan] = useState<PlanId>("free");
   const [placementResult, setPlacementResult] = useState<{
     estimatedSat?: string;
     estimatedIelts?: string;
@@ -220,6 +228,11 @@ function ProfileContent() {
   } | null>(null);
 
   useEffect(() => {
+    const savedUser = loadSecureLocal<{ name?: string; email?: string }>("3talaba_user");
+    if (savedUser?.name || savedUser?.email) {
+      setLocalUser(savedUser);
+    }
+
     const saved = loadSecureLocal<{
       estimatedSat?: string;
       estimatedIelts?: string;
@@ -229,6 +242,9 @@ function ProfileContent() {
     if (saved) {
       setPlacementResult(saved);
     }
+
+    setActivePlan(loadStoredPlan().plan);
+    return subscribeStoredPlan((state) => setActivePlan(state.plan));
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -370,16 +386,23 @@ function ProfileContent() {
                 <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
                   3Talaba Campus O&apos;quvchisi
                 </span>
-                <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-amber-300">
-                  Bo&apos;lajak Grant Sohibi
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full border px-3 py-0.5 text-[11px] font-extrabold uppercase tracking-wider ${
+                    activePlan === "pro"
+                      ? "border-[#c6f432]/60 bg-[#c6f432]/15 text-[#c6f432]"
+                      : "border-amber-400/30 bg-amber-500/10 text-amber-300"
+                  }`}
+                >
+                  <Crown className="h-3 w-3" />
+                  <span>{activePlan === "pro" ? "Pro Campus Faol" : "Bepul Tarif"}</span>
                 </span>
               </div>
 
               <h1 className="mt-2 text-2xl font-black text-white sm:text-3xl tracking-tight">
-                {session?.user?.name ?? "Aziz O'quvchi"}
+                {session?.user?.name ?? localUser?.name ?? "Aziz O'quvchi"}
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-                {session?.user?.email ?? "oquvchi@3talaba.uz"} • Shaxsiy Ta&apos;lim Markazi
+                {session?.user?.email ?? localUser?.email ?? "oquvchi@3talaba.uz"} • Shaxsiy Ta&apos;lim Markazi
               </p>
 
               {/* Akademik Maqsadlar */}
@@ -400,8 +423,20 @@ function ProfileContent() {
             </div>
           </div>
 
-          {/* O'ng taraf: Tezkor harakatlar va XP */}
+          {/* O'ng taraf: Tezkor harakatlar va Tarif */}
           <div className="flex flex-wrap items-center gap-3 border-t border-white/10 pt-4 lg:border-t-0 lg:pt-0">
+            <Link
+              href={activePlan === "pro" ? "/settings?tab=billing" : "/settings?tab=billing&upgrade=pro"}
+              className={
+                activePlan === "pro"
+                  ? "rounded-xl border border-[#c6f432]/40 bg-[#c6f432]/15 px-4 py-2.5 text-xs font-bold text-[#c6f432] hover:bg-[#c6f432]/25 transition-all inline-flex items-center gap-1.5"
+                  : "btn-neon px-4 py-2.5 text-xs font-bold inline-flex items-center gap-1.5"
+              }
+            >
+              <Crown className="h-4 w-4" />
+              <span>{activePlan === "pro" ? "Pro Tarifni Boshqarish" : "Pro Campus'ga o'tish"}</span>
+            </Link>
+
             <Link
               href="/placement"
               className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-all inline-flex items-center gap-1.5"

@@ -1,18 +1,30 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { animate } from "animejs";
 import { Mail, Lock, ArrowRight, AlertCircle, Sparkles, UserCheck } from "lucide-react";
 import { useUIPreferences } from "@/components/providers/AppProviders";
 import { saveSecureLocal } from "@/lib/security/client-storage";
 
-export default function LoginPage() {
+function getSafeRedirectTarget(raw: string | null): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//")) {
+    return raw;
+  }
+  return "/roadmap";
+}
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { reduceMotion } = useUIPreferences();
   const cardRef = useRef<HTMLDivElement | null>(null);
+
+  const nextPath = getSafeRedirectTarget(
+    searchParams.get("next") ?? searchParams.get("callbackUrl")
+  );
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -45,7 +57,7 @@ export default function LoginPage() {
       isLoggedIn: true,
       loggedInAt: new Date().toISOString(),
     });
-    router.push("/roadmap");
+    router.push(nextPath);
     router.refresh();
   };
 
@@ -194,5 +206,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <p className="text-sm text-slate-400">Yuklanmoqda...</p>
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { saveSecureLocal } from "@/lib/security/client-storage";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+import { loadSecureLocal, saveSecureLocal } from "@/lib/security/client-storage";
 import { animate } from "animejs";
 import {
   Sparkles,
@@ -24,6 +24,7 @@ import {
   Sigma,
   BookOpen,
   Compass,
+  Crown,
 } from "lucide-react";
 import { UZBEK_REGIONS, GRADE_OPTIONS } from "@/lib/validations/auth";
 import { useUIPreferences } from "@/components/providers/AppProviders";
@@ -70,13 +71,18 @@ const DIAGNOSTIC_QUESTIONS: DiagnosticQuestion[] = [
   },
 ];
 
-export default function RegisterWizardPage() {
+function RegisterWizardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session, status: sessionStatus } = useSession();
   const { reduceMotion } = useUIPreferences();
   const cardRef = useRef<HTMLDivElement | null>(null);
 
+  const requestedPlan = searchParams.get("plan") === "pro" ? "pro" : null;
+
   // 1 dan 10 gacha sahifalar (har bir ma'lumot uchun alohida sahifa)
   const [page, setPage] = useState<number>(1);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
   // Foydalanuvchi kiritadigan ma'lumotlar
   const [name, setName] = useState("");
@@ -97,6 +103,27 @@ export default function RegisterWizardPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [registered, setRegistered] = useState(false);
+
+  // Agar foydalanuvchi allaqachon ro'yxatdan o'tgan va tizimga kirgan bo'lsa,
+  // uni qayta ro'yxatdan o'tkazmasdan to'g'ridan-to'g'ri tarif/profilga yo'naltiramiz.
+  useEffect(() => {
+    if (registered) return;
+    const localUser = loadSecureLocal<{ name?: string; email?: string; isLoggedIn?: boolean }>(
+      "3talaba_user"
+    );
+    const isSignedIn =
+      sessionStatus === "authenticated" ||
+      Boolean(localUser?.name || localUser?.email || localUser?.isLoggedIn);
+
+    if (isSignedIn) {
+      setAlreadyRegistered(true);
+      const target =
+        requestedPlan === "pro"
+          ? "/settings?tab=billing&upgrade=pro"
+          : "/profile";
+      router.replace(target);
+    }
+  }, [session, sessionStatus, registered, requestedPlan, router]);
 
   // Sahifa o'zgarganda silliq animatsiya
   useEffect(() => {
@@ -197,6 +224,14 @@ export default function RegisterWizardPage() {
         password,
       });
 
+      saveSecureLocal("3talaba_user", {
+        email: email.trim().toLowerCase(),
+        name: name.trim(),
+        grade,
+        region,
+        isLoggedIn: true,
+      });
+
       setRegistered(true);
       setLoading(false);
       // Keyingi sahifaga: 1-Mashq (Savollar banki)
@@ -237,12 +272,61 @@ export default function RegisterWizardPage() {
 
   const progressPercent = Math.round((page / 10) * 100);
 
+  if (alreadyRegistered && !registered) {
+    return (
+      <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-8 sm:px-6">
+        <div className="glass-card w-full max-w-lg p-8 sm:p-10 text-center space-y-5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/15 text-emerald-400">
+            <Crown className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-black text-white">
+            Siz allaqachon ro&apos;yxatdan o&apos;tgansiz!
+          </h1>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            {requestedPlan === "pro"
+              ? "Qayta ro'yxatdan o'tish shart emas — sizni to'g'ridan-to'g'ri Pro Campus tarifini faollashtirish bo'limiga yo'naltiryapmiz."
+              : "Hisobingiz faol holatda. Qayta ro'yxatdan o'tmasdan o'qishni davom ettirishingiz yoki tarifingizni yangilashingiz mumkin."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Link
+              href="/settings?tab=billing&upgrade=pro"
+              className="btn-neon flex-1 inline-flex items-center justify-center gap-2 py-3 text-sm font-bold"
+            >
+              <Crown className="h-4 w-4" />
+              <span>Pro Campus&apos;ga o&apos;tish</span>
+            </Link>
+            <Link
+              href="/profile"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-bold text-white hover:border-emerald-400/40"
+            >
+              <span>Profilga o&apos;tish</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-8 sm:px-6">
       <div
         ref={cardRef}
         className="glass-card w-full max-w-2xl p-8 sm:p-12 shadow-[0_24px_70px_-15px_rgba(0,0,0,0.7)]"
       >
+        {requestedPlan === "pro" && page <= 7 && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#c6f432]/40 bg-[#c6f432]/10 px-4 py-3 text-xs">
+            <span className="inline-flex items-center gap-2 font-extrabold text-[#c6f432]">
+              <Crown className="h-4 w-4" />
+              <span>Pro Campus tanlandi — avval hisob oching</span>
+            </span>
+            <Link
+              href={`/login?next=${encodeURIComponent("/settings?tab=billing&upgrade=pro")}`}
+              className="font-bold text-white underline hover:text-[#c6f432]"
+            >
+              Hisobim bor (Kirish) →
+            </Link>
+          </div>
+        )}
         {/* Yuqori bosqich va progress indikatori */}
         <div className="mb-8">
           <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
@@ -842,15 +926,36 @@ export default function RegisterWizardPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => router.push("/roadmap")}
-              className="btn-neon w-full flex items-center justify-center gap-3 py-4 text-lg font-bold shadow-2xl mt-4"
-            >
-              <Compass className="h-5 w-5" />
-              <span>12 Oylik Shaxsiy Xaritamga Kirish</span>
-              <ArrowRight className="h-5 w-5" />
-            </button>
+            {requestedPlan === "pro" ? (
+              <div className="space-y-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => router.push("/settings?tab=billing&upgrade=pro")}
+                  className="btn-neon w-full flex items-center justify-center gap-3 py-4 text-lg font-bold shadow-2xl"
+                >
+                  <Crown className="h-5 w-5" />
+                  <span>Pro Campus&apos;ni Faollashtirish</span>
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/roadmap")}
+                  className="w-full rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-bold text-slate-300 hover:text-white"
+                >
+                  Keyinroq • 12 Oylik Xaritamga o&apos;tish
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => router.push("/roadmap")}
+                className="btn-neon w-full flex items-center justify-center gap-3 py-4 text-lg font-bold shadow-2xl mt-4"
+              >
+                <Compass className="h-5 w-5" />
+                <span>12 Oylik Shaxsiy Xaritamga Kirish</span>
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            )}
           </div>
         )}
 
@@ -860,7 +965,11 @@ export default function RegisterWizardPage() {
             <p className="text-xs text-slate-400">
               Allaqachon hisobingiz bormi?{" "}
               <Link
-                href="/login"
+                href={
+                  requestedPlan === "pro"
+                    ? `/login?next=${encodeURIComponent("/settings?tab=billing&upgrade=pro")}`
+                    : "/login"
+                }
                 className="font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
               >
                 Tizimga kirish →
@@ -870,5 +979,19 @@ export default function RegisterWizardPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function RegisterWizardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <p className="text-sm text-slate-400">Yuklanmoqda...</p>
+        </div>
+      }
+    >
+      <RegisterWizardContent />
+    </Suspense>
   );
 }
