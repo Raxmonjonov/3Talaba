@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Environment variables
+.env
+.env*.local
+
+# Logs & Test outputs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+coverage/
+test-results/
+playwright-report/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Platform / Agent caches
+.netlify/
+.vercel/
+.agents/
+.claude/
+.freebuff/
+.gemini/
+.cloud-attachments/
