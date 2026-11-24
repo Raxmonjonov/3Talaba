@@ -14,6 +14,14 @@ import {
   Sigma,
   FileText,
   Brain,
+  Calculator,
+  Globe2,
+  PenTool,
+  Shield,
+  Target,
+  Rocket,
+  GraduationCap,
+  Trophy,
 } from "lucide-react";
 import { ChalkboardClassroom } from "@/components/classroom/ChalkboardClassroom";
 import { UniversityPathwayAtlas } from "@/components/curriculum/UniversityPathwayAtlas";
@@ -66,6 +74,29 @@ interface LessonsCatalogResponse {
   earnedBadges: Array<{ id: string; titleUz: string; xpBonus: number }>;
 }
 
+/* ----------------------------------------------------------------
+   FANGA TEGISHLIGA KO'RA ICON VA RANG (har bir bo'lim uchun aniq belgi)
+   ---------------------------------------------------------------- */
+const SUBJECT_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
+  "sat-math": { icon: Calculator, color: "#fbbf24" },
+  "sat-rw": { icon: FileText, color: "#f59e0b" },
+  "ielts": { icon: Globe2, color: "#22c55e" },
+  "foundation-math": { icon: Compass, color: "#38bdf8" },
+  "academic-writing": { icon: PenTool, color: "#a855f7" },
+};
+
+function SubjectIcon({ slug }: { slug: string }) {
+  const { icon: Icon, color } = SUBJECT_ICONS[slug] ?? {
+    icon: BookOpen,
+    color: "#94a3b8",
+  };
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+      <Icon className="h-4 w-4" style={{ color }} />
+    </span>
+  );
+}
+
 export default function LearnIndexPage() {
   const router = useRouter();
   const { pace, setPace, activeOption, options } = useLearningAdaptation();
@@ -73,20 +104,12 @@ export default function LearnIndexPage() {
   const [loading, setLoading] = useState(true);
   const [selectedSubjectSlug, setSelectedSubjectSlug] = useState<string>("all");
   const [activeBoardId, setActiveBoardId] = useState<string>(
-    SEED_CURRICULUM[0]?.topic.lesson.slug ?? "sat-math-linear-equations"
+    SEED_CURRICULUM[0]?.topics[0]?.lessons[0]?.slug ?? "sat-math-linear-equations"
   );
 
   // Barcha dars va matematika modullarini yagona interaktiv doska uchun yig'amiz
   const allBoardSlides = useMemo(() => {
-    const curriculumSlides = SEED_CURRICULUM.map((s) =>
-      buildChalkboardFromLesson({
-        slug: s.topic.lesson.slug,
-        subjectName: s.nameUz,
-        lessonTitle: s.topic.lesson.titleUz,
-        theoryMarkdown: s.topic.lesson.theoryMarkdown,
-        examples: s.topic.lesson.examples,
-      })
-    );
+    const curriculumSlides = buildChalkboardSlidesFromSubjects(SEED_CURRICULUM);
     const mathSlides = MATH_15_MODULES.filter((m) => m.id !== 1).map((m) =>
       buildChalkboardFromMathModule(m)
     );
@@ -114,7 +137,7 @@ export default function LearnIndexPage() {
       <div className="flex min-h-[70vh] items-center justify-center">
         <div className="flex items-center gap-3 text-slate-300">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
-          <span className="text-sm font-semibold">Darslar katalogi yuklanmoqda...</span>
+          <span className="text-sm font-semibold">Darslar katalogi yuklanmoqda…</span>
         </div>
       </div>
     );
@@ -131,8 +154,8 @@ export default function LearnIndexPage() {
   const completedCount = completedLessonIds.length;
 
   return (
-    <div className="custom-scrollbar mx-auto h-[calc(100dvh-69px)] w-full max-w-[1480px] overflow-y-auto px-3 py-1.5 sm:px-5 lg:px-8 space-y-4">
-      {/* JONLI DOSKA VA ANIMATSIYALI AI USTOZ: Faqat doskadagi mavzu almashadi! */}
+    <div className="custom-scrollbar mx-auto h-[calc(100dvh-69px)] w-full max-w-[1480px] overflow-y-auto px-3 py-1.5 sm:px-5 lg:px-8 space-y-5">
+      {/* JONLI DOSKA VA AI USTOZ */}
       <ChalkboardClassroom
         slide={currentBoardSlide}
         availableSlides={allBoardSlides}
@@ -156,20 +179,23 @@ export default function LearnIndexPage() {
         proceedLabel="Misol va Mashqlarni Ishlash"
       />
 
-      {/* Yuqori sokin sinfxona peshlavhasi */}
+      {/* Sarlavha va asosiy ko'rsatkichlar */}
       <div className="glass-card p-6 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-6 border-b border-white/10 pb-6">
+        <div className="flex flex-wrap items-center justify-between gap-5 border-b border-white/10 pb-6">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3.5 py-1 text-xs font-extrabold text-emerald-300">
               <Sparkles className="h-3.5 w-3.5" />
               <span>AKADEMIK KURSLAR • DARS VA AMALIYOT</span>
             </span>
             <h1 className="text-2xl font-black text-white sm:text-4xl tracking-tight">
-              <span className="text-amber-300">{honorific}</span>, bugungi darslar rejasi
+              <span className="text-amber-300">{honorific}</span>, bugungi darslar rejangiz
             </h1>
             <p className="text-xs text-slate-300 sm:text-sm max-w-4xl leading-relaxed">
-              Har bir dars: <strong>Mavzu → Qisqa nazariya → Hayotiy misollar → Mashqlar → Tahlil</strong>{" "}
-              ketma-ketligida tuzilgan. Talaba AI ovozli agenti darsni tushuntirishga yordam beradi.
+              Har bir dars quyidagi ketma-ketlikda yasaladi:{""}
+              <strong className="text-white">
+                Nazariya → Hayotiy misollar → Mashqlar → Tahlil
+              </strong>{" "}
+              . Talaba AI ovozli agenti sizga darsni tushuntiradi.
             </p>
           </div>
 
@@ -211,33 +237,51 @@ export default function LearnIndexPage() {
           </div>
         </div>
 
-        {/* Tezkor Filtrlar va Tushuntirish Moslagichi */}
+        {/* Tezka yo'l-yo'riq (3 qadam) — icon bilan */}
         <div className="mt-5 space-y-4 border-t border-white/10 pt-5">
           <div className="grid gap-3 md:grid-cols-3 rounded-2xl border border-[#c6f432]/30 bg-[#0b0b0c] p-4 text-xs">
-            <div>
-              <span className="font-mono font-black text-[#c6f432] block">1-QADAM: REJIM TANLANG</span>
-              <p className="mt-1 text-slate-300">
-                Agar endi boshlagan bo&apos;lsangiz, <strong className="text-white">«0 dan Sodda Tilda»</strong> rejimini yoqing.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#c6f432] text-[#0b0b0c]">
+                <span className="font-mono text-[10px] font-black">1</span>
+              </div>
+              <div>
+                <span className="font-mono font-black text-[#c6f432] block">Rejimni tanlang</span>
+                <p className="mt-1 text-slate-300">
+                  0 dan boshlaysangiz, <strong className="text-white">«0 dan Sodda Tilda»</strong> rejimini yoqing.
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="font-mono font-black text-[#c6f432] block">2-QADAM: DARSNI OCHING</span>
-              <p className="mt-1 text-slate-300">
-                Har bir dars <strong className="text-white">Qoida → Namuna → Mashq → Tahlil</strong> bo&apos;yicha yetaklaydi.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#c6f432] text-[#0b0b0c]">
+                <span className="font-mono text-[10px] font-black">2</span>
+              </div>
+              <div>
+                <span className="font-mono font-black text-[#c6f432] block">Darsni oching</span>
+                <p className="mt-1 text-slate-300">
+                  Har bir dars <strong className="text-white">Qoida → Namuna → Mashq → Tahlil</strong> bo'yicha yetaklaydi.
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="font-mono font-black text-[#c6f432] block">3-QADAM: OVOZ VA AI YORDAM</span>
-              <p className="mt-1 text-slate-300">
-                Dars ichida <strong className="text-white">«Tinglash»</strong> va <strong className="text-white">«Sodda tushuntir»</strong> tugmalarini bosing.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#c6f432] text-[#0b0b0c]">
+                <span className="font-mono text-[10px] font-black">3</span>
+              </div>
+              <div>
+                <span className="font-mono font-black text-[#c6f432] block">Ovoz va AI yordam</span>
+                <p className="mt-1 text-slate-300">
+                  Dars ichida <strong className="text-white">«Tinglash»</strong> va <strong className="text-white">«Sodda tushuntir»</strong> tugmalarini bosing.
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            {/* Fan filtri */}
+          {/* Filtrlar — icon bilan */}
+          <div className="flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="font-semibold text-slate-400 mr-1">Yo&apos;nalish filtri:</span>
+              <span className="flex items-center gap-1.5 font-semibold text-slate-400">
+                <Layers className="h-3.5 w-3.5" />
+                <span>Yo'nalish filtri:</span>
+              </span>
               <button
                 type="button"
                 onClick={() => setSelectedSubjectSlug("all")}
@@ -247,27 +291,35 @@ export default function LearnIndexPage() {
                     : "glass-pill text-slate-300 hover:text-white"
                 }`}
               >
-                Barcha fanlar ({subjects.length})
+                <BookOpen className="h-3.5 w-3.5" /> Barcha fanlar ({subjects.length})
               </button>
-              {subjects.map((subj) => (
-                <button
-                  key={subj.slug}
-                  type="button"
-                  onClick={() => setSelectedSubjectSlug(subj.slug)}
-                  className={`rounded-lg px-3 py-1.5 font-bold transition-all ${
-                    selectedSubjectSlug === subj.slug
-                      ? "bg-[#c6f432] text-[#0b0b0c]"
-                      : "glass-pill text-slate-300 hover:text-white"
-                  }`}
-                >
-                  {subj.nameUz}
-                </button>
-              ))}
+              {subjects.map((subj) => {
+                const { icon: Icon, color } = SUBJECT_ICONS[subj.slug] ?? {
+                  icon: BookOpen,
+                  color: "#94a3b8",
+                };
+                return (
+                  <button
+                    key={subj.slug}
+                    type="button"
+                    onClick={() => setSelectedSubjectSlug(subj.slug)}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition-all ${
+                      selectedSubjectSlug === subj.slug
+                        ? `bg-[#c6f432] text-[#0b0b0c]`
+                        : "glass-pill text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    <Icon className={`h-3.5 w-3.5 ${selectedSubjectSlug === subj.slug ? "text-[#0b0b0c]" : ""}`} style={{ color }} />
+                    {subj.nameUz}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Tushuntirish darajasi */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-slate-400 font-semibold">Uslub ({activeOption.badge}):</span>
+              <span className="text-slate-400 font-semibold">
+                <Brain className="h-3.5 w-3.5" /> Uslub ({activeOption.badge}):
+              </span>
               {options.map((opt) => (
                 <button
                   key={opt.id}
@@ -287,94 +339,117 @@ export default function LearnIndexPage() {
         </div>
       </div>
 
-      {/* 0 dan Universitet va 100% Grantgacha 6 Bosqichli Yo'l Xaritasi va Grantlar Atlasi */}
+      {/* 12 Oylik Yo'l Xaritasi */}
       <UniversityPathwayAtlas />
 
       {/* Fanlar va Darslar Ro'yxati */}
       <div className="space-y-8">
         {subjects
           .filter((s) => selectedSubjectSlug === "all" || s.slug === selectedSubjectSlug)
-          .map((subject) => (
-          <div key={subject.id} className="glass-card p-6 sm:p-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-black text-white">{subject.nameUz}</h2>
-                <p className="mt-1 text-xs sm:text-sm text-slate-300">
-                  {subject.descriptionUz}
-                </p>
-              </div>
-              <Link
-                href={`/practice?subject=${subject.slug}`}
-                className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-emerald-400 hover:border-emerald-400/50 hover:bg-white/10 transition-colors"
-              >
-                Ushbu fandan mashqlar →
-              </Link>
-            </div>
-
-            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {subject.topics.map((topic) =>
-                topic.lessons.map((lesson) => {
-                  const isDone = completedLessonIds.includes(lesson.id);
-                  return (
-                    <div
-                      key={lesson.id}
-                      className={`flex flex-col justify-between rounded-2xl border p-5 transition-all backdrop-blur-xl ${
-                        isDone
-                          ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_20px_rgba(198,244,50,0.15)]"
-                          : "border-white/10 bg-white/[0.03] hover:border-emerald-400/40 hover:bg-white/[0.06]"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <span className="glass-pill rounded-lg px-2.5 py-1 font-mono font-bold text-emerald-300">
-                            {topic.titleUz}
-                          </span>
-                          <span className="flex items-center gap-1 font-mono text-slate-400">
-                            <Clock className="h-3.5 w-3.5" />
-                            {lesson.estMinutes} daqiqa
-                          </span>
-                        </div>
-
-                        <h3 className="mt-3 text-base sm:text-lg font-black text-white">
-                          {lesson.titleUz}
-                        </h3>
-                        <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-300">
-                          {lesson.summaryUz}
-                        </p>
-                      </div>
-
-                      <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
-                        <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                          <Brain className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Talaba AI audio &amp; {lesson._count.questions} ta mashq</span>
-                        </span>
-                        <Link
-                          href={`/learn/${lesson.slug}`}
-                          className="btn-neon inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold"
-                        >
-                          {isDone ? (
-                            <>
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              <span>Qayta ko&apos;rish</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>Darsni ochish</span>
-                              <ArrowRight className="h-3.5 w-3.5" />
-                            </>
-                          )}
-                        </Link>
-                      </div>
+          .map((subject) => {
+            const { icon: Icon, color } = SUBJECT_ICONS[subject.slug] ?? {
+              icon: BookOpen,
+              color: "#94a3b8",
+            };
+            return (
+              <div key={subject.id} className="glass-card p-6 sm:p-8">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <SubjectIcon slug={subject.slug} />
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-black text-white">
+                        {subject.nameUz}
+                      </h2>
+                      <p className="mt-1 text-xs sm:text-sm text-slate-300">
+                        {subject.descriptionUz}
+                      </p>
                     </div>
-                  );
-                }),
-              )}
-            </div>
-          </div>
-        ))}
+                  </div>
+                  <Link
+                    href={`/practice?subject=${subject.slug}`}
+                    className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-emerald-400 hover:border-emerald-400/50 hover:bg-white/10 transition-colors"
+                  >
+                    <Target className="h-3.5 w-3.5" />
+                    <span>Ushbu fandan mashqlar →</span>
+                  </Link>
+                </div>
+
+                <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {subject.topics.map((topic) =>
+                    topic.lessons.map((lesson) => {
+                      const isDone = completedLessonIds.includes(lesson.id);
+                      return (
+                        <div
+                          key={lesson.id}
+                          className={`flex flex-col justify-between rounded-2xl border p-5 transition-all backdrop-blur-xl ${
+                            isDone
+                              ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_20px_rgba(198,244,50,0.15)]"
+                              : "border-white/10 bg-white/[0.03] hover:border-emerald-400/40 hover:bg-white/[0.06]"
+                          }`}
+                        >
+                          <div>
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                              <span className="glass-pill rounded-lg px-2.5 py-1 font-mono font-bold text-emerald-300">
+                                {topic.titleUz}
+                              </span>
+                              <span className="flex items-center gap-1 font-mono text-slate-400">
+                                <Clock className="h-3.5 w-3.5" />
+                                {lesson.estMinutes} daqiqa
+                              </span>
+                              <span className="flex items-center gap-1 font-mono text-slate-400">
+                                <Trophy className="h-3.5 w-3.5" />
+                                +{lesson.xpReward} XP
+                              </span>
+                            </div>
+
+                            <h3 className="mt-3 text-base sm:text-lg font-black text-white">
+                              {lesson.titleUz}
+                            </h3>
+                            <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-300">
+                              {lesson.summaryUz}
+                            </p>
+
+                            <div className="mt-4 flex flex-wrap gap-2 text-[10px]">
+                              <span className="flex items-center gap-1 font-bold text-emerald-400">
+                                <Brain className="h-3 w-3" />
+                                Mashq: {lesson._count.questions} ta
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+                            <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                              <Brain className="h-3.5 w-3.5 text-emerald-400" />
+                              <span>Talaba AI audio &amp; mashqlar</span>
+                            </span>
+                            <Link
+                              href={`/learn/${lesson.slug}`}
+                              className="btn-neon inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold"
+                            >
+                              {isDone ? (
+                                <>
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  <span>Qayta ko'rish</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>Darsni ochish</span>
+                                  <ArrowRight className="h-3.5 w-3.5" />
+                                </>
+                              )}
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    }),
+                  )}
+                </div>
+              </div>
+            );
+          })}
       </div>
 
-      {/* Pastki yo'llanma */}
+      {/* Pastdi yo'llanma */}
       <div className="glass-card p-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/20 text-emerald-400">
@@ -382,10 +457,10 @@ export default function LearnIndexPage() {
           </div>
           <div>
             <h3 className="text-sm font-bold text-white">
-              12 Oylik Shaxsiy Yo&apos;l Xaritangiz bilan bog&apos;langan
+              12 Oylik Shaxsiy Yo'l Xaritangiz bilan bog'langan
             </h3>
             <p className="text-xs text-slate-400">
-              Qaysi ketma-ketlikda o&apos;qish kerakligini xaritada ko&apos;ring.
+              Qaysi ketma-ketlikda o'qish kerakligini xaritada ko'ring.
             </p>
           </div>
         </div>
@@ -394,7 +469,7 @@ export default function LearnIndexPage() {
           href="/profile?tab=roadmap"
           className="btn-neon inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold"
         >
-          <span>Profil → Xaritaga o&apos;tish</span>
+          <span>Profil → Xaritaga o'tish</span>
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>

@@ -97,6 +97,21 @@ interface CompletionResultPayload {
 
 type LessonPhase = "THEORY" | "EXAMPLES" | "EXERCISES" | "ANALYSIS";
 
+/* Bosqich belgi (icon) — faqat rang va o'lchamni o'zgartiradi */
+function PhaseIcon({ Icon, active }: { Icon: React.ElementType; active: boolean }) {
+  return (
+    <span
+      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg font-bold text-[10px] transition-all ${
+        active
+          ? "bg-[#c6f432] text-[#0b0b0c] shadow-neon"
+          : "bg-white/5 border border-white/10 text-emerald-400"
+      }`}
+    >
+      <Icon className="h-3 w-3" />
+    </span>
+  );
+}
+
 export default function LessonRunnerPage({
   params,
 }: {
@@ -244,11 +259,19 @@ export default function LessonRunnerPage({
     }
   };
 
-  const phasesList: Array<{ id: LessonPhase; label: string; stepNum: string }> = [
-    { id: "THEORY", label: "1. AI Murabbiy & Metodlar", stepNum: "01" },
-    { id: "EXAMPLES", label: "2. Hayotiy Misollar", stepNum: "02" },
-    { id: "EXERCISES", label: `3. Mashqlar (${lesson.questions.length})`, stepNum: "03" },
-    { id: "ANALYSIS", label: "4. Tahlil & Ertangi Vazifa", stepNum: "04" },
+  /* Darsning 4 bosqichi — har biriga mos icon berilgan */
+  const PHASE_ICONS: Record<LessonPhase, React.ElementType> = {
+    THEORY: BookOpen,
+    EXAMPLES: Lightbulb,
+    EXERCISES: CheckCircle2,
+    ANALYSIS: Trophy,
+  };
+
+  const phasesList: Array<{ id: LessonPhase; label: string; stepNum: string; icon: React.ElementType }> = [
+    { id: "THEORY", label: "1. Nazariya & AI Murabbiy", stepNum: "01", icon: BookOpen },
+    { id: "EXAMPLES", label: "2. Hayotiy Misollar", stepNum: "02", icon: Lightbulb },
+    { id: "EXERCISES", label: `3. Mashqlar (${lesson.questions.length})`, stepNum: "03", icon: CheckCircle2 },
+    { id: "ANALYSIS", label: "4. Tahlil & Keyingi Qadam", stepNum: "04", icon: Trophy },
   ];
 
   return (
@@ -306,12 +329,13 @@ export default function LessonRunnerPage({
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
           <div>
             <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-bold text-neon">
-              <Link href="/learn" className="hover:underline">
-                ← Darslar katalogi
+              <Link href="/learn" className="hover:underline inline-flex items-center gap-1">
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Darslar katalogi</span>
               </Link>
-              <span>•</span>
+              <span className="text-fg-muted opacity-60">•</span>
               <span>{lesson.subject.nameUz}</span>
-              <span>•</span>
+              <span className="text-fg-muted opacity-60">•</span>
               <span className="text-fg-muted">{lesson.topic.titleUz}</span>
             </div>
             <h1 className="mt-2 text-xl font-extrabold text-fg sm:text-3xl">
@@ -360,6 +384,7 @@ export default function LessonRunnerPage({
                     : "border-border bg-surface text-fg-muted hover:text-fg"
                 }`}
               >
+                <PhaseIcon Icon={item.icon} active={active} />
                 <span className="block font-mono text-[10px] opacity-75">
                   BOSQICH {item.stepNum}
                 </span>

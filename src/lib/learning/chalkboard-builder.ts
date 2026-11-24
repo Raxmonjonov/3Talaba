@@ -1,4 +1,5 @@
 import type { MathModuleLesson } from "@/lib/curriculum/math-modules-data";
+import type { SeedSubjectBundle } from "@/lib/curriculum/seed-content";
 import type { LearningPaceMode } from "@/lib/learning/easy-adaptation";
 
 export interface ChalkboardZoneContent {
@@ -636,4 +637,24 @@ export function buildChalkboardFromMathModule(
     ...preset,
     analogyHint: mod.theory.realWorldAnalogy,
   });
+}
+
+/**
+ * Bir faundan barcha (topic -> lesson) doska slaydlarini qaytaradi.
+ * Ushbu funksiya katalog sahifasida barcha darslarni doska orqali ochishga xizmat qiladi.
+ */
+export function buildChalkboardSlidesFromSubjects(subjects: SeedSubjectBundle[]): ChalkboardSlideData[] {
+  return subjects.flatMap((subject) =>
+    subject.topics.flatMap((topic) =>
+      topic.lessons.map((lesson) =>
+        buildChalkboardFromLesson({
+          slug: lesson.slug,
+          subjectName: subject.nameUz,
+          lessonTitle: lesson.titleUz,
+          theoryMarkdown: lesson.theoryMarkdown,
+          examples: lesson.examples,
+        })
+      )
+    )
+  );
 }
