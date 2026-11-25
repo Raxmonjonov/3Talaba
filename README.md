@@ -1,4 +1,4 @@
-# 3Talab (v2)
+# Flux
 
 Next.js (App Router), TypeScript, Tailwind CSS v4 va Prisma + PostgreSQL asosida noldan qurilgan toza asos.
 

@@ -21,7 +21,7 @@ export async function GET() {
   return NextResponse.json(
     {
       status: database === "error" ? "degraded" : "ok",
-      service: "3talab-v2",
+      service: "flux",
       database,
       timestamp: new Date().toISOString(),
     },

@@ -29,3 +29,33 @@ model User {
 
   @@index([createdAt])
 }
+
+model AdmissionApplication {
+  id                    String    @id @default(cuid())
+  userId                String?   @unique
+  userEmail             String?
+  fullName              String
+  phone                 String
+  universityRank        Int
+  universityName        String
+  country               String
+  gradeId               String    @default("9-sinf")
+  grade                 String
+  directionId           String
+  directionTitle        String
+  completedModules      Int       @default(0)
+  currentModuleIndex    Int       @default(0)
+  currentDayNumber      Int       @default(1)
+  dailySlotHour         Int       @default(18)
+  lessonDurationMinutes Int       @default(120)
+  nextLessonStartAt     DateTime  @default(now())
+  nextLessonEndAt       DateTime  @default(now())
+  lastCompletedAt       DateTime?
+  lastNotifiedStartIso  String?
+  questionsAsked        Int       @default(0)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now()) @updatedAt
+
+  @@index([createdAt])
+  @@index([nextLessonStartAt])
+}

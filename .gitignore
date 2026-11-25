@@ -39,3 +39,5 @@ Thumbs.db
 .freebuff/
 .gemini/
 .cloud-attachments/
+data/*.json
+data/tts-cache/

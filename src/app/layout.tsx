@@ -1,17 +1,28 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-jakarta",
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-jetbrains",
+  display: "swap",
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "3Talab — Yangi avlod ta'lim platformasi",
+  title: {
+    default: "Flux — Top 300 Universitetlar Sari Jonli AI Metodologiya",
+    template: "%s | Flux",
+  },
   description:
-    "Next.js App Router, TypeScript, Tailwind CSS va Prisma/PostgreSQL asosida noldan qurilgan toza arxitektura.",
+    "SAT 1500+, IELTS 7.5+ va Top 300 xalqaro universitetlarga kirish uchun ovozli AI ustoz va shaxsiy yo'l xaritasi — 100% tabiiy o'zbek tilida.",
 };
 
 export default function RootLayout({
@@ -20,8 +31,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uz" className={inter.variable}>
-      <body className="min-h-screen bg-zinc-950 font-sans text-zinc-100 antialiased selection:bg-amber-400/30 selection:text-amber-100">
+    <html
+      lang="uz"
+      className={`${jakarta.variable} ${jetbrainsMono.variable} dark overflow-x-hidden`}
+    >
+      <body className="relative min-h-screen max-w-[100vw] overflow-x-hidden bg-[#0b0b0c] font-sans text-white antialiased selection:bg-[#c6f432] selection:text-[#0b0b0c]">
         {children}
       </body>
     </html>
